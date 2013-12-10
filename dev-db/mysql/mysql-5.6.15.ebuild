@@ -71,7 +71,10 @@ src_test() {
 		# false positives:
 		#
 		# main.information_schema, binlog.binlog_statement_insert_delayed,
-		# main.mysqld--help-notwin
+		# main.mysqld--help-notwin, funcs_1.is_triggers funcs_1.is_tables_mysql,
+		# funcs_1.is_columns_mysql, binlog.binlog_mysqlbinlog_filter,
+		# perfschema.binlog_edge_mix, perfschema.binlog_edge_stmt,
+		# mysqld--help-notwin
 		# fails due to USE=-latin1 / utf8 default
 		#
 		# main.mysql_client_test:
@@ -85,7 +88,10 @@ src_test() {
 		# fails because of unknown system variable 'DEBUG_SYNC'
 		for t in main.mysql_client_test \
 			binlog.binlog_statement_insert_delayed main.information_schema \
-			main.mysqld--help-notwin; do
+			main.mysqld--help-notwinfuncs_1.is_triggers funcs_1.is_tables_mysql \
+			funcs_1.is_columns_mysql binlog.binlog_mysqlbinlog_filter \
+			perfschema.binlog_edge_mix perfschema.binlog_edge_stmt \
+			mysqld--help-notwin; do
 				mysql-v2_disable_test  "$t" "False positives in Gentoo"
 		done
 
