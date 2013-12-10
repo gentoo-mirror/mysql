@@ -2,6 +2,11 @@
 # Copyright 1999-2013 Gentoo Foundation; Distributed under the GPL v2
 # $Header: $
 
+*mysql-5.7 (10 Dec 2013)
+
+  10 Dec 2013; Brian Evans <grknight@tuffmail.com> +mysql-5.7.ebuild:
+  [virtual] Add missing 5.7 virtual
+
 *mysql-10.0 (21 Mar 2013)
 
   21 Mar 2013; Robin H. Johnson <robbat2@gentoo.org> +mysql-10.0.ebuild:
