@@ -3,7 +3,7 @@
 # $Header: $
 
 EAPI="4"
-MY_EXTRAS_VER="20130120-0100Z"
+MY_EXTRAS_VER="live"
 WSREP_REVISION="23"
 
 # Build system
@@ -61,6 +61,9 @@ src_test() {
 
 		# create directories because mysqladmin might right out of order
 		mkdir -p "${S}"/mysql-test/var-tests{,/log}
+
+		# create symlink for the tests to find mysql_tzinfo_to_sql
+		ln -s "${CMAKE_BUILD_DIR}/sql/mysql_tzinfo_to_sql" "${S}/sql/"
 
 		# These are failing in MySQL 5.5 for now and are believed to be
 		# false positives:
