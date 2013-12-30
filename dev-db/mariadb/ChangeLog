@@ -2,6 +2,12 @@
 # Copyright 1999-2013 Gentoo Foundation; Distributed under the GPL v2
 # $Header: $
 
+*mariadb-10.0.7 (30 Dec 2013)
+
+  30 Dec 2013; Brian Evans <grknight@tuffmail.com> files/my.cnf-5.5,
+  -mariadb-10.0.4.ebuild, +mariadb-10.0.7.ebuild:
+  [mariadb] Version bump for 10 series
+
 *mariadb-5.5.34 (22 Nov 2013)
 
   22 Nov 2013; Brian Evans <grknight@tuffmail.com> +mariadb-5.5.34.ebuild:
@@ -43,7 +49,7 @@
 
 *mariadb-5.5.32 (19 Jul 2013)
 
-  19 Jul 2013; Brian Evans <grknight@lavabit.com> +mariadb-5.5.32.ebuild:
+  19 Jul 2013; Brian Evans <grknight@tuffmail.com> +mariadb-5.5.32.ebuild:
   Version bump
 
 *mariadb-10.0.3 (12 Jun 2013)
@@ -224,4 +230,4 @@
   15 Mar 2010; Robin H. Johnson <robbat2@gentoo.org> +files/my.cnf-4.1,
   +mariadb-5.1.42.ebuild, +metadata.xml:
   Add MariaDB. Bug #303130, based on the submission by Brian Evans
-  <grknight@scent-team.com>.
+  <grknight@tuffmail.com>.

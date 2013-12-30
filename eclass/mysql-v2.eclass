@@ -263,6 +263,7 @@ if [[ ${PN} == "mariadb" || ${PN} == "mariadb-galera" ]] ; then
 	mysql_version_is_at_least "5.2.10" && DEPEND="${DEPEND} !minimal? ( pam? ( virtual/pam ) )"
 	# Bug 441700 MariaDB >=5.3 include custom mytop
 	mysql_version_is_at_least "5.3" && DEPEND="${DEPEND} perl? ( !dev-db/mytop )"
+	mysql_version_is_at_least "10.0.7" && DEPEND="${DEPEND} oqgraph? ( dev-libs/judy )"
 fi
 
 # Having different flavours at the same time is not a good idea
@@ -573,13 +574,21 @@ mysql-v2_pkg_postinst() {
 			fi
 		done
 
-		if [[ ${PN} == "mariadb" || ${PN} == "mariadb-galera" ]] \
-			&& mysql_version_is_at_least "5.2.10" && use pam ; then
-			einfo
-			elog "This install includes the PAM authentication plugin."
-			elog "To activate and configure the PAM plugin, please read:"
-			elog "https://kb.askmonty.org/en/pam-authentication-plugin/"
-			einfo
+		if [[ ${PN} == "mariadb" || ${PN} == "mariadb-galera" ]] ; then
+			if mysql_version_is_at_least "5.2.10" && use pam ; then
+				einfo
+				elog "This install includes the PAM authentication plugin."
+				elog "To activate and configure the PAM plugin, please read:"
+				elog "https://kb.askmonty.org/en/pam-authentication-plugin/"
+				einfo
+			fi
+
+			if mysql_version_is_at_least "10.0.7" ; then
+				einfo
+				elog "In 10.0, XtraDB is no longer the default InnoDB implementation."
+				elog "It is installed as a dynamic plugin and must be activated in my.cnf."
+				einfo
+			fi
 		fi
 
 		einfo

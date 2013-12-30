@@ -1,9 +1,9 @@
 # Copyright 1999-2013 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: /var/cvsroot/gentoo-x86/dev-db/mariadb/mariadb-5.5.29.ebuild,v 1.1 2013/02/13 00:47:45 robbat2 Exp $
+# $Header: $
 
 EAPI="4"
-MY_EXTRAS_VER="20130120-0100Z"
+MY_EXTRAS_VER="live"
 
 # Build system
 BUILD="cmake"
@@ -28,7 +28,7 @@ RDEPEND="${RDEPEND}"
 # digest clean package
 src_test() {
 
-	local TESTDIR="${CMAKE_BUILD_DIR}/mysql-test"
+	local TESTDIR="${BUILD_DIR}/mysql-test"
 	local retstatus_unit
 	local retstatus_tests
 
@@ -98,7 +98,8 @@ src_test() {
 		pushd "${TESTDIR}"
 
 		# run mysql-test tests
-		perl mysql-test-run.pl --force --vardir="${S}/mysql-test/var-tests"
+		# Skip all CONNECT engine tests until upstream respondes to how to reference data files
+		perl mysql-test-run.pl --force --vardir="${S}/mysql-test/var-tests" --skip-test=connect
 		retstatus_tests=$?
 		[[ $retstatus_tests -eq 0 ]] || eerror "tests failed"
 		has usersandbox $FEATURES && eerror "Some tests may fail with FEATURES=usersandbox"
