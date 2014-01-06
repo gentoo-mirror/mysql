@@ -80,7 +80,7 @@ _mysql-multilib_src_configure() {
 
 	configure_cmake_locale
 
-	if multilib_is_native_abi; then
+	if multilib_build_binaries ; then
 		if use minimal ; then
 			configure_cmake_minimal
 		else
@@ -121,7 +121,7 @@ mysql-cmake-multilib_src_configure() {
 
 _mysql-multilib_src_compile() {
 
-	if ! multilib_is_native_abi; then
+	if ! multilib_build_binaries ; then
 		BUILD_DIR="${BUILD_DIR}/libmysql" cmake-utils_src_compile
 	else
 		cmake-utils_src_compile
@@ -141,7 +141,7 @@ mysql-cmake-multilib_src_compile() {
 _mysql-multilib_src_install() {
 	debug-print-function ${FUNCNAME} "$@"
 
-	if multilib_is_native_abi; then
+	if multilib_build_binaries; then
 		mysql-cmake_src_install
 	else
 		BUILD_DIR="${BUILD_DIR}/libmysql" cmake-utils_src_install
