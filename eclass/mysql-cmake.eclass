@@ -311,7 +311,8 @@ mysql-cmake_src_configure() {
 		-DINSTALL_DOCREADMEDIR=share/doc/${P}
 		-DINSTALL_INCLUDEDIR=include/mysql
 		-DINSTALL_INFODIR=share/info
-		-DINSTALL_LIBDIR=$(get_libdir)/mysql
+		-DINSTALL_LIBDIR=$(get_libdir)
+		-DINSTALL_ELIBDIR=$(get_libdir)/mysql
 		-DINSTALL_MANDIR=share/man
 		-DINSTALL_MYSQLDATADIR=${EPREFIX}/var/lib/mysql
 		-DINSTALL_MYSQLSHAREDIR=share/mysql
@@ -471,10 +472,10 @@ mysql-cmake_src_install() {
 		done
 	fi
 
-	cat <<-EOF > "${T}"/80mysql-libdir
-	LDPATH="${EPREFIX}/usr/$(get_libdir)/mysql"
-	EOF
-	doenvd "${T}"/80mysql-libdir
+#	cat <<-EOF > "${T}"/80mysql-libdir
+#	LDPATH="${EPREFIX}/usr/$(get_libdir)/mysql"
+#	EOF
+#	doenvd "${T}"/80mysql-libdir
 
 	#Remove mytop if perl is not selected
 	[[ ${PN} == "mariadb" || ${PN} == "mariadb-galera" ]] && ! use perl \
