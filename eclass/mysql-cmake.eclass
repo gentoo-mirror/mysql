@@ -15,7 +15,7 @@
 # the src_prepare, src_configure, src_compile, and src_install
 # phase hooks.
 
-inherit cmake-utils flag-o-matic multilib prefix
+inherit cmake-utils flag-o-matic multilib prefix eutils
 
 #
 # HELPER FUNCTIONS:
@@ -74,7 +74,7 @@ mysql-cmake_disable_test() {
 # and some check WITHOUT_. Also, this can easily extend to non-storage plugins.
 mysql-cmake_use_plugin() {
 	[[ -z $2 ]] && die "mysql-cmake_use_plugin <USE flag> <flag name>"
-	if use $1 ; then
+	if use_if_iuse $1 ; then
 		echo "-DWITH_$2=1"
 	else
 		echo "-DWITHOUT_$2=1 -DWITH_$2=0"
@@ -193,7 +193,7 @@ configure_cmake_standard() {
 		$(cmake-utils_use_with extraengine FEDERATED_STORAGE_ENGINE)
 	)
 
-	if pbxt_available ; then
+	if in_iuse pbxt ; then
 		mycmakeargs+=( $(cmake-utils_use_with pbxt PBXT_STORAGE_ENGINE) )
 	fi
 
@@ -284,7 +284,7 @@ mysql-cmake_src_prepare() {
 		echo "TARGET_LINK_LIBRARIES(mysqld tcmalloc)" >> "${S}/sql/CMakeLists.txt"
 	fi
 
-	if has tokudb ${IUSE} ; then
+	if in_iuse tokudb ; then
 		# Don't build bundled xz-utils
 		rm -f "${S}/storage/tokudb/ft-index/cmake_modules/TokuThirdParty.cmake"
 		touch "${S}/storage/tokudb/ft-index/cmake_modules/TokuThirdParty.cmake"
@@ -345,14 +345,14 @@ mysql-cmake_src_configure() {
 	filter-flags "-O" "-O[01]"
 
 	CXXFLAGS="${CXXFLAGS} -fno-strict-aliasing"
-	CXXFLAGS="${CXXFLAGS} -felide-constructors -fno-rtti"
+	CXXFLAGS="${CXXFLAGS} -felide-constructors"
 	# Causes linkage failures.  Upstream bug #59607 removes it
 	if ! mysql_version_is_at_least "5.6" ; then
 		CXXFLAGS="${CXXFLAGS} -fno-implicit-templates"
 	fi
-	# As of 5.7, exceptions are used!
+	# As of 5.7, exceptions and rtti are used!
 	if ! mysql_version_is_at_least "5.7" ; then
-		CXXFLAGS="${CXXFLAGS} -fno-exceptions"
+		CXXFLAGS="${CXXFLAGS} -fno-exceptions -fno-rtti"
 	fi
 	export CXXFLAGS
 

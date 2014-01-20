@@ -263,6 +263,12 @@ if [[ ${PN} == "mariadb" || ${PN} == "mariadb-galera" ]] ; then
 	mysql_version_is_at_least "5.2.10" && DEPEND="${DEPEND} !minimal? ( pam? ( virtual/pam ) )"
 	# Bug 441700 MariaDB >=5.3 include custom mytop
 	mysql_version_is_at_least "5.3" && DEPEND="${DEPEND} perl? ( !dev-db/mytop )"
+	if mysql_version_is_at_least "10.0.5" ; then
+		DEPEND="${DEPEND}
+			odbc? ( dev-db/unixODBC )
+			xml? ( dev-libs/libxml2 )
+			"
+	fi
 	mysql_version_is_at_least "10.0.7" && DEPEND="${DEPEND} oqgraph? ( dev-libs/judy )"
 fi
 
@@ -304,13 +310,6 @@ if [[ ${PN} == "mariadb" || ${PN} == "mariadb-galera" ]] ; then
 			virtual/perl-Term-ANSIColor
 			virtual/perl-Time-HiRes ) "
 	fi
-
-	if mysql_version_is_at_least "10.0.5" ; then
-		RDEPEND="${RDEPEND}
-			odbc? ( dev-db/unixODBC )
-			xml? ( dev-libs/libxml2 )
-			"
-	fi
 fi
 
 if [[ ${PN} == "mariadb-galera" ]] ; then
@@ -351,7 +350,7 @@ PDEPEND="${PDEPEND} =virtual/mysql-${MYSQL_PV_MAJOR}"
 # External patches
 #
 
-# MariaDB has integrated PBXT
+# MariaDB has integrated PBXT until it was dropped in version 5.5.33
 # PBXT_VERSION means that we have a PBXT patch for this PV
 # PBXT was only introduced after 5.1.12
 pbxt_patch_available() {
@@ -469,7 +468,7 @@ mysql-v2_pkg_setup() {
 		mysql_version_is_at_least "7.2.9" && java-pkg-opt-2_pkg_setup
 	fi
 
-	if has tokudb ${IUSE} && use tokudb && [[ $(gcc-version) < 4.7 ]] ; then
+	if use_if_iuse tokudb && [[ $(gcc-version) < 4.7 ]] ; then
 		eerror "${PN} with tokudb needs to be built with gcc-4.7 or later."
 		eerror "Please use gcc-config to switch to gcc-4.7 or later version."
 		die
@@ -575,7 +574,7 @@ mysql-v2_pkg_postinst() {
 		done
 
 		if [[ ${PN} == "mariadb" || ${PN} == "mariadb-galera" ]] ; then
-			if mysql_version_is_at_least "5.2.10" && use pam ; then
+			if use_if_iuse pam ; then
 				einfo
 				elog "This install includes the PAM authentication plugin."
 				elog "To activate and configure the PAM plugin, please read:"
@@ -603,7 +602,7 @@ mysql-v2_pkg_postinst() {
 		einfo
 	fi
 
-	if pbxt_available && use pbxt ; then
+	if use_if_iuse pbxt ; then
 		elog "Note: PBXT is now statically built when enabled."
 		elog ""
 		elog "If, you previously installed as a plugin and "
