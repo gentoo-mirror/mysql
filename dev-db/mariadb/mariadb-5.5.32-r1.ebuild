@@ -3,7 +3,7 @@
 # $Header: /var/cvsroot/gentoo-x86/dev-db/mariadb/mariadb-5.5.29.ebuild,v 1.1 2013/02/13 00:47:45 robbat2 Exp $
 
 EAPI="4"
-MY_EXTRAS_VER="20140117-1443Z"
+MY_EXTRAS_VER="20140121-1138Z"
 
 # Build system
 BUILD="cmake"
