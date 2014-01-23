@@ -251,10 +251,16 @@ DEPEND="
 	kernel_linux? ( sys-process/procps )
 	>=sys-apps/sed-4
 	>=sys-apps/texinfo-4.7-r1
-	>=sys-libs/readline-4.1
 	>=sys-libs/zlib-1.2.3
 	!dev-db/mariadb-native-client[mysqlcompat]
 "
+
+# dev-db/mysql-5.7.3+ only works with dev-libs/libedit
+if [[ ${PN} == "mysql" ]] && mysql_version_is_at_least "5.7.3" ; then
+	DEPEND="${DEPEND} dev-libs/libedit"
+else
+	DEPEND="${DEPEND} >=sys-libs/readline-4.1"
+fi
 
 if [[ ${PN} == "mariadb" || ${PN} == "mariadb-galera" ]] ; then
 	mysql_check_version_range "5.1.38 to 5.3.99" && DEPEND="${DEPEND} libevent? ( >=dev-libs/libevent-1.4 )"
