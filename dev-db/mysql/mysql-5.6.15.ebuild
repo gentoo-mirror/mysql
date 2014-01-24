@@ -98,8 +98,12 @@ src_test() {
 		# Run mysql tests
 		pushd "${TESTDIR}"
 
+		# Set file limits higher so tests run
+		ulimit -n 3000
+
 		# run mysql-test tests
-		perl mysql-test-run.pl --force --vardir="${S}/mysql-test/var-tests"
+		perl mysql-test-run.pl --force --vardir="${S}/mysql-test/var-tests" \
+			--suite-timeout=5000
 		retstatus_tests=$?
 		[[ $retstatus_tests -eq 0 ]] || eerror "tests failed"
 		has usersandbox $FEATURES && eerror "Some tests may fail with FEATURES=usersandbox"
