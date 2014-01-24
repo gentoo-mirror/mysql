@@ -125,7 +125,6 @@ configure_cmake_minimal() {
 		-DWITHOUT_LIBWRAP=1
 		-DWITH_READLINE=0
 		-DWITH_LIBEDIT=0
-		-DWITH_EDITLINE=system
 		-DWITHOUT_ARCHIVE_STORAGE_ENGINE=1
 		-DWITHOUT_BLACKHOLE_STORAGE_ENGINE=1
 		-DWITHOUT_CSV_STORAGE_ENGINE=1
@@ -137,6 +136,10 @@ configure_cmake_minimal() {
 		-DWITHOUT_PARTITION_STORAGE_ENGINE=1
 		-DWITHOUT_INNOBASE_STORAGE_ENGINE=1
 	)
+
+	if [[ ${PN} == "mysql" || ${PN} == "percona-server" ]] && mysql_version_is_at_least "5.6.12" ; then
+		mycmakeargs+=( -DWITH_EDITLINE=system )
+	fi
 }
 
 # @FUNCTION: configure_cmake_standard
@@ -153,8 +156,11 @@ configure_cmake_standard() {
 		-DWITH_LIBEDIT=0
 		-DWITH_ZLIB=system
 		-DWITHOUT_LIBWRAP=1
-		-DWITH_EDITLINE=system
 	)
+
+	if [[ ${PN} == "mysql" || ${PN} == "percona-server" ]] && mysql_version_is_at_least "5.6.12" ; then
+		mycmakeargs+=( -DWITH_EDITLINE=system )
+	fi
 
 	mycmakeargs+=(
 		$(cmake-utils_use_disable !static SHARED)
