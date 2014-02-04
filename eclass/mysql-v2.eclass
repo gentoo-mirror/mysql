@@ -365,7 +365,7 @@ pbxt_patch_available() {
 }
 
 pbxt_available() {
-	pbxt_patch_available || ( [[ ${PN} == "mariadb" || ${PN} == "mariadb-galera" ]] && mysql_check_version_range "5.1 to 5.5.32" )
+	pbxt_patch_available || [[ ${PN} == "mariadb" || ${PN} == "mariadb-galera" ]] && mysql_check_version_range "5.1 to 5.5.32"
 	return $?
 }
 
@@ -768,6 +768,10 @@ mysql-v2_pkg_config() {
 	options="${options/skip-locking/skip-external-locking}"
 
 	use prefix || options="${options} --user=mysql"
+
+	# Fix bug 446200.  Don't reference host my.cnf
+	use prefix && [[ -f "${MY_SYSCONFDIR}/my.cnf" ]] \
+		&& options="${options} '--defaults-file=${MY_SYSCONFDIR}/my.cnf'"
 
 	pushd "${TMPDIR}" &>/dev/null
 	#cmd="'${EROOT}/usr/share/mysql/scripts/mysql_install_db' '--basedir=${EPREFIX}/usr' ${options}"
