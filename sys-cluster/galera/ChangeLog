@@ -1,3 +1,8 @@
+*galera-25.3.2 (13 Feb 2014)
+
+  13 Feb 2014;  <grknight@gentoo.org> +galera-25.3.2.ebuild:
+  [galera] Version bump for new 25.x series
+
 *galera-23.2.7 (18 Nov 2013)
 
   18 Nov 2013; Brian Evans <grknight@tuffmail.com>
