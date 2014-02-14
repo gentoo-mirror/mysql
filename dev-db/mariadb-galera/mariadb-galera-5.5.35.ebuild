@@ -1,10 +1,10 @@
-# Copyright 1999-2013 Gentoo Foundation
+# Copyright 1999-2014 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
 EAPI="4"
-MY_EXTRAS_VER="20130120-0100Z"
-WSREP_REVISION="23"
+MY_EXTRAS_VER="20140121-1138Z"
+WSREP_REVISION="25"
 
 # Build system
 BUILD="cmake"
@@ -90,16 +90,10 @@ src_test() {
 		# plugins.unix_socket
 		# fails because portage strips out the USER enviornment variable
 		#
-		# sys_vars.all_vars
-		# Fails in 5.5.32 only due to known issue upstream, forgotten variable from test.
-		# Should be fixed in next release.
-		#
 		for t in main.mysql_client_test main.mysql_client_test_nonblock \
 			binlog.binlog_statement_insert_delayed main.information_schema \
-			main.mysqld--help main.flush_read_lock_kill \
-			sys_vars.plugin_dir_basic main.openssl_1 plugins.unix_socket \
-			funcs_1.is_triggers funcs_1.is_tables_mysql funcs_1.is_columns_mysql \
-			sys_vars.all_vars ; do
+			main.mysqld--help plugins.unix_socket \
+			funcs_1.is_triggers funcs_1.is_tables_mysql funcs_1.is_columns_mysql ; do
 				mysql-v2_disable_test  "$t" "False positives in Gentoo"
 		done
 
