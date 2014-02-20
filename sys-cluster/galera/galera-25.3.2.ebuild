@@ -10,7 +10,7 @@ inherit scons-utils multilib toolchain-funcs base versionator
 DESCRIPTION="Synchronous multi-master replication engine that provides its service through wsrep API"
 HOMEPAGE="http://www.codership.org/"
 SRC_URI="https://launchpad.net/${PN}/$(get_version_component_range 2).x/${PV}/+download/${MY_P}.tar.gz"
-LICENSE="GPL-3"
+LICENSE="GPL-2 BSD"
 
 SLOT="0"
 
