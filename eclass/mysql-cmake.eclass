@@ -168,6 +168,7 @@ configure_cmake_standard() {
 		$(cmake-utils_use_with embedded EMBEDDED_SERVER)
 		$(cmake-utils_use_with profiling)
 		$(cmake-utils_use_enable systemtap DTRACE)
+		$(cmake-utils_use_enable static-libs STATIC_LIBS)
 	)
 
 	if use static; then

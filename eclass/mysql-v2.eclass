@@ -201,7 +201,7 @@ case "${BUILD}" in
 		IUSE="big-tables debug embedded minimal +perl selinux ssl static test"
 		;;
 	cmake*)
-		IUSE="debug embedded minimal +perl selinux ssl static test"
+		IUSE="debug embedded minimal +perl selinux ssl static static-libs test"
 		;;
 esac
 
@@ -226,7 +226,7 @@ if [[ ${PN} == "mariadb" || ${PN} == "mariadb-galera" ]]; then
 fi
 
 if mysql_version_is_at_least "5.5"; then
-	REQUIRED_USE="${REQUIRED_USE} tcmalloc? ( !jemalloc ) jemalloc? ( !tcmalloc )"
+	REQUIRED_USE="${REQUIRED_USE} tcmalloc? ( !jemalloc ) jemalloc? ( !tcmalloc ) embedded? ( static-libs )"
 	IUSE="${IUSE} jemalloc tcmalloc"
 fi
 
