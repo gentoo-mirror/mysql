@@ -215,12 +215,6 @@ configure_cmake_standard() {
 			$(mysql-cmake_use_plugin pam AUTH_PAM)
 		)
 
-		if use jemalloc ; then
-			mycmakeargs+=( -DWITH_JEMALLOC="system" )
-		else
-			mycmakeargs+=( -DWITH_JEMALLOC=no )
-		fi
-
 		if mysql_version_is_at_least 10.0.5 ; then
 			# CassandraSE needs Apache Thrift which is not in portage
 			# TODO: Add use and deps for Connect SE external deps
@@ -340,6 +334,14 @@ mysql-cmake_src_configure() {
 	# Adds a warning about redistribution to configure
 	if [[ ${PN} == "mariadb" || ${PN} == "mariadb-galera" ]] ; then
 		mycmakeargs+=( -DNOT_FOR_DISTRIBUTION=1 )
+	fi
+
+	if [[ ${PN} == "mariadb" || ${PN} == "mariadb-galera" ]]; then
+		if use jemalloc ; then
+			mycmakeargs+=( -DWITH_JEMALLOC="system" )
+		else
+			mycmakeargs+=( -DWITH_JEMALLOC=no )
+		fi
 	fi
 
 	configure_cmake_locale
