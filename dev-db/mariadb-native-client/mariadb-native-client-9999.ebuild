@@ -1,4 +1,4 @@
-# Copyright 1999-2013 Gentoo Foundation
+# Copyright 1999-2014 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
@@ -31,8 +31,10 @@ SLOT="0"
 KEYWORDS=""
 IUSE="doc +mysqlcompat +ssl static-libs"
 
-RDEPEND="sys-libs/zlib
-	ssl? ( dev-libs/openssl )
+RDEPEND="sys-libs/zlib:=[${MULTILIB_USEDEP}]
+	ssl? ( dev-libs/openssl:=
+		amd64? ( abi_x86_32? ( app-emulation/emul-linux-x86-baselibs  )  )
+	 )
 	mysqlcompat? (
 		!dev-db/mysql
 		!dev-db/mysql-cluster

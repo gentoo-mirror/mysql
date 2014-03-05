@@ -1,4 +1,4 @@
-# Copyright 1999-2013 Gentoo Foundation
+# Copyright 1999-2014 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
@@ -27,7 +27,9 @@ SLOT="0"
 KEYWORDS="~amd64 ~x86"
 IUSE="doc static-libs"
 
-RDEPEND="dev-libs/openssl"
+RDEPEND="
+	dev-libs/openssl:=
+	amd64? ( abi_x86_32? ( app-emulation/emul-linux-x86-baselibs  ) )"
 DEPEND="${RDEPEND}
 	doc? ( app-text/xmlto )"
 
