@@ -117,14 +117,8 @@ configure_cmake_minimal() {
 	mycmakeargs+=(
 		-DWITHOUT_SERVER=1
 		-DWITHOUT_EMBEDDED_SERVER=1
-		-DENABLED_LOCAL_INFILE=1
 		-DEXTRA_CHARSETS=none
 		-DINSTALL_SQLBENCHDIR=
-		-DWITH_SSL=system
-		-DWITH_ZLIB=system
-		-DWITHOUT_LIBWRAP=1
-		-DWITH_READLINE=0
-		-DWITH_LIBEDIT=0
 		-DWITHOUT_ARCHIVE_STORAGE_ENGINE=1
 		-DWITHOUT_BLACKHOLE_STORAGE_ENGINE=1
 		-DWITHOUT_CSV_STORAGE_ENGINE=1
@@ -136,10 +130,6 @@ configure_cmake_minimal() {
 		-DWITHOUT_PARTITION_STORAGE_ENGINE=1
 		-DWITHOUT_INNOBASE_STORAGE_ENGINE=1
 	)
-
-	if [[ ${PN} == "mysql" || ${PN} == "percona-server" ]] && mysql_version_is_at_least "5.6.12" ; then
-		mycmakeargs+=( -DWITH_EDITLINE=system )
-	fi
 }
 
 # @FUNCTION: configure_cmake_standard
@@ -148,21 +138,9 @@ configure_cmake_minimal() {
 configure_cmake_standard() {
 
 	mycmakeargs+=(
-		-DENABLED_LOCAL_INFILE=1
 		-DEXTRA_CHARSETS=all
 		-DMYSQL_USER=mysql
 		-DMYSQL_UNIX_ADDR=${EPREFIX}/var/run/mysqld/mysqld.sock
-		-DWITH_READLINE=0
-		-DWITH_LIBEDIT=0
-		-DWITH_ZLIB=system
-		-DWITHOUT_LIBWRAP=1
-	)
-
-	if [[ ${PN} == "mysql" || ${PN} == "percona-server" ]] && mysql_version_is_at_least "5.6.12" ; then
-		mycmakeargs+=( -DWITH_EDITLINE=system )
-	fi
-
-	mycmakeargs+=(
 		$(cmake-utils_use_disable !static SHARED)
 		$(cmake-utils_use_with debug)
 		$(cmake-utils_use_with embedded EMBEDDED_SERVER)
@@ -173,12 +151,6 @@ configure_cmake_standard() {
 
 	if use static; then
 		mycmakeargs+=( -DWITH_PIC=1 )
-	fi
-
-	if use ssl; then
-		mycmakeargs+=( -DWITH_SSL=system )
-	else
-		mycmakeargs+=( -DWITH_SSL=bundled )
 	fi
 
 	if use jemalloc; then
@@ -327,7 +299,22 @@ mysql-cmake_src_configure() {
 		-DINSTALL_SUPPORTFILESDIR=${EPREFIX}/usr/share/mysql
 		-DWITH_COMMENT="Gentoo Linux ${PF}"
 		$(cmake-utils_use_with test UNIT_TESTS)
+		-DWITH_READLINE=0
+		-DWITH_LIBEDIT=0
+		-DWITH_ZLIB=system
+		-DWITHOUT_LIBWRAP=1
+		-DENABLED_LOCAL_INFILE=1
 	)
+
+	if [[ ${PN} == "mysql" || ${PN} == "percona-server" ]] && mysql_version_is_at_least "5.6.12" ; then
+		mycmakeargs+=( -DWITH_EDITLINE=system )
+	fi
+
+	if use ssl; then
+		mycmakeargs+=( -DWITH_SSL=system )
+	else
+		mycmakeargs+=( -DWITH_SSL=bundled )
+	fi
 
 	# Bug 412851
 	# MariaDB requires this flag to compile with GPLv3 readline linked
