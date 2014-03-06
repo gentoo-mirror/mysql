@@ -22,7 +22,7 @@ DEPEND="|| ( >=sys-devel/gcc-3.4.6 >=sys-devel/gcc-apple-4.0 )"
 RDEPEND="${RDEPEND}"
 
 # Official test instructions:
-# USE='berkdb -cluster embedded extraengine perl ssl community' \
+# USE='-cluster embedded extraengine perl ssl static-libs community' \
 # FEATURES='test userpriv -usersandbox' \
 # ebuild mariadb-X.X.XX.ebuild \
 # digest clean package
