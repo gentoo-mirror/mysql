@@ -2,7 +2,7 @@
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
-# @ECLASS: mysql-v3.eclass
+# @ECLASS: mysql-multilib.eclass
 # @MAINTAINER:
 # Maintainers:
 #	- MySQL Team <mysql-bugs@gentoo.org>
@@ -10,7 +10,7 @@
 #	- Jorge Manuel B. S. Vicetto <jmbsvicetto@gentoo.org>
 # @BLURB: This eclass provides most of the functions for mysql ebuilds
 # @DESCRIPTION:
-# The mysql-v3.eclass is the base eclass to build the mysql and
+# The mysql-multilib.eclass is the base eclass to build the mysql and
 # alternative projects (mariadb and percona) ebuilds.
 # This eclass uses the mysql-cmake eclass for the
 # specific bits related to the build system.
@@ -298,10 +298,10 @@ PDEPEND="${PDEPEND} =virtual/mysql-${MYSQL_PV_MAJOR}"
 # HELPER FUNCTIONS:
 #
 
-# @FUNCTION: mysql-v3_disable_test
+# @FUNCTION: mysql-multilib_disable_test
 # @DESCRIPTION:
 # Helper function to disable specific tests.
-mysql-v3_disable_test() {
+mysql-multilib_disable_test() {
 	mysql-cmake_disable_test "$@"
 }
 
@@ -309,13 +309,13 @@ mysql-v3_disable_test() {
 # EBUILD FUNCTIONS
 #
 
-# @FUNCTION: mysql-v3_pkg_setup
+# @FUNCTION: mysql-multilib_pkg_setup
 # @DESCRIPTION:
 # Perform some basic tests and tasks during pkg_setup phase:
 #   die if FEATURES="test", USE="-minimal" and not using FEATURES="userpriv"
 #   create new user and group for mysql
 #   warn about deprecated features
-mysql-v3_pkg_setup() {
+mysql-multilib_pkg_setup() {
 
 	if has test ${FEATURES} ; then
 		if ! use minimal ; then
@@ -347,10 +347,10 @@ mysql-v3_pkg_setup() {
 
 }
 
-# @FUNCTION: mysql-v3_src_unpack
+# @FUNCTION: mysql-multilib_src_unpack
 # @DESCRIPTION:
 # Unpack the source code
-mysql-v3_src_unpack() {
+mysql-multilib_src_unpack() {
 
 	# Initialize the proper variables first
 	mysql_init_vars
@@ -362,10 +362,10 @@ mysql-v3_src_unpack() {
 	mv -f "${WORKDIR}/${MY_SOURCEDIR}" "${S}"
 }
 
-# @FUNCTION: mysql-v3_src_prepare
+# @FUNCTION: mysql-multilib_src_prepare
 # @DESCRIPTION:
 # Apply patches to the source code and remove unneeded bundled libs.
-mysql-v3_src_prepare() {
+mysql-multilib_src_prepare() {
 	mysql-cmake_src_prepare "$@"
 	if [[ ${PN} == "mysql-cluster" ]] ; then
 		mysql_version_is_at_least "7.2.9" && java-pkg-opt-2_src_prepare
@@ -485,29 +485,29 @@ _mysql-multilib_src_install() {
 	fi
 }
 
-# @FUNCTION: mysql-v3_src_configure
+# @FUNCTION: mysql-multilib_src_configure
 # @DESCRIPTION:
 # Configure mysql to build the code for Gentoo respecting the use flags.
-mysql-v3_src_configure() {
+mysql-multilib_src_configure() {
 	debug-print-function ${FUNCNAME} "$@"
 
 	multilib_parallel_foreach_abi _mysql-multilib_src_configure "${@}"
 }
 
-# @FUNCTION: mysql-v3_src_compile
+# @FUNCTION: mysql-multilib_src_compile
 # @DESCRIPTION:
 # Compile the mysql code.
-mysql-v3_src_compile() {
+mysql-multilib_src_compile() {
 	debug-print-function ${FUNCNAME} "$@"
 
 #	multilib_foreach_abi _mysql-multilib_src_compile "${@}"
 	multilib_foreach_abi cmake-utils_src_compile "${@}"
 }
 
-# @FUNCTION: mysql-v3_src_install
+# @FUNCTION: mysql-multilib_src_install
 # @DESCRIPTION:
 # Install mysql.
-mysql-v3_src_install() {
+mysql-multilib_src_install() {
 	debug-print-function ${FUNCNAME} "$@"
 
 	# Do multilib magic only when >1 ABI is used.
@@ -520,10 +520,10 @@ mysql-v3_src_install() {
 	multilib_install_wrappers
 }
 
-# @FUNCTION: mysql-v3_pkg_preinst
+# @FUNCTION: mysql-multilib_pkg_preinst
 # @DESCRIPTION:
 # Create the user and groups for mysql - die if that fails.
-mysql-v3_pkg_preinst() {
+mysql-multilib_pkg_preinst() {
 	debug-print-function ${FUNCNAME} "$@"
 
 	if [[ ${PN} == "mysql-cluster" ]] ; then
@@ -531,7 +531,7 @@ mysql-v3_pkg_preinst() {
 	fi
 }
 
-# @FUNCTION: mysql-v3_pkg_postinst
+# @FUNCTION: mysql-multilib_pkg_postinst
 # @DESCRIPTION:
 # Run post-installation tasks:
 #   create the dir for logfiles if non-existant
@@ -539,7 +539,7 @@ mysql-v3_pkg_preinst() {
 #   install scripts
 #   issue required steps for optional features
 #   issue deprecation warnings
-mysql-v3_pkg_postinst() {
+mysql-multilib_pkg_postinst() {
 	debug-print-function ${FUNCNAME} "$@"
 
 	# Make sure the vars are correctly initialized
@@ -617,30 +617,30 @@ mysql-v3_pkg_postinst() {
 	fi
 }
 
-# @FUNCTION: mysql-v3_getopt
+# @FUNCTION: mysql-multilib_getopt
 # @DESCRIPTION:
 # Use my_print_defaults to extract specific config options
-mysql-v3_getopt() {
+mysql-multilib_getopt() {
 	local mypd="${EROOT}"/usr/bin/my_print_defaults
 	section="$1"
 	flag="--${2}="
 	"${mypd}" $section | sed -n "/^${flag}/p"
 }
 
-# @FUNCTION: mysql-v3_getoptval
+# @FUNCTION: mysql-multilib_getoptval
 # @DESCRIPTION:
 # Use my_print_defaults to extract specific config options
-mysql-v3_getoptval() {
+mysql-multilib_getoptval() {
 	local mypd="${EROOT}"/usr/bin/my_print_defaults
 	section="$1"
 	flag="--${2}="
 	"${mypd}" $section | sed -n "/^${flag}/s,${flag},,gp"
 }
 
-# @FUNCTION: mysql-v3_pkg_config
+# @FUNCTION: mysql-multilib_pkg_config
 # @DESCRIPTION:
 # Configure mysql environment.
-mysql-v3_pkg_config() {
+mysql-multilib_pkg_config() {
 
 	debug-print-function ${FUNCNAME} "$@"
 
@@ -689,13 +689,13 @@ mysql-v3_pkg_config() {
 	local maxtry=15
 
 	if [ -z "${MYSQL_ROOT_PASSWORD}" ]; then
-		MYSQL_ROOT_PASSWORD="$(mysql-v3_getoptval 'client mysql' password)"
+		MYSQL_ROOT_PASSWORD="$(mysql-multilib_getoptval 'client mysql' password)"
 	fi
-	MYSQL_TMPDIR="$(mysql-v3_getoptval mysqld tmpdir)"
+	MYSQL_TMPDIR="$(mysql-multilib_getoptval mysqld tmpdir)"
 	# These are dir+prefix
-	MYSQL_RELAY_LOG="$(mysql-v3_getoptval mysqld relay-log)"
+	MYSQL_RELAY_LOG="$(mysql-multilib_getoptval mysqld relay-log)"
 	MYSQL_RELAY_LOG=${MYSQL_RELAY_LOG%/*}
-	MYSQL_LOG_BIN="$(mysql-v3_getoptval mysqld log-bin)"
+	MYSQL_LOG_BIN="$(mysql-multilib_getoptval mysqld log-bin)"
 	MYSQL_LOG_BIN=${MYSQL_LOG_BIN%/*}
 
 	if [[ ! -d "${EROOT}"/$MYSQL_TMPDIR ]]; then
