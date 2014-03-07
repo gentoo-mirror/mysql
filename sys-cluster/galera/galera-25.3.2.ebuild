@@ -6,7 +6,7 @@ EAPI=5
 
 MY_P="${PN}-${PV}-src"
 
-inherit scons-utils multilib toolchain-funcs base versionator
+inherit scons-utils multilib toolchain-funcs base versionator eutils
 DESCRIPTION="Synchronous multi-master replication engine that provides its service through wsrep API"
 HOMEPAGE="http://www.codership.org/"
 SRC_URI="https://launchpad.net/${PN}/$(get_version_component_range 2).x/${PV}/+download/${MY_P}.tar.gz"
@@ -48,20 +48,20 @@ pkg_preinst() {
 src_prepare() {
 	# Remove bundled dev-cpp/asio
 	rm -fr "${S}/asio"
-	# Respect LDFLAGS.
-	sed -i	-e "s/LINKFLAGS = link_arch/LINKFLAGS = link_arch + ' ' + os.environ['LDFLAGS']/" \
-		"${S}/SConstruct"
+	
+	# Respect {C,LD}FLAGS.
+	epatch "${FILESDIR}/respect-flags.patch"
+	
 	#Remove optional garbd daemon
 	if ! use garbd ; then
 		rm -fr "${S}/garb"
 	fi
+	
+	epatch_user
 }
 
 src_configure() {
 	tc-export CC CXX
-	CPPFLAGS=${CPPFLAGS:-$CXXFLAGS}
-	export CPPFLAGS
-	tc-export_build_env
 	# strict_build_flags=0 disables -Werror, -pedantic, -Weffc++,
 	# and -Wold-style-cast
 	myesconsargs=(
