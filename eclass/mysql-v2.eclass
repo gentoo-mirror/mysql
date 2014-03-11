@@ -243,13 +243,14 @@ REQUIRED_USE="${REQUIRED_USE} minimal? ( !cluster !extraengine !embedded ) stati
 # Be warned, *DEPEND are version-dependant
 # These are used for both runtime and compiletime
 DEPEND="
-	ssl? ( >=dev-libs/openssl-0.9.6d[static-libs?] )
+	ssl? ( >=dev-libs/openssl-0.9.6d )
 	kernel_linux? ( sys-process/procps )
 	>=sys-apps/sed-4
 	>=sys-apps/texinfo-4.7-r1
-	>=sys-libs/zlib-1.2.3[static-libs?]
-	!dev-db/mariadb-native-client[mysqlcompat]
+	>=sys-libs/zlib-1.2.3
 "
+# TODO: add this as a dep if it is moved from the overlay
+#	!dev-db/mariadb-native-client[mysqlcompat]
 
 # dev-db/mysql-5.6.12+ only works with dev-libs/libedit
 if [[ ${PN} == "mysql" || ${PN} == "percona-server" ]] && mysql_version_is_at_least "5.6.12" ; then
@@ -285,14 +286,13 @@ for i in "mysql" "mariadb" "mariadb-galera" "percona-server" "mysql-cluster" ; d
 	DEPEND="${DEPEND} !dev-db/${i}"
 done
 
-if mysql_version_is_at_least "5.5" ; then
-	DEPEND="${DEPEND} jemalloc? ( dev-libs/jemalloc[static-libs?] )"
-	DEPEND="${DEPEND} tcmalloc? ( dev-util/google-perftools )"
-fi
-
 if mysql_version_is_at_least "5.5.7" ; then
-	DEPEND="${DEPEND} systemtap? ( >=dev-util/systemtap-1.3 )"
-	DEPEND="${DEPEND} kernel_linux? ( dev-libs/libaio )"
+	DEPEND="${DEPEND} jemalloc? ( dev-libs/jemalloc[static-libs?] ) 
+	tcmalloc? ( dev-util/google-perftools )
+	>=sys-libs/zlib-1.2.3[static-libs?]
+        ssl? ( >=dev-libs/openssl-0.9.6d[static-libs?] )
+	systemtap? ( >=dev-util/systemtap-1.3 )
+	kernel_linux? ( dev-libs/libaio )"
 fi
 
 if [[ ${PN} == "mysql-cluster" ]] ; then
