@@ -125,7 +125,9 @@ mysql_version_is_at_least "5.1.50" || die "This eclass should only be used with 
 if [[ -z ${SERVER_URI} ]]; then
 	[[ -z ${MY_PV} ]] && MY_PV="${PV//_/-}"
 	if [[ ${PN} == "mariadb" || ${PN} == "mariadb-galera" ]]; then
-		MARIA_FULL_PV=$(replace_version_separator 3 '-' ${MY_PV})
+		# Beginning with 5.5, MariaDB stopped putting beta, alpha or rc on their tarball names
+		mysql_version_is_at_least "5.5" && MARIA_FULL_PV=$(get_version_component_range 1-3) || \
+			MARIA_FULL_PV=$(replace_version_separator 3 '-' ${MY_PV})
 		MARIA_FULL_P="${PN}-${MARIA_FULL_PV}"
 		SERVER_URI="
 		http://ftp.osuosl.org/pub/mariadb/${MARIA_FULL_P}/kvm-tarbake-jaunty-x86/${MARIA_FULL_P}.tar.gz
@@ -220,7 +222,7 @@ if [[ ${PN} == "mariadb" || ${PN} == "mariadb-galera" ]]; then
 fi
 
 if mysql_version_is_at_least "5.5"; then
-	REQUIRED_USE="${REQUIRED_USE} tcmalloc? ( !jemalloc ) jemalloc? ( !tcmalloc ) embedded? ( static-libs )"
+	REQUIRED_USE="${REQUIRED_USE} tcmalloc? ( !jemalloc ) jemalloc? ( !tcmalloc )"
 	IUSE="${IUSE} jemalloc tcmalloc"
 fi
 
@@ -241,11 +243,11 @@ REQUIRED_USE="${REQUIRED_USE} minimal? ( !cluster !extraengine !embedded ) stati
 # Be warned, *DEPEND are version-dependant
 # These are used for both runtime and compiletime
 DEPEND="
-	ssl? ( >=dev-libs/openssl-0.9.6d )
+	ssl? ( >=dev-libs/openssl-0.9.6d[static-libs?] )
 	kernel_linux? ( sys-process/procps )
 	>=sys-apps/sed-4
 	>=sys-apps/texinfo-4.7-r1
-	>=sys-libs/zlib-1.2.3
+	>=sys-libs/zlib-1.2.3[static-libs?]
 	!dev-db/mariadb-native-client[mysqlcompat]
 "
 
@@ -270,6 +272,11 @@ if [[ ${PN} == "mariadb" || ${PN} == "mariadb-galera" ]] ; then
 			"
 	fi
 	mysql_version_is_at_least "10.0.7" && DEPEND="${DEPEND} oqgraph? ( dev-libs/judy )"
+	# TODO: uncomment this when libpcre 8.35 is released to remove bundled library
+#	if mysql_version_is_at_least "10.0.9" ; then
+#		use embedded && DEPEND="${DEPEND} >=dev-libs/libpcre-8.35[static-libs?]" || \
+#		 DEPEND="${DEPEND} >=dev-libs/libpcre-8.35"
+#	fi
 fi
 
 # Having different flavours at the same time is not a good idea
@@ -279,7 +286,7 @@ for i in "mysql" "mariadb" "mariadb-galera" "percona-server" "mysql-cluster" ; d
 done
 
 if mysql_version_is_at_least "5.5" ; then
-	DEPEND="${DEPEND} jemalloc? ( dev-libs/jemalloc )"
+	DEPEND="${DEPEND} jemalloc? ( dev-libs/jemalloc[static-libs?] )"
 	DEPEND="${DEPEND} tcmalloc? ( dev-util/google-perftools )"
 fi
 
@@ -579,13 +586,6 @@ mysql-v2_pkg_postinst() {
 				elog "This install includes the PAM authentication plugin."
 				elog "To activate and configure the PAM plugin, please read:"
 				elog "https://kb.askmonty.org/en/pam-authentication-plugin/"
-				einfo
-			fi
-
-			if mysql_version_is_at_least "10.0.7" ; then
-				einfo
-				elog "In 10.0, XtraDB is no longer the default InnoDB implementation."
-				elog "It is installed as a dynamic plugin and must be activated in my.cnf."
 				einfo
 			fi
 		fi

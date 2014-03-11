@@ -105,7 +105,9 @@ mysql_version_is_at_least "5.5.35" || die "This eclass should only be used with 
 if [[ -z ${SERVER_URI} ]]; then
 	[[ -z ${MY_PV} ]] && MY_PV="${PV//_/-}"
 	if [[ ${PN} == "mariadb" || ${PN} == "mariadb-galera" ]]; then
-		MARIA_FULL_PV=$(replace_version_separator 3 '-' ${MY_PV})
+		# Beginning with 5.5, MariaDB stopped putting beta, alpha or rc on their tarball names
+		mysql_version_is_at_least "5.5" && MARIA_FULL_PV=$(get_version_component_range 1-3) || \
+			MARIA_FULL_PV=$(replace_version_separator 3 '-' ${MY_PV})
 		MARIA_FULL_P="${PN}-${MARIA_FULL_PV}"
 		SERVER_URI="
 		http://ftp.osuosl.org/pub/mariadb/${MARIA_FULL_P}/kvm-tarbake-jaunty-x86/${MARIA_FULL_P}.tar.gz
@@ -188,7 +190,7 @@ if [[ ${PN} == "percona-server" ]]; then
 fi
 
 REQUIRED_USE="
-	${REQUIRED_USE} tcmalloc? ( !jemalloc ) jemalloc? ( !tcmalloc ) embedded? ( static-libs )
+	${REQUIRED_USE} tcmalloc? ( !jemalloc ) jemalloc? ( !tcmalloc )
 	 minimal? ( !cluster !extraengine !embedded ) static? ( !ssl )"
 
 #
@@ -199,7 +201,7 @@ REQUIRED_USE="
 # These are used for both runtime and compiletime
 # MULTILIB_USEDEP only set for libraries used by the client library
 DEPEND="
-	ssl? ( >=dev-libs/openssl-1.0.0:0= 
+	ssl? ( >=dev-libs/openssl-1.0.0:0=[static-libs?]
 	)
 	kernel_linux? ( 
 		sys-process/procps:0=
@@ -210,7 +212,7 @@ DEPEND="
 	) )
 	>=sys-apps/sed-4
 	>=sys-apps/texinfo-4.7-r1
-	>=sys-libs/zlib-1.2.3:0=[${MULTILIB_USEDEP}]
+	>=sys-libs/zlib-1.2.3:0=[${MULTILIB_USEDEP},static-libs?]
 	!dev-db/mariadb-native-client[mysqlcompat]
 	jemalloc? ( dev-libs/jemalloc:0=[${MULTILIB_USEDEP}] )
 	tcmalloc? ( dev-util/google-perftools:0= )
@@ -238,6 +240,11 @@ if [[ ${PN} == "mariadb" || ${PN} == "mariadb-galera" ]] ; then
 			"
 	fi
 	mysql_version_is_at_least "10.0.7" && DEPEND="${DEPEND} oqgraph? ( dev-libs/judy:0= )"
+	# TODO: uncomment this when libpcre 8.35 is released to remove bundled library
+#	if mysql_version_is_at_least "10.0.9" ; then
+#		use embedded && DEPEND="${DEPEND} >=dev-libs/libpcre-8.35:3=[static-libs?]" || \
+#		DEPEND="${DEPEND} >=dev-libs/libpcre-8.35:3="
+#	fi
 fi
 
 # Having different flavours at the same time is not a good idea
@@ -433,14 +440,14 @@ mysql-multilib_src_configure() {
 		# Adds a warning about redistribution to configure
 		if [[ ${PN} == "mariadb" || ${PN} == "mariadb-galera" ]] ; then
 			mycmakeargs+=( -DNOT_FOR_DISTRIBUTION=1 )
-		fi
 
-        	if [[ ${PN} == "mariadb" || ${PN} == "mariadb-galera" ]]; then
                 	if use jemalloc ; then
                         	mycmakeargs+=( -DWITH_JEMALLOC="system" )
 	                else
         	                mycmakeargs+=( -DWITH_JEMALLOC=no )
                 	fi
+			# TODO: uncomment this when libpcre 8.35 is released to remove bundled library
+#			mysql_version_is_at_least "10.0.9" mycmakeargs+=( -DWITH_PCRE=system )
 	        fi
 
 		configure_cmake_locale
@@ -588,13 +595,6 @@ mysql-multilib_pkg_postinst() {
 				elog "This install includes the PAM authentication plugin."
 				elog "To activate and configure the PAM plugin, please read:"
 				elog "https://kb.askmonty.org/en/pam-authentication-plugin/"
-				einfo
-			fi
-
-			if mysql_version_is_at_least "10.0.7" ; then
-				einfo
-				elog "In 10.0, XtraDB is no longer the default InnoDB implementation."
-				elog "It is installed as a dynamic plugin and must be activated in my.cnf."
 				einfo
 			fi
 		fi
