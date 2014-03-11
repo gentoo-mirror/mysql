@@ -610,21 +610,6 @@ mysql-multilib_pkg_postinst() {
 		elog "mysql_upgrade tool."
 		einfo
 	fi
-
-	if use_if_iuse pbxt ; then
-		elog "Note: PBXT is now statically built when enabled."
-		elog ""
-		elog "If, you previously installed as a plugin and "
-		elog "you cannot start the MySQL server,"
-		elog "remove the ${MY_DATADIR}/mysql/plugin.* files, then"
-		elog "use the MySQL upgrade script to restore the table"
-		elog "or execute the following SQL command:"
-		elog "    CREATE TABLE IF NOT EXISTS plugin ("
-		elog "      name char(64) binary DEFAULT '' NOT NULL,"
-		elog "      dl char(128) DEFAULT '' NOT NULL,"
-		elog "      PRIMARY KEY (name)"
-		elog "    ) CHARACTER SET utf8 COLLATE utf8_bin;"
-	fi
 }
 
 # @FUNCTION: mysql-multilib_getopt
