@@ -600,6 +600,16 @@ mysql-v2_pkg_postinst() {
 		elog "If you are upgrading major versions, you should run the"
 		elog "mysql_upgrade tool."
 		einfo
+
+		if [[ ${PN} == "mariadb-galera" ]] ; then
+			einfo
+			elog "Be sure to edit the my.cnf file to activate your cluster settings."
+			elog "This should be done after running \"emerge --config =${CATEGORY}/${PF}\""
+			elog "The first time the cluster is activated, you should add"
+			elog "--wsrep-new-cluster to the options in /etc/conf.d/mysql for one node."
+			elog "This option should then be removed for subsequent starts."
+			einfo
+		fi
 	fi
 
 	if use_if_iuse pbxt ; then

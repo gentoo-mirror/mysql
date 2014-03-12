@@ -64,11 +64,6 @@ lc_messages_dir			= @GENTOO_PORTAGE_EPREFIX@/usr/share/mysql
 #Set this to your desired error message language
 lc_messages			= en_US
 
-# security:
-# using "localhost" in connects uses sockets by default
-# skip-networking
-bind-address				= 127.0.0.1
-
 log-bin
 server-id 					= 1
 
@@ -85,10 +80,6 @@ tmpdir 						= @GENTOO_PORTAGE_EPREFIX@/tmp/
 #gdb
 #debug						= d:t:i:o,/tmp/mysqld.trace
 #one-thread
-
-# uncomment the following directives if you are using BDB tables
-#bdb_cache_size				= 4M
-#bdb_max_lock				= 10000
 
 # the following is the InnoDB configuration
 # if you wish to disable innodb instead
@@ -128,6 +119,22 @@ innodb_file_per_table
 #plugin-load=federated=ha_federated.so
 loose-federated
 
+# These settings are required for Galera clustering
+#mysql settings
+binlog_format=ROW
+default-storage-engine=innodb
+innodb_autoinc_lock_mode=2
+query_cache_size=0
+query_cache_type=0
+bind-address=0.0.0.0
+# Uncomment this section to activate Galera clustering
+#wsrep_provider=@GENTOO_PORTAGE_EPREFIX@/usr/lib/galera/libgalera_smm.so
+# You should change this name to something meaningful
+#wsrep_cluster_name="my_wsrep_cluster"
+# List all nodes of the cluster including this one
+#wsrep_cluster_address="gcomm://172.16.8.5,172.16.8.6,172.16.8.4"
+#wsrep_sst_method=rsync
+
 [mysqldump]
 quick
 max_allowed_packet 			= 16M
@@ -145,9 +152,8 @@ write_buffer 				= 2M
 [myisamchk]
 key_buffer_size				= 20M
 sort_buffer_size 			= 20M
-read_buffer 				= 2M
-write_buffer 				= 2M
+read_buffer_size			= 2M
+write_buffer_size			= 2M
 
 [mysqlhotcopy]
 interactive-timeout
-
