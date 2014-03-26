@@ -351,7 +351,7 @@ fi
 PDEPEND="perl? ( >=dev-perl/DBD-mysql-2.9004 )"
 
 # For other stuff to bring us in
-PDEPEND="${PDEPEND} =virtual/mysql-${MYSQL_PV_MAJOR}"
+PDEPEND="${PDEPEND} ~virtual/mysql-${MYSQL_PV_MAJOR}"
 
 #
 # External patches
