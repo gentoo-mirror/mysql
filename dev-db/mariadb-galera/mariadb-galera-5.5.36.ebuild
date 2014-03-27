@@ -3,7 +3,7 @@
 # $Header: $
 
 EAPI="4"
-MY_EXTRAS_VER="20140121-1138Z"
+MY_EXTRAS_VER="live"
 WSREP_REVISION="25"
 
 # Build system
@@ -73,26 +73,9 @@ src_test() {
 		# main.mysql_client_test, main.mysql_client_test_nonblock:
 		# segfaults at random under Portage only, suspect resource limits.
 		#
-		# sys_vars.plugin_dir_basic
-		# fails because PLUGIN_DIR is set to MYSQL_LIBDIR64/plugin
-		# instead of MYSQL_LIBDIR/plugin
-		#
-		# main.flush_read_lock_kill
-		# fails because of unknown system variable 'DEBUG_SYNC'
-		#
-		# main.openssl_1
-		# error message changing
-		# -mysqltest: Could not open connection 'default': 2026 SSL connection
-		#  error: ASN: bad other signature confirmation
-		# +mysqltest: Could not open connection 'default': 2026 SSL connection
-		#  error: error:00000001:lib(0):func(0):reason(1)
-		#
-		# plugins.unix_socket
-		# fails because portage strips out the USER enviornment variable
-		#
 		for t in main.mysql_client_test main.mysql_client_test_nonblock \
 			binlog.binlog_statement_insert_delayed main.information_schema \
-			main.mysqld--help plugins.unix_socket \
+			main.mysqld--help \
 			funcs_1.is_triggers funcs_1.is_tables_mysql funcs_1.is_columns_mysql ; do
 				mysql-v2_disable_test  "$t" "False positives in Gentoo"
 		done
