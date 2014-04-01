@@ -67,6 +67,9 @@ src_test() {
 		# create directories because mysqladmin might right out of order
 		mkdir -p "${S}"/mysql-test/var-tests{,/log}
 
+		# create symlink for the tests to find mysql_tzinfo_to_sql
+		ln -s "${CMAKE_BUILD_DIR}/sql/mysql_tzinfo_to_sql" "${S}/sql/"
+
 		# These are failing in MySQL 5.5 for now and are believed to be
 		# false positives:
 		#
@@ -80,18 +83,15 @@ src_test() {
 		# main.mysql_client_test:
 		# segfaults at random under Portage only, suspect resource limits.
 		#
-		# sys_vars.plugin_dir_basic
-		# fails because PLUGIN_DIR is set to MYSQL_LIBDIR64/plugin
-		# instead of MYSQL_LIBDIR/plugin
+		# main.mysql_tzinfo_to_sql_symlink
+		# fails due to missing mysql_test/std_data/zoneinfo/GMT file from archive
 		#
-		# main.flush_read_lock_kill
-		# fails because of unknown system variable 'DEBUG_SYNC'
 		for t in main.mysql_client_test \
 			binlog.binlog_statement_insert_delayed main.information_schema \
 			main.mysqld--help-notwinfuncs_1.is_triggers funcs_1.is_tables_mysql \
 			funcs_1.is_columns_mysql binlog.binlog_mysqlbinlog_filter \
 			perfschema.binlog_edge_mix perfschema.binlog_edge_stmt \
-			mysqld--help-notwin; do
+			mysqld--help-notwin main.mysql_tzinfo_to_sql_symlink; do
 				mysql-v2_disable_test  "$t" "False positives in Gentoo"
 		done
 
