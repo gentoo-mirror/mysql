@@ -94,11 +94,16 @@ src_test() {
 		# main.file_contents
 		# Fails finding a BZR revision number from a text file.
 		# This is an information only test and not needed in Gentoo
+		#
+		# main.percona_bug1289599
+		# Appears to be a syntax error in the test file itself
+		#
 
 		for t in main.mysql_client_test \
 			binlog.binlog_statement_insert_delayed main.information_schema \
 			main.mysqld--help-notwin main.flush_read_lock_kill \
-			sys_vars.plugin_dir_basic main.openssl_1 main.file_contents ; do
+			sys_vars.plugin_dir_basic main.openssl_1 main.file_contents \
+			main.percona_bug1289599 ; do
 				mysql-v2_disable_test  "$t" "False positives in Gentoo"
 		done
 
@@ -106,7 +111,8 @@ src_test() {
 		pushd "${TESTDIR}"
 
 		# run mysql-test tests
-		perl mysql-test-run.pl --force --vardir="${S}/mysql-test/var-tests"
+		perl mysql-test-run.pl --force --vardir="${S}/mysql-test/var-tests" \
+			--testcase-timeout=30
 		retstatus_tests=$?
 		[[ $retstatus_tests -eq 0 ]] || eerror "tests failed"
 		has usersandbox $FEATURES && eerror "Some tests may fail with FEATURES=usersandbox"
