@@ -275,10 +275,12 @@ mysql-cmake_src_configure() {
 
 	debug-print-function ${FUNCNAME} "$@"
 
-	CMAKE_BUILD_TYPE="$(usex debug "Debug" "RelWithDebInfo")"
+	CMAKE_BUILD_TYPE="RelWithDebInfo"
 
 	# debug hack wrt #497532
 	mycmakeargs=(
+		-DCMAKE_C_FLAGS_RELWITHDEBINFO="$(usex debug "" "-DNDEBUG")"
+		-DCMAKE_CXX_FLAGS_RELWITHDEBINFO="$(usex debug "" "-DNDEBUG")"
 		-DCMAKE_INSTALL_PREFIX=${EPREFIX}/usr
 		-DMYSQL_DATADIR=${EPREFIX}/var/lib/mysql
 		-DSYSCONFDIR=${EPREFIX}/etc/mysql
