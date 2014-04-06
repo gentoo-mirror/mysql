@@ -332,8 +332,7 @@ mysql-cmake_src_configure() {
 		else
 			mycmakeargs+=( -DWITH_JEMALLOC=no )
 		fi
-	# TODO: uncomment this when libpcre 8.35 is released to remove bundled library
-#		mysql_version_is_at_least "10.0.9" mycmakeargs+=( -DWITH_PCRE=system )
+		mysql_version_is_at_least "10.0.9" && mycmakeargs+=( -DWITH_PCRE=system )
 	fi
 
 	configure_cmake_locale

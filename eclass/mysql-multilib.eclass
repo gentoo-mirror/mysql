@@ -239,11 +239,10 @@ if [[ ${PN} == "mariadb" || ${PN} == "mariadb-galera" ]] ; then
 			"
 	fi
 	mysql_version_is_at_least "10.0.7" && DEPEND="${DEPEND} oqgraph? ( dev-libs/judy:0= )"
-	# TODO: uncomment this when libpcre 8.35 is released to remove bundled library
-#	if mysql_version_is_at_least "10.0.9" ; then
-#		use embedded && DEPEND="${DEPEND} >=dev-libs/libpcre-8.35:3=[static-libs?]" || \
-#		DEPEND="${DEPEND} >=dev-libs/libpcre-8.35:3="
-#	fi
+	if mysql_version_is_at_least "10.0.9" ; then
+		use embedded && DEPEND="${DEPEND} >=dev-libs/libpcre-8.35:3=[static-libs]" || \
+		DEPEND="${DEPEND} >=dev-libs/libpcre-8.35:3="
+	fi
 fi
 
 # Having different flavours at the same time is not a good idea
