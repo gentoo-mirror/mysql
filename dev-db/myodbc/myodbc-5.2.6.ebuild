@@ -43,7 +43,9 @@ src_prepare() {
 
 src_configure() {
 	# The RPM_BUILD flag does nothing except install to /usr/lib64 when "x86_64"
+	# MYSQL_CXX_LINKAGE expects "mysql_config --cxxflags" which doesn't exist on MariaDB
 	mycmakeargs+=(
+		-DMYSQL_CXX_LINKAGE=0
 		-DWITH_UNIXODBC=1
 		-DRPM_BUILD=1
 		-DMYSQL_LIB="$(mysql_config --variable=pkglibdir)/libmysqlclient_r.so"
