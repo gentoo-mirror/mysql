@@ -131,6 +131,7 @@ if [[ -z ${SERVER_URI} ]]; then
 		MARIA_FULL_P="${PN}-${MARIA_FULL_PV}"
 		SERVER_URI="
 		http://ftp.osuosl.org/pub/mariadb/${MARIA_FULL_P}/kvm-tarbake-jaunty-x86/${MARIA_FULL_P}.tar.gz
+		http://ftp.osuosl.org/pub/mariadb/${MARIA_FULL_P}/source/${MARIA_FULL_P}.tar.gz
 		http://mirror.jmu.edu/pub/mariadb/${MARIA_FULL_P}/kvm-tarbake-jaunty-x86/${MARIA_FULL_P}.tar.gz
 		http://mirrors.coreix.net/mariadb/${MARIA_FULL_P}/kvm-tarbake-jaunty-x86/${MARIA_FULL_P}.tar.gz
 		http://mirrors.syringanetworks.net/mariadb/${MARIA_FULL_P}/kvm-tarbake-jaunty-x86/${MARIA_FULL_P}.tar.gz
