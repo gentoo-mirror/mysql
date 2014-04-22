@@ -1,6 +1,6 @@
-# Copyright 1999-2012 Gentoo Foundation
+# Copyright 1999-2014 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: /var/cvsroot/gentoo-x86/eclass/mysql-v2.eclass,v 1.24 2013/02/13 00:40:57 robbat2 Exp $
+# $Header: $
 
 # @ECLASS: mysql-v2.eclass
 # @MAINTAINER:
@@ -285,12 +285,14 @@ for i in "mysql" "mariadb" "mariadb-galera" "percona-server" "mysql-cluster" ; d
 done
 
 if mysql_version_is_at_least "5.5.7" ; then
-	DEPEND="${DEPEND} jemalloc? ( dev-libs/jemalloc[static-libs?] ) 
-	tcmalloc? ( dev-util/google-perftools )
-	>=sys-libs/zlib-1.2.3[static-libs?]
-        ssl? ( >=dev-libs/openssl-0.9.6d[static-libs?] )
-	systemtap? ( >=dev-util/systemtap-1.3 )
-	kernel_linux? ( dev-libs/libaio )"
+	DEPEND="${DEPEND}
+		jemalloc? ( dev-libs/jemalloc[static-libs?] )
+		tcmalloc? ( dev-util/google-perftools )
+		>=sys-libs/zlib-1.2.3[static-libs?]
+		ssl? ( >=dev-libs/openssl-0.9.6d[static-libs?] )
+		systemtap? ( >=dev-util/systemtap-1.3 )
+		kernel_linux? ( dev-libs/libaio )
+	"
 fi
 
 if [[ ${PN} == "mysql-cluster" ]] ; then
@@ -309,11 +311,14 @@ RDEPEND="${DEPEND}
 if [[ ${PN} == "mariadb" || ${PN} == "mariadb-galera" ]] ; then
 	# Bug 455016 Add dependencies of mytop
 	if mysql_version_is_at_least "5.3" ; then
-		RDEPEND="${RDEPEND} perl? (
-			virtual/perl-Getopt-Long
-			dev-perl/TermReadKey
-			virtual/perl-Term-ANSIColor
-			virtual/perl-Time-HiRes ) "
+		RDEPEND="${RDEPEND}
+			perl? (
+				virtual/perl-Getopt-Long
+				dev-perl/TermReadKey
+				virtual/perl-Term-ANSIColor
+				virtual/perl-Time-HiRes
+			)
+		"
 	fi
 fi
 
@@ -321,14 +326,14 @@ if [[ ${PN} == "mariadb-galera" ]] ; then
 	# The wsrep API version must match between the ebuild and sys-cluster/galera.
 	# This will be indicated by WSREP_REVISION in the ebuild and the first number
 	# in the version of sys-cluster/galera
-	RDEPEND="${RDEPEND} 
+	RDEPEND="${RDEPEND}
 		=sys-cluster/galera-${WSREP_REVISION}*
 	"
 fi
 
 if [[ ${PN} == "mysql-cluster" ]] ; then
-       mysql_version_is_at_least "7.2.9" && RDEPEND="${RDEPEND} java? ( >=virtual/jre-1.6 )" && \
-               DEPEND="${DEPEND} java? ( >=virtual/jdk-1.6 )"
+	mysql_version_is_at_least "7.2.9" && RDEPEND="${RDEPEND} java? ( >=virtual/jre-1.6 )" && \
+		DEPEND="${DEPEND} java? ( >=virtual/jdk-1.6 )"
 fi
 
 DEPEND="${DEPEND}
@@ -439,10 +444,10 @@ configure_common() {
 # @FUNCTION: mysql-v2_pkg_setup
 # @DESCRIPTION:
 # Perform some basic tests and tasks during pkg_setup phase:
-#   die if FEATURES="test", USE="-minimal" and not using FEATURES="userpriv"
-#   check for conflicting use flags
-#   create new user and group for mysql
-#   warn about deprecated features
+#	die if FEATURES="test", USE="-minimal" and not using FEATURES="userpriv"
+#	check for conflicting use flags
+#	create new user and group for mysql
+#	warn about deprecated features
 mysql-v2_pkg_setup() {
 
 	if has test ${FEATURES} ; then
@@ -541,11 +546,11 @@ mysql-v2_pkg_preinst() {
 # @FUNCTION: mysql-v2_pkg_postinst
 # @DESCRIPTION:
 # Run post-installation tasks:
-#   create the dir for logfiles if non-existant
-#   touch the logfiles and secure them
-#   install scripts
-#   issue required steps for optional features
-#   issue deprecation warnings
+#	create the dir for logfiles if non-existant
+#	touch the logfiles and secure them
+#	install scripts
+#	issue required steps for optional features
+#	issue deprecation warnings
 mysql-v2_pkg_postinst() {
 
 	# Make sure the vars are correctly initialized
@@ -618,11 +623,11 @@ mysql-v2_pkg_postinst() {
 		elog "remove the ${MY_DATADIR}/mysql/plugin.* files, then"
 		elog "use the MySQL upgrade script to restore the table"
 		elog "or execute the following SQL command:"
-		elog "    CREATE TABLE IF NOT EXISTS plugin ("
-		elog "      name char(64) binary DEFAULT '' NOT NULL,"
-		elog "      dl char(128) DEFAULT '' NOT NULL,"
-		elog "      PRIMARY KEY (name)"
-		elog "    ) CHARACTER SET utf8 COLLATE utf8_bin;"
+		elog "	CREATE TABLE IF NOT EXISTS plugin ("
+		elog "		name char(64) binary DEFAULT '' NOT NULL,"
+		elog "		dl char(128) DEFAULT '' NOT NULL,"
+		elog "		PRIMARY KEY (name)"
+		elog "	) CHARACTER SET utf8 COLLATE utf8_bin;"
 	fi
 }
 
@@ -686,7 +691,7 @@ mysql-v2_pkg_config() {
 				ewarn "Attempting to use ${MY_DATADIR_s}"
 			else
 				eerror "New MY_DATADIR (${MY_DATADIR_s}) does not exist"
-				die "Configuration Failed!  Please reinstall ${CATEGORY}/${PN}"
+				die "Configuration Failed! Please reinstall ${CATEGORY}/${PN}"
 			fi
 		fi
 	fi
@@ -771,7 +776,7 @@ mysql-v2_pkg_config() {
 
 	use prefix || options="${options} --user=mysql"
 
-	# Fix bug 446200.  Don't reference host my.cnf
+	# Fix bug 446200. Don't reference host my.cnf
 	use prefix && [[ -f "${MY_SYSCONFDIR}/my.cnf" ]] \
 		&& options="${options} '--defaults-file=${MY_SYSCONFDIR}/my.cnf'"
 
