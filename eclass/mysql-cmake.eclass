@@ -1,6 +1,6 @@
-# Copyright 1999-2013 Gentoo Foundation
+# Copyright 1999-2014 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: /var/cvsroot/gentoo-x86/eclass/mysql-cmake.eclass,v 1.15 2013/03/04 19:10:31 robbat2 Exp $
+# $Header: $
 
 # @ECLASS: mysql-cmake.eclass
 # @MAINTAINER:
@@ -34,7 +34,7 @@ mysql-cmake_disable_test() {
 	testsuite="${rawtestname/.*}"
 	testname="${rawtestname/*.}"
 	for mysql_disabled_file in \
-		${S}/mysql-test/disabled.def  \
+		${S}/mysql-test/disabled.def \
 		${S}/mysql-test/t/disabled.def ; do
 		[[ -f ${mysql_disabled_file} ]] && break
 	done
@@ -44,8 +44,8 @@ mysql-cmake_disable_test() {
 
 	if [[ ( -n ${testsuite} ) && ( ${testsuite} != "main" ) ]]; then
 		for mysql_disabled_file in \
-			${S}/mysql-test/suite/${testsuite}/disabled.def  \
-			${S}/mysql-test/suite/${testsuite}/t/disabled.def  \
+			${S}/mysql-test/suite/${testsuite}/disabled.def \
+			${S}/mysql-test/suite/${testsuite}/t/disabled.def \
 			FAILED ; do
 			[[ -f ${mysql_disabled_file} ]] && break
 		done
@@ -54,7 +54,7 @@ mysql-cmake_disable_test() {
 		else
 			for mysql_disabled_dir in \
 				${S}/mysql-test/suite/${testsuite} \
-				${S}/mysql-test/suite/${testsuite}/t  \
+				${S}/mysql-test/suite/${testsuite}/t \
 				FAILED ; do
 				[[ -d ${mysql_disabled_dir} ]] && break
 			done
@@ -251,7 +251,7 @@ mysql-cmake_src_prepare() {
 	[[ -f ${i} ]] && sed -i -e '/CFLAGS/s,-prefer-non-pic,,g' "${i}"
 
 	rm -f "scripts/mysqlbug"
-	if use jemalloc && ! ( [[ ${PN} == "mariadb" ]] && mysql_version_is_at_least "5.5.33"  ); then
+	if use jemalloc && ! ( [[ ${PN} == "mariadb" ]] && mysql_version_is_at_least "5.5.33" ); then
 		echo "TARGET_LINK_LIBRARIES(mysqld jemalloc)" >> "${S}/sql/CMakeLists.txt"
 	fi
 
@@ -348,7 +348,7 @@ mysql-cmake_src_configure() {
 
 	CXXFLAGS="${CXXFLAGS} -fno-strict-aliasing"
 	CXXFLAGS="${CXXFLAGS} -felide-constructors"
-	# Causes linkage failures.  Upstream bug #59607 removes it
+	# Causes linkage failures. Upstream bug #59607 removes it
 	if ! mysql_version_is_at_least "5.6" ; then
 		CXXFLAGS="${CXXFLAGS} -fno-implicit-templates"
 	fi
