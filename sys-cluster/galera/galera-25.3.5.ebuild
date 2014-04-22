@@ -47,14 +47,14 @@ pkg_preinst() {
 
 src_prepare() {
 	# Remove bundled dev-cpp/asio
-	rm -fr "${S}/asio"
+	rm -r "${S}/asio" || die
 
 	# Respect {C,LD}FLAGS.
 	epatch "${FILESDIR}/respect-flags.patch"
 
 	#Remove optional garbd daemon
 	if ! use garbd ; then
-		rm -fr "${S}/garb"
+		rm -r "${S}/garb" || die
 	fi
 
 	epatch_user
