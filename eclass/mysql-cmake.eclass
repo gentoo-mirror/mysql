@@ -401,15 +401,6 @@ mysql-cmake_src_install() {
 	# Various junk (my-*.cnf moved elsewhere)
 	einfo "Removing duplicate /usr/share/mysql files"
 
-	# Clean up stuff for a minimal build
-#	if use minimal ; then
-#		einfo "Remove all extra content for minimal build"
-#		rm -Rf "${D}${MY_SHAREDSTATEDIR}"/{mysql-test,sql-bench}
-#		rm -f "${ED}"/usr/bin/{mysql{_install_db,manager*,_secure_installation,_fix_privilege_tables,hotcopy,_convert_table_format,d_multi,_fix_extensions,_zap,_explain_log,_tableinfo,d_safe,_install,_waitpid,binlog,test},myisam*,isam*,pack_isam}
-#		rm -f "${ED}/usr/sbin/mysqld"
-#		rm -f "${D}${MY_LIBDIR}"/lib{heap,merge,nisam,my{sys,strings,sqld,isammrg,isam},vio,dbug}.a
-#	fi
-
 	# Unless they explicitly specific USE=test, then do not install the
 	# testsuite. It DOES have a use to be installed, esp. when you want to do a
 	# validation of your database configuration after tuning it.
@@ -473,11 +464,6 @@ mysql-cmake_src_install() {
 			[[ ( -f $script ) && ( ${script%.sh} == ${script} ) ]] && dodoc "${script}"
 		done
 	fi
-
-#	cat <<-EOF > "${T}"/80mysql-libdir
-#	LDPATH="${EPREFIX}/usr/$(get_libdir)/mysql"
-#	EOF
-#	doenvd "${T}"/80mysql-libdir
 
 	#Remove mytop if perl is not selected
 	[[ ${PN} == "mariadb" || ${PN} == "mariadb-galera" ]] && ! use perl \
