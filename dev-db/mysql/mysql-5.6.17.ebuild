@@ -1,10 +1,10 @@
-# Copyright 1999-2013 Gentoo Foundation
+# Copyright 1999-2014 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: /var/cvsroot/gentoo-x86/dev-db/mysql/mysql-5.5.1_alpha_pre2.ebuild,v 1.8 2010/04/01 20:41:21 robbat2 Exp $
 
 EAPI="4"
 
-MY_EXTRAS_VER="live"
+MY_EXTRAS_VER="20140424-1043Z"
 MY_PV="${PV//_alpha_pre/-m}"
 MY_PV="${MY_PV//_/-}"
 

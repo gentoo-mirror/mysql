@@ -4,7 +4,7 @@
 
 EAPI="4"
 
-MY_EXTRAS_VER="live"
+MY_EXTRAS_VER="20140424-1043Z"
 MY_PV="${PV//_alpha_pre/-m}"
 MY_PV="${MY_PV//_/-}"
 
@@ -94,9 +94,8 @@ src_test() {
 		# +mysqltest: Could not open connection 'default': 2026 SSL connection
 		#  error: error:00000001:lib(0):func(0):reason(1)
 		#
-                # main.mysql_tzinfo_to_sql_symlink
-                # fails due to missing mysql_test/std_data/zoneinfo/GMT file from archive
-                #
+		# main.mysql_tzinfo_to_sql_symlink
+		# fails due to missing mysql_test/std_data/zoneinfo/GMT file from archive
 
 		for t in main.mysql_client_test \
 			binlog.binlog_statement_insert_delayed main.information_schema \
