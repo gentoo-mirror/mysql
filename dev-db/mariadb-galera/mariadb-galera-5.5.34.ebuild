@@ -3,7 +3,7 @@
 # $Header: $
 
 EAPI="4"
-MY_EXTRAS_VER="live"
+MY_EXTRAS_VER="20140424-1043Z"
 WSREP_REVISION="23"
 
 # Build system
