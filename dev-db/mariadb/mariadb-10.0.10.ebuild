@@ -1,9 +1,9 @@
-# Copyright 1999-2013 Gentoo Foundation
+# Copyright 1999-2014 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
 EAPI="4"
-MY_EXTRAS_VER="live"
+MY_EXTRAS_VER="20140424-1043Z"
 
 # Build system
 BUILD="cmake"
