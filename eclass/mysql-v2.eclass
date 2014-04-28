@@ -274,8 +274,7 @@ if [[ ${PN} == "mariadb" || ${PN} == "mariadb-galera" ]] ; then
 	fi
 	mysql_version_is_at_least "10.0.7" && DEPEND="${DEPEND} oqgraph? ( dev-libs/judy )"
 	if mysql_version_is_at_least "10.0.9" ; then
-		use embedded && DEPEND="${DEPEND} >=dev-libs/libpcre-8.35[static-libs]" || \
-			DEPEND="${DEPEND} >=dev-libs/libpcre-8.35"
+		DEPEND="${DEPEND} >=dev-libs/libpcre-8.35"
 	fi
 fi
 
