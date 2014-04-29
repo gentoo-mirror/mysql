@@ -1,4 +1,4 @@
-# Copyright 1999-2013 Gentoo Foundation
+# Copyright 1999-2014 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
@@ -20,7 +20,7 @@ fi
 
 JAVA_PKG_IUSE="doc"
 
-inherit java-pkg-2 java-ant-2 eutils "${VCS_INHERIT}"
+inherit java-pkg-2 java-ant-2 "${VCS_INHERIT}"
 
 DESCRIPTION="Client Library for Java is used to connect applications to MariaDB/MySQL databases"
 HOMEPAGE="http://mariadb.org/"
@@ -33,11 +33,12 @@ IUSE="${IUSE}"
 # Tests require a server running on localhost port 3306
 RESTRICT="test"
 
-RDEPEND="${RDEPEND} >=virtual/jre-1.6"
-DEPEND="${DEPEND} >=virtual/jdk-1.6"
+COMMON_DEPEND="dev-java/jna"
+RDEPEND="${RDEPEND} >=virtual/jre-1.6 ${COMMON_DEPEND}"
+DEPEND="${DEPEND} >=virtual/jdk-1.6 ${COMMON_DEPEND}"
 
 src_prepare() {
-	cp "${FILESDIR}/maven-build.xml" build.xml
+	cp "${FILESDIR}/maven-build-1.1.4.xml" build.xml || die
 	java-pkg-2_src_prepare
 }
 

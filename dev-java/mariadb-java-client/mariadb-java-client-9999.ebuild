@@ -37,7 +37,7 @@ RDEPEND="${RDEPEND} >=virtual/jre-1.6"
 DEPEND="${DEPEND} >=virtual/jdk-1.6"
 
 src_prepare() {
-	cp "${FILESDIR}/maven-build.xml" build.xml
+	cp "${FILESDIR}/maven-build-1.1.4.xml" build.xml
 	java-pkg-2_src_prepare
 }
 
