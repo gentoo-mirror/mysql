@@ -53,7 +53,6 @@ src_prepare() {
 }
 
 src_configure() {
-	CMAKE_BUILD_TYPE="RelWithDebInfo"
 	mycmakeargs+=(
 		-DMYSQL_UNIX_ADDR="${EPREFIX}/var/run/mysqld/mysqld.sock"
 		-DWITH_EXTERNAL_ZLIB=ON
