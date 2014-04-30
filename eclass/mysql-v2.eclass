@@ -764,7 +764,7 @@ mysql-v2_pkg_config() {
 	helpfile="${TMPDIR}/mysqld-help"
 	${EROOT}/usr/sbin/mysqld --verbose --help >"${helpfile}" 2>/dev/null
 	for opt in grant-tables host-cache name-resolve networking slave-start \
-		federated innodb ssl log-bin relay-log slow-query-log external-locking \
+		federated ssl log-bin relay-log slow-query-log external-locking \
 		ndbcluster log-slave-updates \
 		; do
 		optexp="--(skip-)?${opt}" optfull="--loose-skip-${opt}"
@@ -780,11 +780,27 @@ mysql-v2_pkg_config() {
 	use prefix && [[ -f "${MY_SYSCONFDIR}/my.cnf" ]] \
 		&& options="${options} '--defaults-file=${MY_SYSCONFDIR}/my.cnf'"
 
+	# MySQL 5.6+ needs InnoDB
+	if [[ ${PN} == "mysql" || ${PN} == "percona-server" ]] ; then
+		mysql_version_is_at_least "5.6" || options="${options} --loose-skip-innodb"
+	fi
+
+	einfo "Creating the mysql database and setting proper"
+	einfo "permissions on it ..."
+
+	# Now that /var/run is a tmpfs mount point, we need to ensure it exists before using it
+	PID_DIR="${EROOT}/var/run/mysqld"
+	if [[ ! -d "${PID_DIR}" ]]; then
+		mkdir -p "${PID_DIR}"
+		chown mysql:mysql "${PID_DIR}"
+		chmod 755 "${PID_DIR}"
+	fi
+
 	pushd "${TMPDIR}" &>/dev/null
 	#cmd="'${EROOT}/usr/share/mysql/scripts/mysql_install_db' '--basedir=${EPREFIX}/usr' ${options}"
 	cmd=${EROOT}usr/share/mysql/scripts/mysql_install_db
 	[[ -f ${cmd} ]] || cmd=${EROOT}usr/bin/mysql_install_db
-	cmd="'$cmd' '--basedir=${EPREFIX}/usr' ${options}"
+	cmd="'$cmd' '--basedir=${EPREFIX}/usr' ${options} '--datadir=${EROOT}/${MY_DATADIR}'"
 	einfo "Command: $cmd"
 	eval $cmd \
 		>"${TMPDIR}"/mysql_install_db.log 2>&1
@@ -804,17 +820,6 @@ mysql-v2_pkg_config() {
 
 	if [[ -r "${help_tables}" ]] ; then
 		cat "${help_tables}" >> "${sqltmp}"
-	fi
-
-	einfo "Creating the mysql database and setting proper"
-	einfo "permissions on it ..."
-
-	# Now that /var/run is a tmpfs mount point, we need to ensure it exists before using it
-	PID_DIR="${EROOT}/var/run/mysqld"
-	if [[ ! -d "${PID_DIR}" ]]; then
-		mkdir "${PID_DIR}"
-		chown mysql:mysql "${PID_DIR}"
-		chmod 755 "${PID_DIR}"
 	fi
 
 	local socket="${EROOT}/var/run/mysqld/mysqld${RANDOM}.sock"
