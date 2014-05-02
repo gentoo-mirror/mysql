@@ -18,7 +18,7 @@ MULTILIB_WRAPPED_HEADERS+=(
 	/usr/include/mariadb/my_config.h
 )
 
-DESCRIPTION="Client Library for C is used to connect applications developed in C/C++ to MariaDB/MySQL databases"
+DESCRIPTION="C client library for MariaDB/MySQL"
 HOMEPAGE="http://mariadb.org/"
 SRC_URI="
 	http://ftp.osuosl.org/pub/mariadb/${PN}/Source/${PN}.tar.gz

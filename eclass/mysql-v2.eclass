@@ -190,7 +190,7 @@ if [[ ${PN} == "mariadb-galera" ]]; then
 fi
 if [[ ${PN} == "percona-server" ]]; then
 	HOMEPAGE="http://www.percona.com/software/percona-server"
-	DESCRIPTION="An enhanced, drop-in replacement fro MySQL from the Percona team"
+	DESCRIPTION="An enhanced, drop-in replacement for MySQL from the Percona team"
 fi
 LICENSE="GPL-2"
 SLOT="0"

@@ -22,7 +22,7 @@ JAVA_PKG_IUSE="doc"
 
 inherit java-pkg-2 java-ant-2 "${VCS_INHERIT}"
 
-DESCRIPTION="Client Library for Java is used to connect applications to MariaDB/MySQL databases"
+DESCRIPTION="Java client library for MariaDB/MySQL"
 HOMEPAGE="http://mariadb.org/"
 LICENSE="LGPL-2.1"
 
