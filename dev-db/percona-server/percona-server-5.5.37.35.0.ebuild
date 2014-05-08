@@ -4,7 +4,7 @@
 
 EAPI="4"
 
-MY_EXTRAS_VER="20140424-1043Z"
+MY_EXTRAS_VER="live"
 MY_PV="${PV//_alpha_pre/-m}"
 MY_PV="${MY_PV//_/-}"
 
@@ -67,7 +67,7 @@ src_test() {
 		# create directories because mysqladmin might right out of order
 		mkdir -p "${S}"/mysql-test/var-tests{,/log}
 
-		# These are failing in MySQL 5.5 for now and are believed to be
+		# These are failing in Perocna 5.5 for now and are believed to be
 		# false positives:
 		#
 		# main.information_schema, binlog.binlog_statement_insert_delayed,
@@ -77,33 +77,13 @@ src_test() {
 		# main.mysql_client_test:
 		# segfaults at random under Portage only, suspect resource limits.
 		#
-		# sys_vars.plugin_dir_basic
-		# fails because PLUGIN_DIR is set to MYSQL_LIBDIR64/plugin
-		# instead of MYSQL_LIBDIR/plugin
-		#
-		# main.flush_read_lock_kill
-		# fails because of unknown system variable 'DEBUG_SYNC'
-		#
-		# main.openssl_1
-		# error message changing
-		# -mysqltest: Could not open connection 'default': 2026 SSL connection
-		#  error: ASN: bad other signature confirmation
-		# +mysqltest: Could not open connection 'default': 2026 SSL connection
-		#  error: error:00000001:lib(0):func(0):reason(1)
-		#
-		# main.file_contents
-		# Fails finding a BZR revision number from a text file.
-		# This is an information only test and not needed in Gentoo
-		#
 		# main.percona_bug1289599
 		# Appears to be a syntax error in the test file itself
 		#
 
 		for t in main.mysql_client_test \
 			binlog.binlog_statement_insert_delayed main.information_schema \
-			main.mysqld--help-notwin main.flush_read_lock_kill \
-			sys_vars.plugin_dir_basic main.openssl_1 main.file_contents \
-			main.percona_bug1289599 ; do
+			main.mysqld--help-notwin main.percona_bug1289599 ; do
 				mysql-v2_disable_test  "$t" "False positives in Gentoo"
 		done
 

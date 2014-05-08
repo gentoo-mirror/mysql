@@ -67,7 +67,7 @@ src_test() {
 		# create directories because mysqladmin might right out of order
 		mkdir -p "${S}"/mysql-test/var-tests{,/log}
 
-		# These are failing in MySQL 5.5 for now and are believed to be
+		# These are failing in Percona 5.6 for now and are believed to be
 		# false positives:
 		#
 		# main.information_schema, binlog.binlog_statement_insert_delayed,
@@ -79,40 +79,28 @@ src_test() {
 		# main.mysql_client_test:
 		# segfaults at random under Portage only, suspect resource limits.
 		#
-		# sys_vars.plugin_dir_basic
-		# fails because PLUGIN_DIR is set to MYSQL_LIBDIR64/plugin
-		# instead of MYSQL_LIBDIR/plugin
-		#
-		# main.flush_read_lock_kill
-		# fails because of unknown system variable 'DEBUG_SYNC'
-		#
-		# main.openssl_1
-		# error message changing
-		# -mysqltest: Could not open connection 'default': 2026 SSL connection
-		#  error: ASN: bad other signature confirmation
-		# +mysqltest: Could not open connection 'default': 2026 SSL connection
-		#  error: error:00000001:lib(0):func(0):reason(1)
-		#
-		# main.file_contents
-		# Fails finding a BZR revision number from a text file.
-		# This is an information only test and not needed in Gentoo
-		#
 		# main.percona_bug1289599
 		# Looks to be a syntax error in the test file itself
+		#
+		# main.variables main.myisam main.merge_recover
+		# fails due to ulimit not able to open enough files (needs 5000)
 		#
 
 		for t in main.mysql_client_test \
 			binlog.binlog_statement_insert_delayed main.information_schema \
-			main.mysqld--help-notwin main.flush_read_lock_kill \
-			sys_vars.plugin_dir_basic main.openssl_1 binlog.binlog_mysqlbinlog_filter \
+			main.mysqld--help-notwin binlog.binlog_mysqlbinlog_filter \
 			perfschema.binlog_edge_mix perfschema.binlog_edge_stmt \
 			funcs_1.is_columns_mysql funcs_1.is_tables_mysql funcs_1.is_triggers \
-			main.file_contents main.percona_bug1289599; do
+			main.variables main.myisam main.merge_recover \
+			main.percona_bug1289599; do
 				mysql-v2_disable_test  "$t" "False positives in Gentoo"
 		done
 
 		# Run mysql tests
 		pushd "${TESTDIR}"
+
+		# Set file limits higher so tests run
+		ulimit -n 3000
 
 		# run mysql-test tests
 		perl mysql-test-run.pl --force --vardir="${S}/mysql-test/var-tests" \
