@@ -341,6 +341,9 @@ DEPEND="${DEPEND}
 	virtual/yacc
 "
 
+# Only 5.5+ has been made compatible with Bison 3+
+mysql_version_is_at_least "5.5" || DEPEND="${DEPEND} !>sys-devel/bison-3.0"
+
 DEPEND="${DEPEND} static? ( sys-libs/ncurses[static-libs] )"
 
 # compile-time-only
