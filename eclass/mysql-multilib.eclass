@@ -201,15 +201,11 @@ REQUIRED_USE="
 # These are used for both runtime and compiletime
 # MULTILIB_USEDEP only set for libraries used by the client library
 DEPEND="
-	ssl? ( >=dev-libs/openssl-1.0.0:0=[static-libs?]
-	)
-	kernel_linux? ( 
+	ssl? ( >=dev-libs/openssl-1.0.0:0=[${MULTILIB_USEDEP},static-libs?] )
+	kernel_linux? (
 		sys-process/procps:0=
 		dev-libs/libaio:0=
 	)
-	amd64? ( abi_x86_32? (
-		app-emulation/emul-linux-x86-baselibs[abi_x86_32]
-	) )
 	>=sys-apps/sed-4
 	>=sys-apps/texinfo-4.7-r1
 	>=sys-libs/zlib-1.2.3:0=[${MULTILIB_USEDEP},static-libs?]
