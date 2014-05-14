@@ -179,7 +179,7 @@ if [[ ${MY_EXTRAS_VER} != "live" && ${MY_EXTRAS_VER} != "none" ]]; then
 		http://dev.gentoo.org/~grknight/distfiles/mysql-extras-${MY_EXTRAS_VER}.tar.bz2"
 fi
 
-DESCRIPTION="A fast, multi-threaded, multi-user SQL database server."
+DESCRIPTION="A fast, multi-threaded, multi-user SQL database server"
 HOMEPAGE="http://www.mysql.com/"
 if [[ ${PN} == "mariadb" ]]; then
 	HOMEPAGE="http://mariadb.org/"
@@ -340,9 +340,6 @@ fi
 DEPEND="${DEPEND}
 	virtual/yacc
 "
-
-# Only 5.5+ has been made compatible with Bison 3+
-mysql_version_is_at_least "5.5" || DEPEND="${DEPEND} !>sys-devel/bison-3.0"
 
 DEPEND="${DEPEND} static? ( sys-libs/ncurses[static-libs] )"
 
