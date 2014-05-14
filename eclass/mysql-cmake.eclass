@@ -129,6 +129,7 @@ configure_cmake_minimal() {
 		-DWITHOUT_MYISAM_STORAGE_ENGINE=1
 		-DWITHOUT_PARTITION_STORAGE_ENGINE=1
 		-DWITHOUT_INNOBASE_STORAGE_ENGINE=1
+		$(cmake-utils_use_enable static-libs STATIC_LIBS)
 	)
 }
 
