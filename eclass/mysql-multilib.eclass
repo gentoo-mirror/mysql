@@ -255,9 +255,11 @@ if [[ ${PN} == "mysql-cluster" ]] ; then
 fi
 
 # prefix: first need to implement something for #196294
+# TODO: check emul-linux-x86-db dep when it is multilib enabled
 RDEPEND="${DEPEND}
 	!minimal? ( !prefix? ( dev-db/mysql-init-scripts ) )
 	selinux? ( sec-policy/selinux-mysql )
+	!app-emulation/emul-linux-x86-db[-abi_x86_32(-)]
 "
 
 if [[ ${PN} == "mariadb" || ${PN} == "mariadb-galera" ]] ; then
