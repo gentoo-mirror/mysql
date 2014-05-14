@@ -27,7 +27,7 @@ MYSQL_EXTRAS=""
 [[ ${MY_EXTRAS_VER} == "live" ]] && MYSQL_EXTRAS="git-2"
 
 inherit eutils flag-o-matic ${MYSQL_EXTRAS} mysql-cmake mysql_fx versionator \
-	toolchain-funcs user cmake-utils multilib-build
+	toolchain-funcs user cmake-utils multilib-minimal
 
 #
 # Supported EAPI versions and export functions
@@ -157,7 +157,7 @@ if [[ ${MY_EXTRAS_VER} != "live" && ${MY_EXTRAS_VER} != "none" ]]; then
 		http://dev.gentoo.org/~grknight/distfiles/mysql-extras-${MY_EXTRAS_VER}.tar.bz2"
 fi
 
-DESCRIPTION="A fast, multi-threaded, multi-user SQL database server."
+DESCRIPTION="A fast, multi-threaded, multi-user SQL database server"
 HOMEPAGE="http://www.mysql.com/"
 if [[ ${PN} == "mariadb" ]]; then
 	HOMEPAGE="http://mariadb.org/"
@@ -174,7 +174,7 @@ fi
 LICENSE="GPL-2"
 SLOT="0"
 
-IUSE="+community cluster debug embedded extraengine jemalloc latin1 max-idx-128 minimal 
+IUSE="+community cluster debug embedded extraengine jemalloc latin1 max-idx-128 minimal
 	+perl profiling selinux ssl systemtap static static-libs tcmalloc test"
 
 if [[ ${PN} == "mariadb" || ${PN} == "mariadb-galera" ]]; then
@@ -224,7 +224,7 @@ fi
 
 if [[ ${PN} == "mariadb" || ${PN} == "mariadb-galera" ]] ; then
 	# Bug 441700 MariaDB >=5.3 include custom mytop
-	DEPEND="${DEPEND} 
+	DEPEND="${DEPEND}
 		oqgraph? ( >=dev-libs/boost-1.40.0:0= )
 		sphinx? ( app-misc/sphinx:0= )
 		!minimal? ( pam? ( virtual/pam:0= ) )
@@ -273,7 +273,7 @@ if [[ ${PN} == "mariadb-galera" ]] ; then
 	# The wsrep API version must match between the ebuild and sys-cluster/galera.
 	# This will be indicated by WSREP_REVISION in the ebuild and the first number
 	# in the version of sys-cluster/galera
-	RDEPEND="${RDEPEND} 
+	RDEPEND="${RDEPEND}
 		=sys-cluster/galera-${WSREP_REVISION}*
 	"
 fi
@@ -381,157 +381,125 @@ mysql-multilib_src_prepare() {
 # @DESCRIPTION:
 # Configure mysql to build the code for Gentoo respecting the use flags.
 mysql-multilib_src_configure() {
+	multilib-minimal_src_configure
+}
+
+multilib_src_configure() {
+
 	debug-print-function ${FUNCNAME} "$@"
 
-	_mysql-multilib_src_configure() {
+	CMAKE_BUILD_TYPE="RelWithDebInfo"
 
-		debug-print-function ${FUNCNAME} "$@"
+	# debug hack wrt #497532
+	mycmakeargs=(
+		-DCMAKE_C_FLAGS_RELWITHDEBINFO="$(usex debug "" "-DNDEBUG")"
+		-DCMAKE_CXX_FLAGS_RELWITHDEBINFO="$(usex debug "" "-DNDEBUG")"
+		-DCMAKE_INSTALL_PREFIX=${EPREFIX}/usr
+		-DMYSQL_DATADIR=${EPREFIX}/var/lib/mysql
+		-DSYSCONFDIR=${EPREFIX}/etc/mysql
+		-DINSTALL_BINDIR=bin
+		-DINSTALL_DOCDIR=share/doc/${P}
+		-DINSTALL_DOCREADMEDIR=share/doc/${P}
+		-DINSTALL_INCLUDEDIR=include/mysql
+		-DINSTALL_INFODIR=share/info
+		-DINSTALL_LIBDIR=$(get_libdir)
+		-DINSTALL_ELIBDIR=$(get_libdir)/mysql
+		-DINSTALL_MANDIR=share/man
+		-DINSTALL_MYSQLDATADIR=${EPREFIX}/var/lib/mysql
+		-DINSTALL_MYSQLSHAREDIR=share/mysql
+		-DINSTALL_MYSQLTESTDIR=share/mysql/mysql-test
+		-DINSTALL_PLUGINDIR=$(get_libdir)/mysql/plugin
+		-DINSTALL_SBINDIR=sbin
+		-DINSTALL_SCRIPTDIR=share/mysql/scripts
+		-DINSTALL_SQLBENCHDIR=share/mysql
+		-DINSTALL_SUPPORTFILESDIR=${EPREFIX}/usr/share/mysql
+		-DWITH_COMMENT="Gentoo Linux ${PF}"
+		$(cmake-utils_use_with test UNIT_TESTS)
+		-DWITH_READLINE=0
+		-DWITH_LIBEDIT=0
+		-DWITH_ZLIB=system
+		-DWITHOUT_LIBWRAP=1
+		-DENABLED_LOCAL_INFILE=1
+		-DMYSQL_UNIX_ADDR=${EPREFIX}/var/run/mysqld/mysqld.sock
+		-DWITH_SSL=$(usex ssl system bundled)
+	)
 
-		CMAKE_BUILD_TYPE="RelWithDebInfo"
+	if [[ ${PN} == "mysql" || ${PN} == "percona-server" ]] && mysql_version_is_at_least "5.6.12" ; then
+		mycmakeargs+=( -DWITH_EDITLINE=system )
+	fi
 
-		# debug hack wrt #497532
-		mycmakeargs=(
-			-DCMAKE_C_FLAGS_RELWITHDEBINFO="$(usex debug "" "-DNDEBUG")"
-			-DCMAKE_CXX_FLAGS_RELWITHDEBINFO="$(usex debug "" "-DNDEBUG")"
-			-DCMAKE_INSTALL_PREFIX=${EPREFIX}/usr
-			-DMYSQL_DATADIR=${EPREFIX}/var/lib/mysql
-			-DSYSCONFDIR=${EPREFIX}/etc/mysql
-			-DINSTALL_BINDIR=bin
-			-DINSTALL_DOCDIR=share/doc/${P}
-			-DINSTALL_DOCREADMEDIR=share/doc/${P}
-			-DINSTALL_INCLUDEDIR=include/mysql
-			-DINSTALL_INFODIR=share/info
-			-DINSTALL_LIBDIR=$(get_libdir)
-			-DINSTALL_ELIBDIR=$(get_libdir)/mysql
-			-DINSTALL_MANDIR=share/man
-			-DINSTALL_MYSQLDATADIR=${EPREFIX}/var/lib/mysql
-			-DINSTALL_MYSQLSHAREDIR=share/mysql
-			-DINSTALL_MYSQLTESTDIR=share/mysql/mysql-test
-			-DINSTALL_PLUGINDIR=$(get_libdir)/mysql/plugin
-			-DINSTALL_SBINDIR=sbin
-			-DINSTALL_SCRIPTDIR=share/mysql/scripts
-			-DINSTALL_SQLBENCHDIR=share/mysql
-			-DINSTALL_SUPPORTFILESDIR=${EPREFIX}/usr/share/mysql
-			-DWITH_COMMENT="Gentoo Linux ${PF}"
-			$(cmake-utils_use_with test UNIT_TESTS)
-			-DWITH_READLINE=0
-			-DWITH_LIBEDIT=0
-			-DWITH_ZLIB=system
-			-DWITHOUT_LIBWRAP=1
-			-DENABLED_LOCAL_INFILE=1
-			-DMYSQL_UNIX_ADDR=${EPREFIX}/var/run/mysqld/mysqld.sock
+
+	# Bug 412851
+	# MariaDB requires this flag to compile with GPLv3 readline linked
+	# Adds a warning about redistribution to configure
+	if [[ ${PN} == "mariadb" || ${PN} == "mariadb-galera" ]] ; then
+		mycmakeargs+=(
+			-DNOT_FOR_DISTRIBUTION=1
+			-DWITH_JEMALLOC=$(usex jemalloc system)
 		)
 
-		if [[ ${PN} == "mysql" || ${PN} == "percona-server" ]] && mysql_version_is_at_least "5.6.12" ; then
-			mycmakeargs+=( -DWITH_EDITLINE=system )
-		fi
+		mysql_version_is_at_least "10.0.9" && mycmakeargs+=( -DWITH_PCRE=system )
+        fi
 
-		if use ssl; then
-			mycmakeargs+=( -DWITH_SSL=system )
-		else
-			mycmakeargs+=( -DWITH_SSL=bundled )
-		fi
+	configure_cmake_locale
 
-		# Bug 412851
-		# MariaDB requires this flag to compile with GPLv3 readline linked
-		# Adds a warning about redistribution to configure
-		if [[ ${PN} == "mariadb" || ${PN} == "mariadb-galera" ]] ; then
-			mycmakeargs+=( -DNOT_FOR_DISTRIBUTION=1 )
+	if multilib_is_native_abi && ! use minimal ; then
+		configure_cmake_standard
+	else
+		configure_cmake_minimal
+	fi
 
-                	if use jemalloc ; then
-                        	mycmakeargs+=( -DWITH_JEMALLOC="system" )
-	                else
-        	                mycmakeargs+=( -DWITH_JEMALLOC=no )
-                	fi
-			# TODO: uncomment this when libpcre 8.35 is released to remove bundled library
-#			mysql_version_is_at_least "10.0.9" mycmakeargs+=( -DWITH_PCRE=system )
-	        fi
+	# Bug #114895, bug #110149
+	filter-flags "-O" "-O[01]"
 
-		configure_cmake_locale
+	CXXFLAGS="${CXXFLAGS} -fno-strict-aliasing"
+	CXXFLAGS="${CXXFLAGS} -felide-constructors -fno-rtti"
+	# Causes linkage failures.  Upstream bug #59607 removes it
+	if ! mysql_version_is_at_least "5.6" ; then
+		CXXFLAGS="${CXXFLAGS} -fno-implicit-templates"
+	fi
+	# As of 5.7, exceptions are used!
+	if ! mysql_version_is_at_least "5.7" ; then
+		CXXFLAGS="${CXXFLAGS} -fno-exceptions"
+	fi
+	export CXXFLAGS
 
-		if multilib_is_native_abi ; then
-			if use minimal ; then
-				configure_cmake_minimal
-			else
-				configure_cmake_standard
-			fi
-		else
-			configure_cmake_minimal
-		fi
+	# bug #283926, with GCC4.4, this is required to get correct behavior.
+	append-flags -fno-strict-aliasing
 
-		# Bug #114895, bug #110149
-		filter-flags "-O" "-O[01]"
-
-		CXXFLAGS="${CXXFLAGS} -fno-strict-aliasing"
-		CXXFLAGS="${CXXFLAGS} -felide-constructors -fno-rtti"
-		# Causes linkage failures.  Upstream bug #59607 removes it
-		if ! mysql_version_is_at_least "5.6" ; then
-			CXXFLAGS="${CXXFLAGS} -fno-implicit-templates"
-		fi
-		# As of 5.7, exceptions are used!
-		if ! mysql_version_is_at_least "5.7" ; then
-			CXXFLAGS="${CXXFLAGS} -fno-exceptions"
-		fi
-		export CXXFLAGS
-
-		# bug #283926, with GCC4.4, this is required to get correct behavior.
-		append-flags -fno-strict-aliasing
-
-		cmake-utils_src_configure
-	}
-
-	multilib_parallel_foreach_abi _mysql-multilib_src_configure "${@}"
+	cmake-utils_src_configure
 }
 
-# @FUNCTION: mysql-multilib_src_compile
-# @DESCRIPTION:
-# Compile the mysql code.
 mysql-multilib_src_compile() {
-	#_mysql-multilib_src_compile() {
-	#
-	#	if ! multilib_is_native_abi ; then
-	#		BUILD_DIR="${BUILD_DIR}/libmysql" cmake-utils_src_compile
-	#	else
-	#		cmake-utils_src_compile
-	#	fi
-	#}
+	local _cmake_args=( "${@}" )
 
-	debug-print-function ${FUNCNAME} "$@"
-
-#	multilib_foreach_abi _mysql-multilib_src_compile "${@}"
-	multilib_foreach_abi cmake-utils_src_compile "${@}"
+	multilib-minimal_src_compile
 }
+
+multilib_src_compile() {
+	cmake-utils_src_compile "${_cmake_args[@]}"
+}
+
 
 # @FUNCTION: mysql-multilib_src_install
 # @DESCRIPTION:
 # Install mysql.
 mysql-multilib_src_install() {
-	_mysql-multilib_src_install() {
-		debug-print-function ${FUNCNAME} "$@"
+	multilib-minimal_src_install
+}
 
-		if multilib_is_native_abi; then
-			mysql-cmake_src_install
-		else
-		#	BUILD_DIR="${BUILD_DIR}/libmysql" cmake-utils_src_install
-			cmake-utils_src_install
-			if ! use minimal && [[ "${PN}" == "mariadb" || "${PN}" == "mariadb-galera" ]] ; then
-				insinto /usr/include/mysql/private
-				doins sql/*.h
-			fi
-
-		fi
-		# Do multilib magic only when >1 ABI is used.
-		if [[ ${#MULTIBUILD_VARIANTS[@]} -gt 1 ]]; then
-			multilib_prepare_wrappers
-			# Make sure all headers are the same for each ABI.
-			multilib_check_headers
-		fi
-	}
-
+multilib_src_install() {
 	debug-print-function ${FUNCNAME} "$@"
 
-	multilib_foreach_abi _mysql-multilib_src_install "${@}"
-	multilib_install_wrappers
+	if multilib_is_native_abi; then
+		mysql-cmake_src_install
+	else
+		cmake-utils_src_install
+		if ! use minimal && [[ "${PN}" == "mariadb" || "${PN}" == "mariadb-galera" ]] ; then
+			insinto /usr/include/mysql/private
+			doins "${S}"/sql/*.h
+		fi
+	fi
 }
 
 # @FUNCTION: mysql-multilib_pkg_preinst
