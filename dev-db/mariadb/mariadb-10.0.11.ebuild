@@ -3,7 +3,7 @@
 # $Header: $
 
 EAPI="4"
-MY_EXTRAS_VER="live"
+MY_EXTRAS_VER="20140514-0124Z"
 
 # Build system
 BUILD="cmake"
