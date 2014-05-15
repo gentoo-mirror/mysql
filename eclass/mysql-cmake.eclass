@@ -458,4 +458,15 @@ mysql-cmake_src_install() {
 	#Remove mytop if perl is not selected
 	[[ ${PN} == "mariadb" || ${PN} == "mariadb-galera" ]] && ! use perl \
 	&& rm -f "${ED}/usr/bin/mytop"
+
+	# Percona has decided to rename libmysqlclient to libperconaserverclient
+	# Use a symlink to preserve linkages for those who don't use mysql_config
+	if [[ ${PN} == "percona-server" ]] && mysql_version_is_at_least "5.5.36" ; then
+		dosym libperconaserverclient.so /usr/$(get_libdir)/libmysqlclient.so
+		dosym libperconaserverclient.so /usr/$(get_libdir)/libmysqlclient_r.so
+		if use static-libs ; then
+			dosym libperconaserverclient.a /usr/$(get_libdir)/libmysqlclient.a
+			dosym libperconaserverclient.a /usr/$(get_libdir)/libmysqlclient_r.a
+		fi
+	fi
 }
