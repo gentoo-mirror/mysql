@@ -8,6 +8,7 @@
 #	- MySQL Team <mysql-bugs@gentoo.org>
 #	- Robin H. Johnson <robbat2@gentoo.org>
 #	- Jorge Manuel B. S. Vicetto <jmbsvicetto@gentoo.org>
+#	- Brian Evans <grknight@gentoo.org>
 # @BLURB: This eclass provides most of the functions for mysql ebuilds
 # @DESCRIPTION:
 # The mysql-v2.eclass is the base eclass to build the mysql and
@@ -792,9 +793,9 @@ mysql-v2_pkg_config() {
 	# Now that /var/run is a tmpfs mount point, we need to ensure it exists before using it
 	PID_DIR="${EROOT}/var/run/mysqld"
 	if [[ ! -d "${PID_DIR}" ]]; then
-		mkdir -p "${PID_DIR}"
-		chown mysql:mysql "${PID_DIR}"
-		chmod 755 "${PID_DIR}"
+		mkdir -p "${PID_DIR}" || die "Could not create pid directory"
+		chown mysql:mysql "${PID_DIR}" || die "Could not set ownership on pid directory"
+		chmod 755 "${PID_DIR}" || die "Could not set permissions on pid directory"
 	fi
 
 	pushd "${TMPDIR}" &>/dev/null
