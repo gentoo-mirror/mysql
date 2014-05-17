@@ -251,7 +251,7 @@ mysql-cmake_src_prepare() {
 
 	rm -f "scripts/mysqlbug"
 	if use jemalloc && ! ( [[ ${PN} == "mariadb" ]] && mysql_version_is_at_least "5.5.33" ); then
-		echo "TARGET_LINK_LIBRARIES(mysqld jemalloc)" >> "${S}/sql/CMakeLists.txt"
+		echo "TARGET_LINK_LIBRARIES(mysqld jemalloc)" >> "${S}/sql/CMakeLists.txt" || die
 	fi
 
 	if use tcmalloc; then
@@ -409,11 +409,11 @@ mysql-cmake_src_install() {
 	mycnf_src="my.cnf-${mysql_mycnf_version}"
 	sed -e "s!@DATADIR@!${MY_DATADIR}!g" \
 		"${FILESDIR}/${mycnf_src}" \
-		> "${TMPDIR}/my.cnf.ok"
+		> "${TMPDIR}/my.cnf.ok" || die
 	if use latin1 ; then
 		sed -i \
 			-e "/character-set/s|utf8|latin1|g" \
-			"${TMPDIR}/my.cnf.ok"
+			"${TMPDIR}/my.cnf.ok" || die
 	fi
 	eprefixify "${TMPDIR}/my.cnf.ok"
 	newins "${TMPDIR}/my.cnf.ok" my.cnf
