@@ -2,8 +2,8 @@
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
-EAPI="4"
-MY_EXTRAS_VER="20140426-0232Z"
+EAPI="5"
+MY_EXTRAS_VER="20140514-0124Z"
 
 # Build system
 BUILD="cmake"
@@ -21,10 +21,6 @@ EPATCH_EXCLUDE=''
 DEPEND="|| ( >=sys-devel/gcc-3.4.6 >=sys-devel/gcc-apple-4.0 )"
 RDEPEND="${RDEPEND}"
 
-# Please do not add a naive src_unpack to this ebuild
-# If you want to add a single patch, copy the ebuild to an overlay
-# and create your own mysql-extras tarball, looking at 000_index.txt
-
 # Official test instructions:
 # USE='-cluster embedded extraengine perl ssl static-libs community' \
 # FEATURES='test userpriv -usersandbox' \
@@ -32,7 +28,7 @@ RDEPEND="${RDEPEND}"
 # digest clean package
 src_test() {
 
-	local TESTDIR="${CMAKE_BUILD_DIR}/mysql-test"
+	local TESTDIR="${BUILD_DIR}/mysql-test"
 	local retstatus_unit
 	local retstatus_tests
 
@@ -61,10 +57,7 @@ src_test() {
 		# create directories because mysqladmin might right out of order
 		mkdir -p "${S}"/mysql-test/var-tests{,/log}
 
-		# create symlink for the tests to find mysql_tzinfo_to_sql
-		ln -s "${CMAKE_BUILD_DIR}/sql/mysql_tzinfo_to_sql" "${S}/sql/"
-
-		# These are failing in MySQL 5.5 for now and are believed to be
+		# These are failing in MariaDB 10.0 for now and are believed to be
 		# false positives:
 		#
 		# main.information_schema, binlog.binlog_statement_insert_delayed,
@@ -75,10 +68,13 @@ src_test() {
 		# main.mysql_client_test, main.mysql_client_test_nonblock:
 		# segfaults at random under Portage only, suspect resource limits.
 		#
+		# plugins.unix_socket
+		# fails because portage strips out the USER enviornment variable
+		#
 
 		for t in main.mysql_client_test main.mysql_client_test_nonblock \
 			binlog.binlog_statement_insert_delayed main.information_schema \
-			main.mysqld--help \
+			main.mysqld--help plugins.unix_socket \
 			funcs_1.is_triggers funcs_1.is_tables_mysql funcs_1.is_columns_mysql ; do
 				mysql-v2_disable_test  "$t" "False positives in Gentoo"
 		done
@@ -87,7 +83,8 @@ src_test() {
 		pushd "${TESTDIR}"
 
 		# run mysql-test tests
-		perl mysql-test-run.pl --force --vardir="${S}/mysql-test/var-tests"
+		# Skip all CONNECT engine tests until upstream respondes to how to reference data files
+		perl mysql-test-run.pl --force --vardir="${S}/mysql-test/var-tests" --skip-test=connect
 		retstatus_tests=$?
 		[[ $retstatus_tests -eq 0 ]] || eerror "tests failed"
 		has usersandbox $FEATURES && eerror "Some tests may fail with FEATURES=usersandbox"
