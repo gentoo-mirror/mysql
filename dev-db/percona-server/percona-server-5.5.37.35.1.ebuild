@@ -2,7 +2,7 @@
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
-EAPI="4"
+EAPI="5"
 
 MY_EXTRAS_VER="20140509-0130Z"
 MY_PV="${PV//_alpha_pre/-m}"
