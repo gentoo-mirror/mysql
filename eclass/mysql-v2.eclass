@@ -210,7 +210,7 @@ esac
 IUSE="${IUSE} latin1 extraengine cluster max-idx-128 +community profiling"
 
 if [[ ${PN} == "mariadb" || ${PN} == "mariadb-galera" ]] && \
-	mysql_version_is_at_least "5.5" || mysql_check_version_range "5.5.38 to 5.6.11.99" ; then
+	mysql_version_is_at_least "5.5" || mysql_check_version_range "5.5.37 to 5.6.11.99" ; then
 	IUSE="bindist ${IUSE}"
 fi
 
