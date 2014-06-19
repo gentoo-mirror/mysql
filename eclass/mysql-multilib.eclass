@@ -178,7 +178,8 @@ SLOT="0"
 IUSE="+community cluster debug embedded extraengine jemalloc latin1 max-idx-128 minimal
 	+perl profiling selinux ssl systemtap static static-libs tcmalloc test"
 
-if [[ ${PN} == "mariadb" || ${PN} == "mariadb-galera" ]] || mysql_check_version_range "5.5.38 to 5.6.11.99" ; then
+if [[ ${PN} == "mariadb" || ${PN} == "mariadb-galera" ]] && \
+	mysql_version_is_at_least "5.5" || mysql_check_version_range "5.5.38 to 5.6.11.99" ; then
 	IUSE="bindist ${IUSE}"
 fi
 
