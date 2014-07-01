@@ -303,7 +303,7 @@ PDEPEND="perl? ( >=dev-perl/DBD-mysql-2.9004 )
 	 ~virtual/mysql-${MYSQL_PV_MAJOR}"
 
 # my_config.h includes ABI specific data
-MULTILIB_WRAPPED_HEADERS=( /usr/include/mysql/my_config.h )
+MULTILIB_WRAPPED_HEADERS=( /usr/include/mysql/my_config.h /usr/include/mysql/private/embedded_priv.h )
 
 #
 # HELPER FUNCTIONS:
@@ -430,16 +430,15 @@ multilib_src_configure() {
 		-DWITH_SSL=$(usex ssl system bundled)
 	)
 
-	if [[ ${PN} == "mysql" || ${PN} == "percona-server" ]] && mysql_version_is_at_least "5.6.12" ; then
-		mycmakeargs+=( -DWITH_EDITLINE=system )
-	else
+	if in_iuse bindist ; then
 		mycmakeargs+=(
 			-DWITH_READLINE=$(usex bindist 1 0)
 			-DNOT_FOR_DISTRIBUTION=$(usex bindist 0 1)
-			$(usex bindist -DHAVE_BFD_H=0)
+			$(usex bindist -DHAVE_BFD_H=0 '')
 		)
 	fi
 
+	mycmakeargs+=( -DWITH_EDITLINE=system )
 
 	if [[ ${PN} == "mariadb" || ${PN} == "mariadb-galera" ]] ; then
 		mycmakeargs+=(
