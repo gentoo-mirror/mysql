@@ -1,6 +1,6 @@
 # Copyright 1999-2014 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: $
+# $Header: /var/cvsroot/gentoo-x86/eclass/mysql-v2.eclass,v 1.30 2014/06/04 01:17:11 grknight Exp $
 
 # @ECLASS: mysql-v2.eclass
 # @MAINTAINER:
@@ -209,8 +209,15 @@ esac
 # Common IUSE
 IUSE="${IUSE} latin1 extraengine cluster max-idx-128 +community profiling"
 
+# This probably could be simplified, but the syntax would have to be just right
 if [[ ${PN} == "mariadb" || ${PN} == "mariadb-galera" ]] && \
-	mysql_version_is_at_least "5.5" || mysql_check_version_range "5.5.37 to 5.6.11.99" ; then
+	mysql_version_is_at_least "5.5" ; then
+	IUSE="bindist ${IUSE}"
+elif [[ ${PN} == "mysql" || ${PN} == "percona-server" ]] && \
+	mysql_check_version_range "5.5.37 to 5.6.11.99" ; then
+	IUSE="bindist ${IUSE}"
+elif [[ ${PN} == "mysql-cluster" ]] && \
+	mysql_check_version_range "7.2 to 7.2.99.99"  ; then
 	IUSE="bindist ${IUSE}"
 fi
 
@@ -260,7 +267,11 @@ DEPEND="
 #	!dev-db/mariadb-native-client[mysqlcompat]
 
 # dev-db/mysql-5.6.12+ only works with dev-libs/libedit
-if [[ ${PN} == "mysql" || ${PN} == "percona-server" ]] && mysql_version_is_at_least "5.6.12" ; then
+# This probably could be simplified
+if [[ ${PN} == "mysql" || ${PN} == "percona-server" ]] && \
+	mysql_version_is_at_least "5.6.12" ; then
+	DEPEND="${DEPEND} dev-libs/libedit"
+elif [[ ${PN} == "mysql-cluster" ]] && mysql_version_is_at_least "7.3"; then
 	DEPEND="${DEPEND} dev-libs/libedit"
 else
 	if mysql_version_is_at_least "5.5" ; then

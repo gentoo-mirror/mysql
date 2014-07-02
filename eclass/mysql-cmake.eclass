@@ -1,6 +1,6 @@
 # Copyright 1999-2014 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: $
+# $Header: /var/cvsroot/gentoo-x86/eclass/mysql-cmake.eclass,v 1.20 2014/05/15 03:18:47 grknight Exp $
 
 # @ECLASS: mysql-cmake.eclass
 # @MAINTAINER:

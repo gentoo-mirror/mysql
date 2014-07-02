@@ -1,4 +1,4 @@
-# Copyright 1999-2013 Gentoo Foundation
+# Copyright 1999-2014 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
@@ -20,7 +20,7 @@ KEYWORDS="~alpha ~amd64 ~arm ~hppa ~ia64 ~ppc ~ppc64 ~s390 ~sh ~sparc ~x86 ~spar
 
 # When MY_EXTRAS is bumped, the index should be revised to exclude these.
 # This is often broken still
-EPATCH_EXCLUDE='02040_all_embedded-library-shared-5.1.43.patch '
+#EPATCH_EXCLUDE='02040_all_embedded-library-shared-5.1.43.patch '
 
 DEPEND="|| ( >=sys-devel/gcc-3.4.6 >=sys-devel/gcc-apple-4.0 )"
 RDEPEND="!media-sound/amarok[embedded]"
