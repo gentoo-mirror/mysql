@@ -1,8 +1,8 @@
-# Copyright 1999-2011 Gentoo Foundation
+# Copyright 1999-2014 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: /var/cvsroot/gentoo-x86/virtual/mysql/mysql-5.5.ebuild,v 1.2 2010/03/23 14:48:06 darkside Exp $
+# $Header: $
 
-EAPI="2"
+EAPI="5"
 
 DESCRIPTION="Virtual for MySQL client or database"
 HOMEPAGE=""
@@ -14,8 +14,11 @@ KEYWORDS="~alpha ~amd64 ~arm ~hppa ~ia64 ~mips ~ppc ~ppc64 ~s390 ~sh ~sparc ~x86
 IUSE="embedded minimal static static-libs"
 
 DEPEND=""
-# TODO: add Drizzle and MariaDB here
 RDEPEND="|| (
+	=dev-db/mariadb-10.1*[embedded=,minimal=,static=,static-libs=]
+	=dev-db/mariadb-10.0*[embedded=,minimal=,static=,static-libs=]
 	=dev-db/mysql-${PV}*[embedded=,minimal=,static=,static-libs=]
 	=dev-db/percona-server-${PV}*[embedded=,minimal=,static=,static-libs=]
+	=dev-db/mariadb-galera-10.0*[embedded=,minimal=,static=,static-libs=]
+	=dev-db/mysql-cluster-7.3*[embedded=,minimal=,static=,static-libs=]
 )"

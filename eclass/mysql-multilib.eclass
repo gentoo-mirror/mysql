@@ -69,6 +69,13 @@ if [[ "${PN}" == "mysql-cluster" ]]; then
 	esac
 fi
 
+# MariaDB has left the numbering schema but keeping compatibility
+if [[ ${PN} == "mariadb" || ${PN} == "mariadb-galera" ]]; then
+	case ${PV} in
+		10.0*|10.1*) MYSQL_PV_MAJOR="5.6" ;;
+	esac
+fi
+
 # @ECLASS-VARIABLE: MYSQL_VERSION_ID
 # @DESCRIPTION:
 # MYSQL_VERSION_ID will be:

@@ -83,10 +83,18 @@ fi
 MYSQL_PV_MAJOR="$(get_version_component_range 1-2 ${PV})"
 
 # Cluster is a special case...
-if [[ "${PN}" == "mysql-cluster" ]]; then
-	case $PV in
+if [[ ${PN} == "mysql-cluster" ]]; then
+	case ${PV} in
 		6.1*|7.0*|7.1*) MYSQL_PV_MAJOR=5.1 ;;
-		7.2*|7.3*) MYSQL_PV_MAJOR=5.5 ;;
+		7.2*) MYSQL_PV_MAJOR=5.5 ;;
+		7.3*) MYSQL_PV_MAJOR=5.6 ;;
+	esac
+fi
+
+# MariaDB has left the numbering schema but keeping compatibility
+if [[ ${PN} == "mariadb" || ${PN} == "mariadb-galera" ]]; then
+	case ${PV} in
+		10.0*|10.1*) MYSQL_PV_MAJOR="5.6" ;;
 	esac
 fi
 
