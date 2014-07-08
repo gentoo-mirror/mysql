@@ -77,13 +77,13 @@ src_test() {
 		# main.mysql_client_test:
 		# segfaults at random under Portage only, suspect resource limits.
 		#
-		# main.percona_bug1289599
+		# main.percona_bug1289599 main.percona_innodb_version
 		# Appears to be a syntax error in the test file itself
 		#
 
 		for t in main.mysql_client_test \
 			binlog.binlog_statement_insert_delayed main.information_schema \
-			main.mysqld--help-notwin main.percona_bug1289599 ; do
+			main.mysqld--help-notwin main.percona_bug1289599 main.percona_innodb_version ; do
 				mysql-v2_disable_test  "$t" "False positives in Gentoo"
 		done
 
