@@ -1,6 +1,10 @@
 # ChangeLog for virtual/mysql
-# Copyright 1999-2013 Gentoo Foundation; Distributed under the GPL v2
+# Copyright 1999-2014 Gentoo Foundation; Distributed under the GPL v2
 # $Header: $
+
+  29 Jul 2014; Robin H. Johnson <robbat2@gentoo.org> mysql-4.0.ebuild,
+  mysql-4.1.ebuild, mysql-5.0.ebuild, mysql-5.1.ebuild:
+  Copy keywords from main tree.
 
 *mysql-5.7 (10 Dec 2013)
 
