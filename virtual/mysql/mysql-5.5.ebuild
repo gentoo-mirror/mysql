@@ -1,8 +1,8 @@
-# Copyright 1999-2012 Gentoo Foundation
+# Copyright 1999-2014 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: /var/cvsroot/gentoo-x86/virtual/mysql/mysql-5.5.ebuild,v 1.5 2012/04/18 06:12:08 robbat2 Exp $
 
-EAPI="2"
+EAPI="4"
 
 DESCRIPTION="Virtual for MySQL client or database"
 HOMEPAGE=""
