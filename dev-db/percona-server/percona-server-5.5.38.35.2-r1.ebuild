@@ -4,7 +4,7 @@
 
 EAPI="5"
 
-MY_EXTRAS_VER="20140729-0112Z"
+MY_EXTRAS_VER="20140729-2200Z"
 MY_PV="${PV//_alpha_pre/-m}"
 MY_PV="${MY_PV//_/-}"
 
@@ -92,7 +92,7 @@ src_test() {
 
 		# run mysql-test tests
 		perl mysql-test-run.pl --force --vardir="${S}/mysql-test/var-tests" \
-			--testcase-timeout=30
+			--testcase-timeout=30 --parallel=auto
 		retstatus_tests=$?
 		[[ $retstatus_tests -eq 0 ]] || eerror "tests failed"
 		has usersandbox $FEATURES && eerror "Some tests may fail with FEATURES=usersandbox"

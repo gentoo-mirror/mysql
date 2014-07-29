@@ -3,7 +3,7 @@
 # $Header: $
 
 EAPI="5"
-MY_EXTRAS_VER="20140514-0124Z"
+MY_EXTRAS_VER="20140729-2200Z"
 
 # Build system
 BUILD="cmake"
@@ -84,7 +84,8 @@ src_test() {
 
 		# run mysql-test tests
 		# Skip all CONNECT engine tests until upstream respondes to how to reference data files
-		perl mysql-test-run.pl --force --vardir="${S}/mysql-test/var-tests" --skip-test=connect
+		perl mysql-test-run.pl --force --vardir="${S}/mysql-test/var-tests" \
+			--skip-test=connect --parallel=auto
 		retstatus_tests=$?
 		[[ $retstatus_tests -eq 0 ]] || eerror "tests failed"
 		has usersandbox $FEATURES && eerror "Some tests may fail with FEATURES=usersandbox"

@@ -4,7 +4,7 @@
 
 EAPI="5"
 
-MY_EXTRAS_VER="live"
+MY_EXTRAS_VER="20140729-2200Z"
 MY_PV="${PV//_alpha_pre/-m}"
 MY_PV="${MY_PV//_/-}"
 
@@ -70,14 +70,14 @@ src_test() {
 		# create symlink for the tests to find mysql_tzinfo_to_sql
 		ln -s "${CMAKE_BUILD_DIR}/sql/mysql_tzinfo_to_sql" "${S}/sql/"
 
-		# These are failing in MySQL 5.5 for now and are believed to be
+		# These are failing in MySQL 5.5/5.6 for now and are believed to be
 		# false positives:
 		#
 		# main.information_schema, binlog.binlog_statement_insert_delayed,
 		# main.mysqld--help-notwin, funcs_1.is_triggers funcs_1.is_tables_mysql,
 		# funcs_1.is_columns_mysql, binlog.binlog_mysqlbinlog_filter,
 		# perfschema.binlog_edge_mix, perfschema.binlog_edge_stmt,
-		# mysqld--help-notwin
+		# mysqld--help-notwin, funcs_1.is_triggers
 		# fails due to USE=-latin1 / utf8 default
 		#
 		# main.mysql_client_test:
@@ -91,7 +91,8 @@ src_test() {
 			main.mysqld--help-notwinfuncs_1.is_triggers funcs_1.is_tables_mysql \
 			funcs_1.is_columns_mysql binlog.binlog_mysqlbinlog_filter \
 			perfschema.binlog_edge_mix perfschema.binlog_edge_stmt \
-			mysqld--help-notwin main.mysql_tzinfo_to_sql_symlink; do
+			mysqld--help-notwin main.mysql_tzinfo_to_sql_symlink \
+			funcs_1.is_triggers ; do
 				mysql-v2_disable_test  "$t" "False positives in Gentoo"
 		done
 
@@ -103,7 +104,7 @@ src_test() {
 
 		# run mysql-test tests
 		perl mysql-test-run.pl --force --vardir="${S}/mysql-test/var-tests" \
-			--suite-timeout=5000
+			--suite-timeout=5000 --parallel=auto
 		retstatus_tests=$?
 		[[ $retstatus_tests -eq 0 ]] || eerror "tests failed"
 		has usersandbox $FEATURES && eerror "Some tests may fail with FEATURES=usersandbox"
