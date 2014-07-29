@@ -688,7 +688,7 @@ mysql-v2_pkg_config() {
 	local old_MY_DATADIR="${MY_DATADIR}"
 	local old_HOME="${HOME}"
 	# my_print_defaults needs to read stuff in $HOME/.my.cnf
-	export HOME=/root
+	export HOME=${EPREFIX}/root
 
 	# Make sure the vars are correctly initialized
 	mysql_init_vars
@@ -739,13 +739,13 @@ mysql-v2_pkg_config() {
 	MYSQL_LOG_BIN="$(mysql-v2_getoptval mysqld log-bin)"
 	MYSQL_LOG_BIN=${MYSQL_LOG_BIN%/*}
 
-	if [[ ! -d "${EROOT}"/$MYSQL_TMPDIR ]]; then
+	if [[ ! -d "${ROOT}"/$MYSQL_TMPDIR ]]; then
 		einfo "Creating MySQL tmpdir $MYSQL_TMPDIR"
-		install -d -m 770 -o mysql -g mysql "${EROOT}"/$MYSQL_TMPDIR
+		install -d -m 770 -o mysql -g mysql "${ROOT}"/$MYSQL_TMPDIR
 	fi
-	if [[ ! -d "${EROOT}"/$MYSQL_LOG_BIN ]]; then
+	if [[ ! -d "${ROOT}"/$MYSQL_LOG_BIN ]]; then
 		einfo "Creating MySQL log-bin directory $MYSQL_LOG_BIN"
-		install -d -m 770 -o mysql -g mysql "${EROOT}"/$MYSQL_LOG_BIN
+		install -d -m 770 -o mysql -g mysql "${ROOT}"/$MYSQL_LOG_BIN
 	fi
 	if [[ ! -d "${EROOT}"/$MYSQL_RELAY_LOG ]]; then
 		einfo "Creating MySQL relay-log directory $MYSQL_RELAY_LOG"
@@ -766,7 +766,7 @@ mysql-v2_pkg_config() {
 	if [ -z "${MYSQL_ROOT_PASSWORD}" ]; then
 
 		einfo "Please provide a password for the mysql 'root' user now, in the"
-		einfo "MYSQL_ROOT_PASSWORD env var or through the /root/.my.cnf file."
+		einfo "MYSQL_ROOT_PASSWORD env var or through the ${HOME}/.my.cnf file."
 		ewarn "Avoid [\"'\\_%] characters in the password"
 		read -rsp "    >" pwd1 ; echo
 
@@ -780,8 +780,12 @@ mysql-v2_pkg_config() {
 		unset pwd1 pwd2
 	fi
 
-	local options="--log-warnings=0"
+	local options
 	local sqltmp="$(emktemp)"
+
+	# Fix bug 446200. Don't reference host my.cnf, needs to come first,
+	# see http://bugs.mysql.com/bug.php?id=31312
+	use prefix && options="${options} --defaults-file=${MY_SYSCONFDIR}/my.cnf"
 
 	local help_tables="${ROOT}${MY_SHAREDSTATEDIR}/fill_help_tables.sql"
 	[[ -r "${help_tables}" ]] \
@@ -805,10 +809,6 @@ mysql-v2_pkg_config() {
 
 	use prefix || options="${options} --user=mysql"
 
-	# Fix bug 446200. Don't reference host my.cnf
-	use prefix && [[ -f "${MY_SYSCONFDIR}/my.cnf" ]] \
-		&& options="${options} '--defaults-file=${MY_SYSCONFDIR}/my.cnf'"
-
 	# MySQL 5.6+ needs InnoDB
 	if [[ ${PN} == "mysql" || ${PN} == "percona-server" ]] ; then
 		mysql_version_is_at_least "5.6" || options="${options} --loose-skip-innodb"
@@ -829,7 +829,7 @@ mysql-v2_pkg_config() {
 	#cmd="'${EROOT}/usr/share/mysql/scripts/mysql_install_db' '--basedir=${EPREFIX}/usr' ${options}"
 	cmd=${EROOT}usr/share/mysql/scripts/mysql_install_db
 	[[ -f ${cmd} ]] || cmd=${EROOT}usr/bin/mysql_install_db
-	cmd="'$cmd' '--basedir=${EPREFIX}/usr' ${options} '--datadir=${EROOT}/${MY_DATADIR}' '--tmpdir=${EROOT}/${MYSQL_TMPDIR}'"
+	cmd="'$cmd' '--basedir=${EPREFIX}/usr' ${options} '--datadir=${ROOT}/${MY_DATADIR}' '--tmpdir=${ROOT}/${MYSQL_TMPDIR}'"
 	einfo "Command: $cmd"
 	eval $cmd \
 		>"${TMPDIR}"/mysql_install_db.log 2>&1
@@ -855,16 +855,16 @@ mysql-v2_pkg_config() {
 	local pidfile="${EROOT}/var/run/mysqld/mysqld${RANDOM}.pid"
 	local mysqld="${EROOT}/usr/sbin/mysqld \
 		${options} \
-		--user=mysql \
+		$(use prefix || echo --user=mysql) \
 		--log-warnings=0 \
 		--basedir=${EROOT}/usr \
-		--datadir=${EROOT}/${MY_DATADIR} \
+		--datadir=${ROOT}/${MY_DATADIR} \
 		--max_allowed_packet=8M \
 		--net_buffer_length=16K \
 		--default-storage-engine=MyISAM \
 		--socket=${socket} \
 		--pid-file=${pidfile}
-		--tmpdir=${EROOT}/${MYSQL_TMPDIR}"
+		--tmpdir=${ROOT}/${MYSQL_TMPDIR}"
 	#einfo "About to start mysqld: ${mysqld}"
 	ebegin "Starting mysqld"
 	einfo "Command ${mysqld}"
