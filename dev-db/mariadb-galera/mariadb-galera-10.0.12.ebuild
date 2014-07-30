@@ -1,9 +1,9 @@
 # Copyright 1999-2014 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: $
+# $Header: /var/cvsroot/gentoo-x86/dev-db/mariadb-galera/mariadb-galera-10.0.12.ebuild,v 1.1 2014/07/30 06:26:21 robbat2 Exp $
 
 EAPI="5"
-MY_EXTRAS_VER="20140424-1043Z"
+MY_EXTRAS_VER="20140729-2200Z"
 WSREP_REVISION="25"
 
 # Build system
@@ -89,7 +89,8 @@ src_test() {
 
 		# run mysql-test tests
 		# Skip all CONNECT engine tests until upstream respondes to how to reference data files
-		perl mysql-test-run.pl --force --vardir="${S}/mysql-test/var-tests" --skip-test=connect
+		perl mysql-test-run.pl --force --vardir="${S}/mysql-test/var-tests" \
+				--skip-test=connect --parallel=auto
 		retstatus_tests=$?
 		[[ $retstatus_tests -eq 0 ]] || eerror "tests failed"
 		has usersandbox $FEATURES && eerror "Some tests may fail with FEATURES=usersandbox"

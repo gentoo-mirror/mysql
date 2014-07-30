@@ -1,3 +1,11 @@
+*mariadb-galera-10.0.12 (30 Jul 2014)
+
+  30 Jul 2014; Robin H. Johnson <robbat2@gentoo.org>
+  +mariadb-galera-10.0.12.ebuild, -mariadb-galera-10.0.10_beta.ebuild,
+  -mariadb-galera-10.0.11.ebuild:
+  mariadb-galera merge back from the tree. unsure if we should keep the 5.5
+  series for reference.
+
 *mariadb-galera-5.5.35 (14 Feb 2014)
 
   14 Feb 2014;  <grknight@gentoo.org> +mariadb-galera-5.5.35.ebuild,
