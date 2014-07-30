@@ -14,9 +14,8 @@ KEYWORDS="alpha amd64 arm hppa ia64 ~mips ppc ppc64 s390 sh sparc x86 ~sparc-fbs
 IUSE="embedded minimal static"
 
 DEPEND=""
-# TODO: add mysql-cluster here
 RDEPEND="|| (
 	=dev-db/mysql-${PV}*[embedded=,minimal=,static=]
 	=dev-db/mariadb-${PV}*[embedded=,minimal=,static=]
-	=dev-db/mysql-cluster-7*[embedded=,minimal=,static=]
+	=dev-db/mysql-cluster-7.2*[embedded=,minimal=,static=]
 )"
