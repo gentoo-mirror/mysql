@@ -317,6 +317,8 @@ mysql-cmake_src_configure() {
 		-DENABLED_LOCAL_INFILE=1
 		$(cmake-utils_use_enable static-libs STATIC_LIBS)
 		-DWITH_SSL=$(usex ssl system bundled)
+		-DWITH_DEFAULT_COMPILER_OPTIONS=0
+		-DWITH_DEFAULT_FEATURE_SET=0
 	)
 
 	if in_iuse bindist ; then
