@@ -1,6 +1,6 @@
 # Copyright 1999-2014 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: $
+# $Header: /var/cvsroot/gentoo-x86/dev-db/mysql/mysql-5.6.20.ebuild,v 1.1 2014/08/02 00:23:41 grknight Exp $
 
 EAPI="5"
 
@@ -19,7 +19,7 @@ IUSE="$IUSE"
 EGIT_REPO_URI="git://git.overlays.gentoo.org/proj/mysql-extras.git"
 
 # REMEMBER: also update eclass/mysql*.eclass before committing!
-KEYWORDS="~alpha ~amd64 ~arm ~hppa ~ia64 ~ppc ~ppc64 ~s390 ~sh ~sparc ~x86 ~sparc-fbsd ~x86-fbsd ~x86-linux"
+KEYWORDS="~alpha ~amd64 ~arm ~hppa ~ia64 ~ppc ~ppc64 ~s390 ~sh ~sparc ~x86 ~sparc-fbsd ~x86-fbsd ~x86-freebsd ~amd64-linux ~x86-linux ~ppc-macos ~x64-macos ~x86-macos ~x64-solaris ~x86-solaris"
 
 # When MY_EXTRAS is bumped, the index should be revised to exclude these.
 EPATCH_EXCLUDE=''
@@ -83,15 +83,15 @@ src_test() {
 		# main.mysql_client_test:
 		# segfaults at random under Portage only, suspect resource limits.
 		#
-		# main.mysql_tzinfo_to_sql_symlink
-		# fails due to missing mysql_test/std_data/zoneinfo/GMT file from archive
-		#
+		# rpl.rpl_plugin_load
+		# fails due to included file not listed in expected result
+		# appears to be poor planning
 		for t in main.mysql_client_test \
 			binlog.binlog_statement_insert_delayed main.information_schema \
 			main.mysqld--help-notwinfuncs_1.is_triggers funcs_1.is_tables_mysql \
 			funcs_1.is_columns_mysql binlog.binlog_mysqlbinlog_filter \
 			perfschema.binlog_edge_mix perfschema.binlog_edge_stmt \
-			mysqld--help-notwin main.mysql_tzinfo_to_sql_symlink \
+			mysqld--help-notwin rpl.rpl_plugin_load \
 			funcs_1.is_triggers ; do
 				mysql-v2_disable_test  "$t" "False positives in Gentoo"
 		done
