@@ -65,37 +65,44 @@ src_test() {
 		# create directories because mysqladmin might right out of order
 		mkdir -p "${S}"/mysql-test/var-tests{,/log}
 
-		# These are failing in MySQL 5.5 for now and are believed to be
+		# These are failing in MySQL 5.5/5.6 for now and are believed to be
 		# false positives:
 		#
 		# main.information_schema, binlog.binlog_statement_insert_delayed,
-		# main.mysqld--help-notwin, ndb.ndbinfo, ndb_binlog.ndb_binlog_index
+		# main.mysqld--help-notwin, funcs_1.is_triggers funcs_1.is_tables_mysql,
+		# funcs_1.is_columns_mysql, binlog.binlog_mysqlbinlog_filter,
+		# perfschema.binlog_edge_mix, perfschema.binlog_edge_stmt,
+		# mysqld--help-notwin, funcs_1.is_triggers, funcs_1.is_tables_mysql, funcs_1.is_columns_mysql
+		# perfschema.binlog_edge_stmt, perfschema.binlog_edge_mix, binlog.binlog_mysqlbinlog_filter
 		# fails due to USE=-latin1 / utf8 default
 		#
 		# main.mysql_client_test:
 		# segfaults at random under Portage only, suspect resource limits.
 		#
-		# sys_vars.plugin_dir_basic
-		# fails because PLUGIN_DIR is set to MYSQL_LIBDIR64/plugin
-		# instead of MYSQL_LIBDIR/plugin
+		# main.mysql_tzinfo_to_sql_symlink
+		# fails due to missing mysql_test/std_data/zoneinfo/GMT file from archive
 		#
-		# main.flush_read_lock_kill
-		# fails because of unknown system variable 'DEBUG_SYNC'
-		#
-		# main.openssl_1
-		# error message changing
-		# -mysqltest: Could not open connection 'default': 2026 SSL connection
-		#  error: ASN: bad other signature confirmation
-		# +mysqltest: Could not open connection 'default': 2026 SSL connection
-		#  error: error:00000001:lib(0):func(0):reason(1)
-		#
-
-		for t in main.mysql_client_test \
-			binlog.binlog_statement_insert_delayed main.information_schema \
-			main.mysqld--help-notwin main.flush_read_lock_kill \
-			sys_vars.plugin_dir_basic main.openssl_1 \
-			ndb.ndbinfo ndb_binlog.ndb_binlog_index ; do
+		for t in \
+			binlog.binlog_mysqlbinlog_filter \
+			binlog.binlog_statement_insert_delayed \
+			funcs_1.is_columns_mysql \
+			funcs_1.is_tables_mysql \
+			funcs_1.is_triggers \
+			main.information_schema \
+			main.mysqld--help-notwinfuncs_1.is_triggers \
+			main.mysql_client_test \
+			main.mysql_tzinfo_to_sql_symlink \
+			mysqld--help-notwin \
+			perfschema.binlog_edge_mix \
+			perfschema.binlog_edge_stmt \
+		; do
 				mysql-v2_disable_test  "$t" "False positives in Gentoo"
+		done
+		# ndb.ndbinfo, ndb_binlog.ndb_binlog_index: latin1/utf8
+		for t in \
+			ndb.ndbinfo \
+			ndb_binlog.ndb_binlog_index ; do
+				mysql-v2_disable_test  "$t" "False positives in Gentoo (NDB)"
 		done
 
 		# Run mysql tests
