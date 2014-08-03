@@ -1,6 +1,6 @@
-# Copyright 1999-2013 Gentoo Foundation
+# Copyright 1999-2014 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: $
+# $Header: /var/cvsroot/gentoo-x86/dev-db/mysql-cluster/mysql-cluster-7.2.17.ebuild,v 1.1 2014/08/03 21:42:35 robbat2 Exp $
 
 EAPI=4
 MY_EXTRAS_VER="live"
@@ -16,7 +16,7 @@ inherit toolchain-funcs java-pkg-opt-2 mysql-v2
 IUSE="$IUSE"
 
 # REMEMBER: also update eclass/mysql*.eclass before committing!
-KEYWORDS="~alpha ~amd64 ~arm ~hppa ~ia64 ~ppc ~ppc64 ~s390 ~sh ~sparc ~x86 ~sparc-fbsd ~x86-fbsd ~x64-macos ~x86-solaris"
+KEYWORDS="~amd64 ~x86"
 
 # When MY_EXTRAS is bumped, the index should be revised to exclude these.
 # This is often broken still
