@@ -1,9 +1,9 @@
 # Copyright 1999-2014 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: $
+# $Header: /var/cvsroot/gentoo-x86/dev-db/mariadb/mariadb-10.0.13.ebuild,v 1.1 2014/08/12 17:16:36 grknight Exp $
 
 EAPI="5"
-MY_EXTRAS_VER="20140729-2200Z"
+MY_EXTRAS_VER="20140811-2248Z"
 
 inherit toolchain-funcs mysql-multilib
 # only to make repoman happy. it is really set in the eclass
@@ -23,7 +23,12 @@ RDEPEND="${RDEPEND}"
 # FEATURES='test userpriv -usersandbox' \
 # ebuild mariadb-X.X.XX.ebuild \
 # digest clean package
-src_test() {
+multilib_src_test() {
+
+	if ! multilib_is_native_abi ; then
+		einfo "Server tests not available on non-native abi".
+		return 0;
+	fi
 
 	local TESTDIR="${BUILD_DIR}/mysql-test"
 	local retstatus_unit
@@ -62,18 +67,21 @@ src_test() {
 		# funcs_1.is_columns_mysql
 		# fails due to USE=-latin1 / utf8 default
 		#
-		# main.mysql_client_test, main.mysql_client_test_nonblock:
+		# main.mysql_client_test, main.mysql_client_test_nonblock
+		# main.mysql_client_test_comp:
 		# segfaults at random under Portage only, suspect resource limits.
 		#
-		# plugins.unix_socket
-		# fails because portage strips out the USER enviornment variable
+		# innodb.innodb_simulate_comp_failures_small
+		# Has a very long timeout requirement to be consistent
+		# Upstream bug MDEV-6546
 		#
 
 		for t in main.mysql_client_test main.mysql_client_test_nonblock \
+			main.mysql_client_test_comp \
 			binlog.binlog_statement_insert_delayed main.information_schema \
-			main.mysqld--help plugins.unix_socket \
+			main.mysqld--help innodb.innodb_simulate_comp_failures_small \
 			funcs_1.is_triggers funcs_1.is_tables_mysql funcs_1.is_columns_mysql ; do
-				mysql-v2_disable_test  "$t" "False positives in Gentoo"
+				mysql-multilib_disable_test  "$t" "False positives in Gentoo"
 		done
 
 		# Run mysql tests
