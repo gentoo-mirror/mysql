@@ -73,7 +73,8 @@ fi
 # MariaDB has left the numbering schema but keeping compatibility
 if [[ ${PN} == "mariadb" || ${PN} == "mariadb-galera" ]]; then
 	case ${PV} in
-		10.0*|10.1*) MYSQL_PV_MAJOR="5.6" ;;
+		10.0*) MYSQL_PV_MAJOR="5.6" ;;
+		10.1*) MYSQL_PV_MAJOR="5.7" ;;
 	esac
 fi
 
