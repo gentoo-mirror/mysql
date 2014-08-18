@@ -247,6 +247,10 @@ else
 	DEPEND="${DEPEND} !bindist? ( >=sys-libs/readline-4.1:0=[${MULTILIB_USEDEP}] )"
 fi
 
+if [[ ${PN} == "mysql" || ${PN} == "percona-server" ]] ; then
+	mysql_verison_is_at_least "5.7.5" && DEPEND="${DEPEND} dev-libs/boost:0="
+fi
+
 if [[ ${PN} == "mariadb" || ${PN} == "mariadb-galera" ]] ; then
 	# Bug 441700 MariaDB >=5.3 include custom mytop
 	DEPEND="${DEPEND}
@@ -260,9 +264,7 @@ if [[ ${PN} == "mariadb" || ${PN} == "mariadb-galera" ]] ; then
 			"
 	fi
 	mysql_version_is_at_least "10.0.7" && DEPEND="${DEPEND} oqgraph? ( dev-libs/judy:0= )"
-	if mysql_version_is_at_least "10.0.9" ; then
-		DEPEND="${DEPEND} >=dev-libs/libpcre-8.35:3="
-	fi
+	mysql_version_is_at_least "10.0.9" && DEPEND="${DEPEND} >=dev-libs/libpcre-8.35:3="
 fi
 
 # Having different flavours at the same time is not a good idea

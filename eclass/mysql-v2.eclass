@@ -290,6 +290,10 @@ else
 	fi
 fi
 
+if [[ ${PN} == "mysql" || ${PN} == "percona-server" ]] ; then
+	mysql_verison_is_at_least "5.7.5" && DEPEND="${DEPEND} dev-libs/boost"
+fi
+
 if [[ ${PN} == "mariadb" || ${PN} == "mariadb-galera" ]] ; then
 	mysql_check_version_range "5.1.38 to 5.3.99" && DEPEND="${DEPEND} libevent? ( >=dev-libs/libevent-1.4 )"
 	mysql_version_is_at_least "5.2" && DEPEND="${DEPEND} oqgraph? ( >=dev-libs/boost-1.40.0 )"
