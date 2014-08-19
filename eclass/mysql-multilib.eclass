@@ -248,7 +248,7 @@ else
 fi
 
 if [[ ${PN} == "mysql" || ${PN} == "percona-server" ]] ; then
-	mysql_verison_is_at_least "5.7.5" && DEPEND="${DEPEND} dev-libs/boost:0="
+	mysql_version_is_at_least "5.7.5" && DEPEND="${DEPEND} dev-libs/boost:0="
 fi
 
 if [[ ${PN} == "mariadb" || ${PN} == "mariadb-galera" ]] ; then
@@ -451,6 +451,7 @@ multilib_src_configure() {
 		-DWITH_SSL=$(usex ssl system bundled)
 		-DWITH_DEFAULT_COMPILER_OPTIONS=0
 		-DWITH_DEFAULT_FEATURE_SET=0
+		$(cmake-utils_use_enable systemtap DTRACE)
 	)
 
 	if in_iuse bindist ; then

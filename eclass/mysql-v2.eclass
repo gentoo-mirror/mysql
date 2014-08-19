@@ -291,7 +291,7 @@ else
 fi
 
 if [[ ${PN} == "mysql" || ${PN} == "percona-server" ]] ; then
-	mysql_verison_is_at_least "5.7.5" && DEPEND="${DEPEND} dev-libs/boost"
+	mysql_version_is_at_least "5.7.5" && DEPEND="${DEPEND} dev-libs/boost"
 fi
 
 if [[ ${PN} == "mariadb" || ${PN} == "mariadb-galera" ]] ; then
