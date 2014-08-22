@@ -332,6 +332,9 @@ PDEPEND="perl? ( >=dev-perl/DBD-mysql-2.9004 )
 # my_config.h includes ABI specific data
 MULTILIB_WRAPPED_HEADERS=( /usr/include/mysql/my_config.h /usr/include/mysql/private/embedded_priv.h )
 
+# wrap the config script
+MULTILIB_CHOST_TOOLS=( /usr/bin/mysql_config )
+
 #
 # HELPER FUNCTIONS:
 #
