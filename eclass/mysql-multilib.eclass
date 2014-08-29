@@ -203,12 +203,11 @@ if [[ ${PN} == "mariadb" || ${PN} == "mariadb-galera" ]]; then
 	# 5.5.33 and 10.0.5 add TokuDB. Authors strongly recommend jemalloc or perfomance suffers
 	mysql_version_is_at_least "10.0.5" && IUSE="${IUSE} odbc xml" && \
 		REQUIRED_USE="odbc? ( extraengine !minimal ) xml? ( extraengine !minimal )"
-	REQUIRED_USE="${REQUIRED_USE} minimal? ( !oqgraph !pam !sphinx ) tokudb? ( jemalloc )"
+	REQUIRED_USE="${REQUIRED_USE} minimal? ( !oqgraph !sphinx ) tokudb? ( jemalloc )"
 fi
 
 if [[ ${PN} == "percona-server" ]]; then
 	IUSE="${IUSE} pam"
-	REQUIRED_USE="${REQUIRED_USE} minimal? ( !pam )"
 fi
 
 REQUIRED_USE="
@@ -256,7 +255,7 @@ if [[ ${PN} == "mariadb" || ${PN} == "mariadb-galera" ]] ; then
 	# Bug 441700 MariaDB >=5.3 include custom mytop
 	DEPEND="${DEPEND}
 		oqgraph? ( >=dev-libs/boost-1.40.0:0= )
-		pam? ( virtual/pam:0= )
+		!minimal? ( pam? ( virtual/pam:0= ) )
 		perl? ( !dev-db/mytop )"
 	if mysql_version_is_at_least "10.0.5" ; then
 		DEPEND="${DEPEND}
@@ -268,7 +267,7 @@ if [[ ${PN} == "mariadb" || ${PN} == "mariadb-galera" ]] ; then
 	mysql_version_is_at_least "10.0.9" && DEPEND="${DEPEND} >=dev-libs/libpcre-8.35:3="
 fi
 
-[[ ${PN} == "percona-server" ]] && DEPEND="${DEPEND} pam? ( virtual/pam:0= )"
+[[ ${PN} == "percona-server" ]] && DEPEND="${DEPEND} !minimal? ( pam? ( virtual/pam:0= ) )"
 
 # Having different flavours at the same time is not a good idea
 for i in "mysql" "mariadb" "mariadb-galera" "percona-server" "mysql-cluster" ; do
