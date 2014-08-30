@@ -1,6 +1,6 @@
 # Copyright 1999-2014 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: $
+# $Header: /var/cvsroot/gentoo-x86/dev-db/percona-server/percona-server-5.6.20.68.0.ebuild,v 1.1 2014/08/30 00:05:31 grknight Exp $
 
 EAPI="5"
 MY_EXTRAS_VER="20140817-2331Z"
@@ -23,7 +23,7 @@ RDEPEND="${RDEPEND}"
 # and create your own mysql-extras tarball, looking at 000_index.txt
 
 # Official test instructions:
-# USE='embedded extraengine perl ssl static-libs community' \
+# USE='extraengine perl ssl static-libs community' \
 # FEATURES='test userpriv -usersandbox' \
 # ebuild percona-server-X.X.XX.ebuild \
 # digest clean package
