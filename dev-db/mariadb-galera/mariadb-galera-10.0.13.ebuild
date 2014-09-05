@@ -1,6 +1,6 @@
 # Copyright 1999-2014 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: $
+# $Header: /var/cvsroot/gentoo-x86/dev-db/mariadb-galera/mariadb-galera-10.0.13.ebuild,v 1.1 2014/09/03 22:44:00 grknight Exp $
 
 EAPI="5"
 MY_EXTRAS_VER="20140903-1928Z"
@@ -60,6 +60,9 @@ multilib_src_test() {
 
 		# Ensure that parallel runs don't die
 		export MTR_BUILD_THREAD="$((${RANDOM} % 100))"
+		# You may set this by hand.
+		# The default maximum is 8 unless MTR_MAX_PARALLEL is increased
+		export MTR_PARALLEL="${MTR_PARALLEL:-auto}"
 
 		# create directories because mysqladmin might right out of order
 		mkdir -p "${S}"/mysql-test/var-tests{,/log}
@@ -95,7 +98,7 @@ multilib_src_test() {
 		# run mysql-test tests
 		# Skip all CONNECT engine tests until upstream respondes to how to reference data files
 		perl mysql-test-run.pl --force --vardir="${S}/mysql-test/var-tests" \
-				--skip-test=connect --parallel=auto
+				--skip-test=connect
 		retstatus_tests=$?
 		[[ $retstatus_tests -eq 0 ]] || eerror "tests failed"
 		has usersandbox $FEATURES && eerror "Some tests may fail with FEATURES=usersandbox"
