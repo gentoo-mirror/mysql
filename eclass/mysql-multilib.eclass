@@ -188,7 +188,8 @@ IUSE="+community cluster debug embedded extraengine jemalloc latin1 max-idx-128 
 	+perl profiling selinux ssl systemtap static static-libs tcmalloc test"
 
 # This probably could be simplified, but the syntax would have to be just right
-if [[ ${PN} == "mariadb" || ${PN} == "mariadb-galera" ]] ; then
+if [[ ${PN} == "mariadb" || ${PN} == "mariadb-galera" ]] && \
+        mysql_check_version_range "5.5.37 to 10.0.13.99" ; then
 	IUSE="bindist ${IUSE}"
 elif [[ ${PN} == "mysql" || ${PN} == "percona-server" ]] && \
 	mysql_check_version_range "5.5.37 to 5.6.11.99" ; then
@@ -237,11 +238,15 @@ DEPEND="
 "
 
 # dev-db/mysql-5.6.12+ only works with dev-libs/libedit
+# mariadb 10.0.14 fixes libedit detection. changed to follow mysql
 # This probably could be simplified
 if [[ ${PN} == "mysql" || ${PN} == "percona-server" ]] && \
 	mysql_version_is_at_least "5.6.12" ; then
 	DEPEND="${DEPEND} dev-libs/libedit:0=[${MULTILIB_USEDEP}]"
 elif [[ ${PN} == "mysql-cluster" ]] && mysql_version_is_at_least "7.3"; then
+	DEPEND="${DEPEND} dev-libs/libedit:0=[${MULTILIB_USEDEP}]"
+elif [[ ${PN} == "mariadb" || ${PN} == "mariadb-galera" ]] && \
+	mysql_version_is_at_least "10.0.14" ; then
 	DEPEND="${DEPEND} dev-libs/libedit:0=[${MULTILIB_USEDEP}]"
 else
 	DEPEND="${DEPEND} !bindist? ( >=sys-libs/readline-4.1:0=[${MULTILIB_USEDEP}] )"
