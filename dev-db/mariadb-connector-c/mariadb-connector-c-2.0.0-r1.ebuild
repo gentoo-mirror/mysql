@@ -8,6 +8,7 @@ VCS_INHERIT=""
 if [[ "${PV}" == 9999 ]] ; then
 	VCS_INHERIT="git-r3"
 	EGIT_REPO_URI="https://github.com/MariaDB/connector-c.git"
+	KEYWORDS=""
 else
 	MY_PN="mariadb_client"
 	SRC_URI="
@@ -16,6 +17,7 @@ else
 	http://ftp-stud.hs-esslingen.de/pub/Mirrors/mariadb/client-native-${PV}/src/${MY_PN}-${PV}-src.tar.gz
 	"
 	S="${WORKDIR}/${MY_PN}-${PV}-src"
+	KEYWORDS="~amd64 ~x86"
 fi
 
 inherit cmake-multilib eutils "${VCS_INHERIT}"
@@ -29,7 +31,6 @@ HOMEPAGE="http://mariadb.org/"
 LICENSE="LGPL-2.1"
 
 SLOT="0/2"
-KEYWORDS="~amd64 ~x86"
 IUSE="doc +mysqlcompat +ssl static-libs"
 
 CDEPEND="sys-libs/zlib:=[${MULTILIB_USEDEP}]
