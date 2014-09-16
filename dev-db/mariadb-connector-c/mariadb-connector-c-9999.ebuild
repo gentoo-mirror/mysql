@@ -42,6 +42,7 @@ CDEPEND="sys-libs/zlib:=[${MULTILIB_USEDEP}]
 RDEPEND="${CDEPEND}
 	!dev-db/mysql
 	!dev-db/mysql-cluster
+	!dev-db/mysql-connector-c
 	!dev-db/mariadb
 	!dev-db/mariadb-galera
 	!dev-db/percona-server
