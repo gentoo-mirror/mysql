@@ -315,6 +315,7 @@ if [[ ${PN} == "mariadb-galera" ]] ; then
 	#
 	# lsof is required as of 5.5.38 and 10.0.11 for the rsync sst
 	RDEPEND="${RDEPEND}
+		sys-apps/iproute2
 		=sys-cluster/galera-${WSREP_REVISION}*
 		sst_rsync? ( sys-process/lsof )
 		sst_xtrabackup? (
