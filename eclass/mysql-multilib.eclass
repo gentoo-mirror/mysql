@@ -207,6 +207,10 @@ if [[ ${PN} == "mariadb" || ${PN} == "mariadb-galera" ]]; then
 	REQUIRED_USE="${REQUIRED_USE} minimal? ( !oqgraph !sphinx ) tokudb? ( jemalloc )"
 fi
 
+if [[ ${PN} == "mariadb-galera" ]]; then
+	IUSE="${IUSE} +sst_rsync sst_xtrabackup"
+fi
+
 if [[ ${PN} == "percona-server" ]]; then
 	IUSE="${IUSE} pam"
 fi
@@ -312,7 +316,11 @@ if [[ ${PN} == "mariadb-galera" ]] ; then
 	# lsof is required as of 5.5.38 and 10.0.11 for the rsync sst
 	RDEPEND="${RDEPEND}
 		=sys-cluster/galera-${WSREP_REVISION}*
-		sys-process/lsof
+		sst_rsync? ( sys-process/lsof )
+		sst_xtrabackup? (
+			dev-db/xtrabackup-bin
+			net-misc/socat[ssl]
+		)
 	"
 fi
 
