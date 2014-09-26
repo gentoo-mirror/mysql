@@ -272,6 +272,7 @@ mysql-cmake_src_prepare() {
 		# Don't build bundled xz-utils
 		rm -f "${S}/storage/tokudb/ft-index/cmake_modules/TokuThirdParty.cmake"
 		touch "${S}/storage/tokudb/ft-index/cmake_modules/TokuThirdParty.cmake"
+		sed -i 's/ build_lzma//' "${S}/storage/tokudb/ft-index/ft/CMakeLists.txt" || die
 	fi
 
 	epatch_user
