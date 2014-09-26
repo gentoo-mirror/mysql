@@ -1,9 +1,9 @@
 # Copyright 1999-2014 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: /var/cvsroot/gentoo-x86/dev-db/mariadb/mariadb-10.0.13.ebuild,v 1.1 2014/08/12 17:16:36 grknight Exp $
+# $Header: $
 
 EAPI="5"
-MY_EXTRAS_VER="20140811-2248Z"
+MY_EXTRAS_VER="20140924-1913Z"
 
 inherit toolchain-funcs mysql-multilib
 # only to make repoman happy. it is really set in the eclass
@@ -71,15 +71,11 @@ multilib_src_test() {
 		# main.mysql_client_test_comp:
 		# segfaults at random under Portage only, suspect resource limits.
 		#
-		# innodb.innodb_simulate_comp_failures_small
-		# Has a very long timeout requirement to be consistent
-		# Upstream bug MDEV-6546
-		#
 
 		for t in main.mysql_client_test main.mysql_client_test_nonblock \
 			main.mysql_client_test_comp \
 			binlog.binlog_statement_insert_delayed main.information_schema \
-			main.mysqld--help innodb.innodb_simulate_comp_failures_small \
+			main.mysqld--help \
 			funcs_1.is_triggers funcs_1.is_tables_mysql funcs_1.is_columns_mysql ; do
 				mysql-multilib_disable_test  "$t" "False positives in Gentoo"
 		done
