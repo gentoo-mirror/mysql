@@ -1,6 +1,6 @@
 # Copyright 1999-2014 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: $
+# $Header: /var/cvsroot/gentoo-x86/dev-db/mariadb/mariadb-10.0.14.ebuild,v 1.1 2014/09/26 19:07:01 grknight Exp $
 
 EAPI="5"
 MY_EXTRAS_VER="20140924-1913Z"
@@ -10,7 +10,7 @@ inherit toolchain-funcs mysql-multilib
 IUSE="$IUSE"
 
 # REMEMBER: also update eclass/mysql*.eclass before committing!
-KEYWORDS="~alpha ~amd64 ~arm ~ia64 ~mips ~ppc ~ppc64 ~s390 ~sh ~sparc ~x86 ~sparc-fbsd ~x86-fbsd ~x86-freebsd ~amd64-linux ~x86-linux ~ppc-macos ~x64-macos ~x86-macos ~x64-solaris ~x86-solaris"
+KEYWORDS="~alpha ~amd64 ~arm ~ia64 ~hppa ~mips ~ppc ~ppc64 ~s390 ~sh ~sparc ~x86 ~sparc-fbsd ~x86-fbsd ~x86-freebsd ~amd64-linux ~x86-linux ~ppc-macos ~x64-macos ~x86-macos ~x64-solaris ~x86-solaris"
 
 # When MY_EXTRAS is bumped, the index should be revised to exclude these.
 EPATCH_EXCLUDE=''
@@ -55,6 +55,10 @@ multilib_src_test() {
 
 		# Ensure that parallel runs don't die
 		export MTR_BUILD_THREAD="$((${RANDOM} % 100))"
+		# Enable parallel testing, auto will try to detect number of cores
+		# You may set this by hand.
+		# The default maximum is 8 unless MTR_MAX_PARALLEL is increased
+		export MTR_PARALLEL="${MTR_PARALLEL:-auto}"
 
 		# create directories because mysqladmin might right out of order
 		mkdir -p "${S}"/mysql-test/var-tests{,/log}
@@ -86,7 +90,7 @@ multilib_src_test() {
 		# run mysql-test tests
 		# Skip all CONNECT engine tests until upstream respondes to how to reference data files
 		perl mysql-test-run.pl --force --vardir="${S}/mysql-test/var-tests" \
-			--skip-test=connect --parallel=auto
+			--skip-test=connect
 		retstatus_tests=$?
 		[[ $retstatus_tests -eq 0 ]] || eerror "tests failed"
 		has usersandbox $FEATURES && eerror "Some tests may fail with FEATURES=usersandbox"
