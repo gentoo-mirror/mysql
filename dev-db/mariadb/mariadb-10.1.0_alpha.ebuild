@@ -102,6 +102,8 @@ multilib_src_test() {
 		[[ -z "$failures" ]] || die "Test failures: $failures"
 		einfo "Tests successfully completed"
 
+		# Cleanup test data after a successful run
+		rm -r "${S}/mysql-test/var-tests"
 	else
 
 		einfo "Skipping server tests due to minimal build."
