@@ -1,5 +1,5 @@
 # @GENTOO_PORTAGE_EPREFIX@/etc/mysql/my.cnf: The global mysql configuration file.
-# $Header: /var/cvsroot/gentoo-x86/dev-db/mysql/files/my.cnf-5.5,v 1.2 2013/01/20 02:40:02 robbat2 Exp $
+# $Header: /var/cvsroot/gentoo-x86/dev-db/mariadb/files/my.cnf-5.5,v 1.2 2013/01/20 02:39:55 robbat2 Exp $
 
 # The following options will be passed to all MySQL clients
 [client]
@@ -53,10 +53,10 @@ basedir 					= @GENTOO_PORTAGE_EPREFIX@/usr
 datadir 					= @DATADIR@
 skip-external-locking
 key_buffer_size				= 16M
-max_allowed_packet 			= 1M
-table_open_cache 			= 64
+max_allowed_packet 			= 4M
+table_open_cache 			= 400
 sort_buffer_size 			= 512K
-net_buffer_length 			= 8K
+net_buffer_length 			= 16K
 read_buffer_size 			= 256K
 read_rnd_buffer_size 		= 512K
 myisam_sort_buffer_size 	= 8M
@@ -77,7 +77,7 @@ tmpdir 						= @GENTOO_PORTAGE_EPREFIX@/tmp/
 #log-update 				= @GENTOO_PORTAGE_EPREFIX@/path-to-dedicated-directory/hostname
 
 # you need the debug USE flag enabled to use the following directives,
-# if needed, uncomment them, start the server and issue 
+# if needed, uncomment them, start the server and issue
 # #tail -f @GENTOO_PORTAGE_EPREFIX@/tmp/mysqld.sql @GENTOO_PORTAGE_EPREFIX@/tmp/mysqld.trace
 # this will show you *exactly* what's happening in your server ;)
 
@@ -86,17 +86,10 @@ tmpdir 						= @GENTOO_PORTAGE_EPREFIX@/tmp/
 #debug						= d:t:i:o,/tmp/mysqld.trace
 #one-thread
 
-# the following is the InnoDB configuration
-# if you wish to disable innodb instead
-# uncomment just the next line
-#skip-innodb
-#
 # the rest of the innodb config follows:
 # don't eat too much memory, we're trying to be safe on 64Mb boxes
 # you might want to bump this up a bit on boxes with more RAM
-innodb_buffer_pool_size = 16M
-# this is the default, increase it if you have lots of tables
-innodb_additional_mem_pool_size = 2M
+innodb_buffer_pool_size = 128M
 #
 # i'd like to use @GENTOO_PORTAGE_EPREFIX@/var/lib/mysql/innodb, but that is seen as a database :-(
 # and upstream wants things to be under @GENTOO_PORTAGE_EPREFIX@/var/lib/mysql/, so that's the route
@@ -109,7 +102,7 @@ innodb_additional_mem_pool_size = 2M
 innodb_data_file_path = ibdata1:10M:autoextend:max:128M
 # we keep this at around 25% of of innodb_buffer_pool_size
 # sensible values range from 1MB to (1/innodb_log_files_in_group*innodb_buffer_pool_size)
-innodb_log_file_size = 5M
+innodb_log_file_size = 48M
 # this is the default, increase it if you have very large transactions going on
 innodb_log_buffer_size = 8M
 # this is the default and won't hurt you
@@ -146,4 +139,3 @@ write_buffer_size			= 2M
 
 [mysqlhotcopy]
 interactive-timeout
-
