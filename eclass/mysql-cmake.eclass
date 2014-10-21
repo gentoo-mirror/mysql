@@ -209,6 +209,9 @@ configure_cmake_standard() {
 				$(cmake-utils_use odbc CONNECT_WITH_ODBC)
 			)
 		fi
+		if in_iuse galera ; then
+			mycmakeargs+=( $(cmake-utils_use_with galera WSREP) )
+		fi
 	fi
 
 	if [[ ${PN} == "percona-server" ]]; then

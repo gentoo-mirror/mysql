@@ -207,8 +207,13 @@ if [[ ${PN} == "mariadb" || ${PN} == "mariadb-galera" ]]; then
 	REQUIRED_USE="${REQUIRED_USE} minimal? ( !oqgraph !sphinx ) tokudb? ( jemalloc )"
 fi
 
-if [[ ${PN} == "mariadb-galera" ]]; then
-	IUSE="${IUSE} +sst-rsync sst-xtrabackup"
+if [[ -n "${WSREP_REVISION}" ]]; then
+	if [[ ${PN} == "mariadb" ]]; then
+		IUSE="${IUSE} galera sst-rsync sst-xtrabackup"
+		REQUIRED_USE="${REQUIRED_USE} sst-rsync? ( galera ) sst-xtrabackup? ( galera )"
+	else
+		IUSE="${IUSE} +sst-rsync sst-xtrabackup"
+	fi
 fi
 
 if [[ ${PN} == "percona-server" ]]; then
@@ -308,18 +313,23 @@ if [[ ${PN} == "mariadb" || ${PN} == "mariadb-galera" ]] ; then
 		virtual/perl-Time-HiRes ) "
 fi
 
-if [[ ${PN} == "mariadb-galera" ]] ; then
+if [[ -n "${WSREP_REVISION}" ]] ; then
 	# The wsrep API version must match between the ebuild and sys-cluster/galera.
 	# This will be indicated by WSREP_REVISION in the ebuild and the first number
 	# in the version of sys-cluster/galera
 	#
 	# lsof is required as of 5.5.38 and 10.0.11 for the rsync sst
-	RDEPEND="${RDEPEND}
-		sys-apps/iproute2
+
+	GALERA_RDEPEND="sys-apps/iproute2
 		=sys-cluster/galera-${WSREP_REVISION}*
+		"
+	if [[ ${PN} == "mariadb" ]]; then
+		GALERA_RDEPEND="galera? ( ${GALERA_RDEPEND} )"
+	fi
+	RDEPEND="${RDEPEND} ${GALERA_RDEPEND}
 		sst-rsync? ( sys-process/lsof )
 		sst-xtrabackup? (
-			dev-db/xtrabackup-bin
+			>=dev-db/xtrabackup-bin-2.2.4
 			net-misc/socat[ssl]
 		)
 	"
