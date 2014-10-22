@@ -3,7 +3,7 @@
 # $Header: $
 
 EAPI="5"
-MY_EXTRAS_VER="20140514-0124Z"
+MY_EXTRAS_VER="live"
 WSREP_REVISION="25"
 
 inherit toolchain-funcs mysql-multilib
@@ -14,7 +14,7 @@ IUSE="$IUSE"
 KEYWORDS="~alpha ~amd64 ~arm ~ia64 ~mips ~ppc ~ppc64 ~s390 ~sh ~sparc ~x86 ~sparc-fbsd ~x86-fbsd ~x86-freebsd ~amd64-linux ~x86-linux ~ppc-macos ~x64-macos ~x86-macos ~x64-solaris ~x86-solaris"
 
 # When MY_EXTRAS is bumped, the index should be revised to exclude these.
-EPATCH_EXCLUDE=''
+EPATCH_EXCLUDE='01050_all_mariadb_mysql_config_cleanup-5.5.patch 20006_all_cmake_elib-mariadb-10.0.11.patch'
 
 DEPEND="|| ( >=sys-devel/gcc-3.4.6 >=sys-devel/gcc-apple-4.0 )"
 RDEPEND="${RDEPEND}"

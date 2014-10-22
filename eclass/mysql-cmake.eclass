@@ -214,8 +214,8 @@ configure_cmake_standard() {
 		fi
 
 		if mysql_version_is_at_least "10.1.1" ; then
-			mycmakeargs+=(  $(cmake-utils_use_has innodb-lz4 LZ4)
-					$(cmake-utils_use_has innodb-lzo LZO) )
+			mycmakeargs+=(  $(cmake-utils_use_with innodb-lz4 INNODB_LZ4)
+					$(cmake-utils_use_with innodb-lzo INNODB_LZO) )
 		fi
 	fi
 
