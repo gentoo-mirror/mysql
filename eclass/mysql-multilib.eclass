@@ -364,6 +364,9 @@ PDEPEND="perl? ( >=dev-perl/DBD-mysql-2.9004 )
 # my_config.h includes ABI specific data
 MULTILIB_WRAPPED_HEADERS=( /usr/include/mysql/my_config.h /usr/include/mysql/private/embedded_priv.h )
 
+[[ ${PN} == "mariadb" ]] && mysql_version_is_at_least "10.1.1" && \
+	MULTILIB_WRAPPED_HEADERS+=( /usr/include/mysql/mysql_version.h )
+
 # wrap the config script
 MULTILIB_CHOST_TOOLS=( /usr/bin/mysql_config )
 
