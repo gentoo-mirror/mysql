@@ -205,6 +205,10 @@ if [[ ${PN} == "mariadb" || ${PN} == "mariadb-galera" ]]; then
 	mysql_version_is_at_least "10.0.5" && IUSE="${IUSE} odbc xml" && \
 		REQUIRED_USE="odbc? ( extraengine !minimal ) xml? ( extraengine !minimal )"
 	REQUIRED_USE="${REQUIRED_USE} minimal? ( !oqgraph !sphinx ) tokudb? ( jemalloc )"
+
+	# MariaDB 10.1 introduces InnoDB/XtraDB compression with external libraries
+	# Choices are bzip2, lz4, lzma, lzo.  bzip2 and lzma enabled by default as they are system libraries
+	mysql_version_is_at_least "10.1.1" && IUSE="${IUSE} innodb-lz4 innodb-lzo"
 fi
 
 if [[ -n "${WSREP_REVISION}" ]]; then
@@ -279,6 +283,11 @@ if [[ ${PN} == "mariadb" || ${PN} == "mariadb-galera" ]] ; then
 	fi
 	mysql_version_is_at_least "10.0.7" && DEPEND="${DEPEND} oqgraph? ( dev-libs/judy:0= )"
 	mysql_version_is_at_least "10.0.9" && DEPEND="${DEPEND} >=dev-libs/libpcre-8.35:3="
+
+	mysql_version_is_at_least "10.1.1" && DEPEND="${DEPEND}
+		innodb-lz4? ( app-arch/lz4 )
+		innodb-lzo? ( dev-libs/lzo )
+		"
 fi
 
 [[ ${PN} == "percona-server" ]] && DEPEND="${DEPEND} !minimal? ( pam? ( virtual/pam:0= ) )"

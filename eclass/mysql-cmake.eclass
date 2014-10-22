@@ -212,6 +212,11 @@ configure_cmake_standard() {
 		if in_iuse galera ; then
 			mycmakeargs+=( $(cmake-utils_use_with galera WSREP) )
 		fi
+
+		if mysql_version_is_at_least "10.1.1" ; then
+			mycmakeargs+=(  $(cmake-utils_use_has innodb-lz4 LZ4)
+					$(cmake-utils_use_has innodb-lzo LZO) )
+		fi
 	fi
 
 	if [[ ${PN} == "percona-server" ]]; then

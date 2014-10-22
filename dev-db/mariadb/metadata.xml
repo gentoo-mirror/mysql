@@ -14,6 +14,8 @@ dev-db/mariadb
   <flag name='embedded'>Build embedded server (libmysqld)</flag>
   <flag name='extraengine'>Add support for alternative storage engines (Archive, CSV, Blackhole, Federated(X), Partition)</flag>
   <flag name='galera'>Enables galera replication</flag>
+  <flag name='innodb-lz4'>Enables lz4 compression methods for InnoDB/XtraDB</flag>
+  <flag name='innodb-lzo'>Enables lzo compression methods for InnoDB/XtraDB</flag>
   <flag name="jemalloc">Use <pkg>dev-libs/jemalloc</pkg> for allocations.</flag>
   <flag name='latin1'>Use LATIN1 encoding instead of UTF8</flag>
   <flag name='libevent'>Use libevent for connection handling</flag>
