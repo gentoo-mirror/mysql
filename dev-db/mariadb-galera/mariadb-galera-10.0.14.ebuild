@@ -1,9 +1,9 @@
 # Copyright 1999-2014 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: /var/cvsroot/gentoo-x86/dev-db/mariadb-galera/mariadb-galera-10.0.13.ebuild,v 1.4 2014/10/06 17:44:30 grknight Exp $
+# $Header: /var/cvsroot/gentoo-x86/dev-db/mariadb-galera/mariadb-galera-10.0.14.ebuild,v 1.1 2014/10/20 23:54:49 grknight Exp $
 
 EAPI="5"
-MY_EXTRAS_VER="20140903-1928Z"
+MY_EXTRAS_VER="20141019-1948Z"
 WSREP_REVISION="25"
 
 inherit toolchain-funcs mysql-multilib
@@ -79,15 +79,17 @@ multilib_src_test() {
 		# mina.mysql_client_test_comp:
 		# segfaults at random under Portage only, suspect resource limits.
 		#
-		# innodb.innodb_simulate_comp_failures_small
-		# Has a very long timeout requirement to be consistent
-		# Upstream bug MDEV-6546
+		# wsrep.variables:
+		# Expects the sys-cluster/galera library to be installed and configured
+		#
+		# wsrep.foreign_key:
+		# Issues a configuration deprecation warning which does not affect data
 		#
 
 		for t in main.mysql_client_test main.mysql_client_test_nonblock \
 			main.mysql_client_test_comp \
 			binlog.binlog_statement_insert_delayed main.information_schema \
-			main.mysqld--help innodb.innodb_simulate_comp_failures_small \
+			main.mysqld--help wsrep.variables wsrep.foreign_key \
 			funcs_1.is_triggers funcs_1.is_tables_mysql funcs_1.is_columns_mysql ; do
 				mysql-multilib_disable_test  "$t" "False positives in Gentoo"
 		done
@@ -96,9 +98,7 @@ multilib_src_test() {
 		pushd "${TESTDIR}"
 
 		# run mysql-test tests
-		# Skip all CONNECT engine tests until upstream respondes to how to reference data files
-		perl mysql-test-run.pl --force --vardir="${T}/var-tests" \
-				--skip-test=connect
+		perl mysql-test-run.pl --force --vardir="${T}/var-tests"
 		retstatus_tests=$?
 		[[ $retstatus_tests -eq 0 ]] || eerror "tests failed"
 		has usersandbox $FEATURES && eerror "Some tests may fail with FEATURES=usersandbox"
