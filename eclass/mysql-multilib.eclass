@@ -493,6 +493,7 @@ multilib_src_configure() {
 		-DWITHOUT_LIBWRAP=1
 		-DENABLED_LOCAL_INFILE=1
 		-DMYSQL_UNIX_ADDR=${EPREFIX}/var/run/mysqld/mysqld.sock
+		-DINSTALL_UNIX_ADDR=${EPREFIX}/var/run/mysqld/mysqld.sock
 		-DWITH_SSL=$(usex ssl system bundled)
 		-DWITH_DEFAULT_COMPILER_OPTIONS=0
 		-DWITH_DEFAULT_FEATURE_SET=0
