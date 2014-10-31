@@ -1,3 +1,6 @@
+  31 Oct 2014; Brian Evans <grknight@gentoo.org> galera-25.3.5.ebuild:
+  Sync from main tree for user eclass. Thanks for dcmwai on IRC for noticing
+
 *galera-25.3.2 (13 Feb 2014)
 
   13 Feb 2014;  <grknight@gentoo.org> +galera-25.3.2.ebuild:
