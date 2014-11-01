@@ -1,3 +1,7 @@
+  01 Nov 2014; Brian Evans <grknight@gentoo.org> files/garb.sh,
+  galera-25.3.5.ebuild:
+  [galera] Sync changes from tree for enewuser and bashisms
+
   31 Oct 2014; Brian Evans <grknight@gentoo.org> galera-25.3.5.ebuild:
   Sync from main tree for user eclass. Thanks for dcmwai on IRC for noticing
 
