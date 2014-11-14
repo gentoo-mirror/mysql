@@ -1,3 +1,9 @@
+*galera-25.3.7 (14 Nov 2014)
+
+  14 Nov 2014; Brian Evans <grknight@gentoo.org> +galera-25.3.7.ebuild,
+  -files/disable-tests.patch, -galera-23.2.4-r1.ebuild, -galera-25.3.2.ebuild:
+  Version bump; drop old
+
   01 Nov 2014; Brian Evans <grknight@gentoo.org> files/garb.sh,
   galera-25.3.5.ebuild:
   [galera] Sync changes from tree for enewuser and bashisms

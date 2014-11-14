@@ -1,34 +1,34 @@
-# Copyright 1999-2013 Gentoo Foundation
+# Copyright 1999-2014 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
 EAPI=5
 
-MY_P="${PN}-${PV}-src"
+MY_PV="release_${PV}"
 
-inherit scons-utils multilib toolchain-funcs base versionator
+inherit scons-utils multilib toolchain-funcs base versionator eutils user
 DESCRIPTION="Synchronous multi-master replication engine that provides its service through wsrep API"
 HOMEPAGE="http://www.codership.org/"
-SRC_URI="https://launchpad.net/${PN}/$(get_version_component_range 2).x/${PV}/+download/${MY_P}.tar.gz"
-LICENSE="GPL-3"
+SRC_URI="https://github.com/codership/${PN}/archive/${MY_PV}.tar.gz"
+LICENSE="GPL-2 BSD"
 
 SLOT="0"
 
-KEYWORDS="~x86 ~amd64"
+KEYWORDS="~amd64 ~x86"
 IUSE="garbd ssl test"
 
-RDEPEND="
+CDEPEND="
 	 ssl? ( dev-libs/openssl )
 	>=dev-libs/boost-1.41
 	"
 DEPEND="${DEPEND}
-	${RDEPEND}
-	test? ( dev-libs/check )
+	${CDEPEND}
+	dev-libs/check
 	>=sys-devel/gcc-4.4
 	>=dev-cpp/asio-1.4.8[ssl?]
 	"
 #Run time only
-RDEPEND="${RDEPEND}
+RDEPEND="${CDEPEND}
 	garbd? ( || (
 		net-analyzer/netcat
 		net-analyzer/netcat6
@@ -36,36 +36,38 @@ RDEPEND="${RDEPEND}
 		net-analyzer/openbsd-netcat
 	) )"
 
-S="${WORKDIR}/${MY_P}"
+S="${WORKDIR}/${PN}-${MY_PV}"
 
 pkg_preinst() {
 	if use garbd ; then
 		enewgroup garbd
-		enewuser garbd
+		enewuser garbd -1 -1 -1 garbd
 	fi
 }
 
 src_prepare() {
-	#Remove bundled dev-cpp/asio
-	rm -fr "${S}/asio"
-	#Remove Werror from build file, no way to disable. Also, respect LDFLAGS.
-	sed -i	-e "s/-Werror //" \
-		-e "s/LINKFLAGS = link_arch/LINKFLAGS = link_arch + ' ' + os.environ['LDFLAGS']/" \
-		"${S}/SConstruct"
+	# Remove bundled dev-cpp/asio
+	rm -r "${S}/asio" || die
+
+	# Respect {C,LD}FLAGS.
+	epatch "${FILESDIR}/respect-flags.patch"
+
 	#Remove optional garbd daemon
 	if ! use garbd ; then
-		rm -fr "${S}/garb"
+		rm -r "${S}/garb" || die
 	fi
-	if ! use test ; then
-		epatch "${FILESDIR}/disable-tests.patch"
-	fi
+
+	epatch_user
 }
 
 src_configure() {
-	tc-export CC
-	tc-export CXX
+	tc-export CC CXX
+	# strict_build_flags=0 disables -Werror, -pedantic, -Weffc++,
+	# and -Wold-style-cast
 	myesconsargs=(
 		$(use_scons ssl ssl 1 0)
+		$(use_scons test tests 1 0)
+		strict_build_flags=0
 	)
 }
 
