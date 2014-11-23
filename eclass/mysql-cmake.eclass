@@ -297,7 +297,9 @@ mysql-cmake_src_prepare() {
 
 	# Remove the bundled groonga if it exists
 	# There is no CMake flag, it simply checks for existance
-	[[ -d "${S}"/storage/mroonga/vendor/groonga ]] && rm -r "${S}"/storage/mroonga/vendor/groonga || die
+	if [[ -d "${S}"/storage/mroonga/vendor/groonga ]] ; then
+		rm -r "${S}"/storage/mroonga/vendor/groonga || die "could not remove packaged groonga"
+	fi
 
 	epatch_user
 }
