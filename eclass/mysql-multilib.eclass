@@ -497,8 +497,14 @@ multilib_src_configure() {
 		-DWITH_SSL=$(usex ssl system bundled)
 		-DWITH_DEFAULT_COMPILER_OPTIONS=0
 		-DWITH_DEFAULT_FEATURE_SET=0
-		$(cmake-utils_use_enable systemtap DTRACE)
 	)
+
+	# systemtap only works on native ABI  bug 530132
+	if multilib_is_native_abi; then
+		mycmakeargs+=( $(cmake-utils_use_enable systemtap DTRACE) )
+	else
+		mycmakeargs+=( -DENABLE_DTRACE=0 )
+	fi
 
 	if in_iuse bindist ; then
 		mycmakeargs+=(
