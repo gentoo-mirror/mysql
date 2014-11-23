@@ -217,6 +217,10 @@ configure_cmake_standard() {
 			mycmakeargs+=( -DWITHOUT_HA_MROONGA=1 )
 		fi
 
+		if in_iuse mroonga ; then
+			use mroonga || mycmakeargs+=( -DWITHOUT_HA_MROONGA=1 )
+		fi
+
 		if in_iuse galera ; then
 			mycmakeargs+=( $(cmake-utils_use_with galera WSREP) )
 		fi
@@ -290,6 +294,10 @@ mysql-cmake_src_prepare() {
 		touch "${S}/storage/tokudb/ft-index/cmake_modules/TokuThirdParty.cmake"
 		sed -i 's/ build_lzma//' "${S}/storage/tokudb/ft-index/ft/CMakeLists.txt" || die
 	fi
+
+	# Remove the bundled groonga if it exists
+	# There is no CMake flag, it simply checks for existance
+	[[ -d "${S}"/storage/mroonga/vendor/groonga ]] && rm -r "${S}"/storage/mroonga/vendor/groonga || die
 
 	epatch_user
 }
