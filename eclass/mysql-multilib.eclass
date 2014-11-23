@@ -282,7 +282,7 @@ if [[ ${PN} == "mariadb" || ${PN} == "mariadb-galera" ]] ; then
 			"
 	fi
 	mysql_version_is_at_least "10.0.7" && DEPEND="${DEPEND} oqgraph? ( dev-libs/judy:0= )"
-	mysql_version_is_at_least "10.0.9" && DEPEND="${DEPEND} >=dev-libs/libpcre-8.35:3="
+	mysql_version_is_at_least "10.0.9" && DEPEND="${DEPEND} >=dev-libs/libpcre-8.35:3=[${MULTILIB_USEDEP}]"
 
 	mysql_version_is_at_least "10.1.1" && DEPEND="${DEPEND}
 		innodb-lz4? ( app-arch/lz4 )
