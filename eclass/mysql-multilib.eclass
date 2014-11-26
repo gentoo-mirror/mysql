@@ -1,6 +1,6 @@
 # Copyright 1999-2014 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: /var/cvsroot/gentoo-x86/eclass/mysql-multilib.eclass,v 1.10 2014/10/08 17:25:46 grknight Exp $
+# $Header: /var/cvsroot/gentoo-x86/eclass/mysql-multilib.eclass,v 1.11 2014/11/26 00:34:41 grknight Exp $
 
 # @ECLASS: mysql-multilib.eclass
 # @MAINTAINER:

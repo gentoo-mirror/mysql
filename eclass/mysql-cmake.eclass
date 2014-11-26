@@ -1,6 +1,6 @@
 # Copyright 1999-2014 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: /var/cvsroot/gentoo-x86/eclass/mysql-cmake.eclass,v 1.25 2014/10/08 17:25:46 grknight Exp $
+# $Header: /var/cvsroot/gentoo-x86/eclass/mysql-cmake.eclass,v 1.26 2014/11/26 00:34:41 grknight Exp $
 
 # @ECLASS: mysql-cmake.eclass
 # @MAINTAINER:
@@ -218,15 +218,10 @@ configure_cmake_standard() {
 			)
 		fi
 
-		if mysql_version_is_at_least "10.0.15"; then
-			# Disable mroonga until the groonga options can be analyzed
-			# Groonga is bundled in and lots of defaults and possible dep magic
-			# It can be a package on its own
-			mycmakeargs+=( -DWITHOUT_MROONGA=1 )
-		fi
-
 		if in_iuse mroonga ; then
 			use mroonga || mycmakeargs+=( -DWITHOUT_MROONGA=1 )
+		else
+			mycmakeargs+=( -DWITHOUT_MROONGA=1 )
 		fi
 
 		if in_iuse galera ; then
