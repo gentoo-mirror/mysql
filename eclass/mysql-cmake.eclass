@@ -179,7 +179,6 @@ configure_cmake_standard() {
 		-DWITH_MYISAMMRG_STORAGE_ENGINE=1
 		-DWITH_MYISAM_STORAGE_ENGINE=1
 		-DWITH_PARTITION_STORAGE_ENGINE=1
-		$(cmake-utils_use_with extraengine FEDERATED_STORAGE_ENGINE)
 	)
 
 	if in_iuse pbxt ; then
@@ -187,10 +186,19 @@ configure_cmake_standard() {
 	fi
 
 	if [[ ${PN} == "mariadb" || ${PN} == "mariadb-galera" ]]; then
+
+		# Federated{,X} must be treated special otherwise they will not be built as plugins
+		if ! use extraengine ; then
+			mycmakeargs+=(
+				-DWITHOUT_FEDERATED_STORAGE_ENGINE=1
+				-DPLUGIN_FEDERATED=0
+				-DWITHOUT_FEDERATEDX_STORAGE_ENGINE=1
+				-DPLUGIN_FEDERATEDX=0 )
+		fi
+
 		mycmakeargs+=(
 			$(mysql-cmake_use_plugin oqgraph OQGRAPH)
 			$(mysql-cmake_use_plugin sphinx SPHINX)
-			$(mysql-cmake_use_plugin extraengine FEDERATEDX)
 			$(mysql-cmake_use_plugin tokudb TOKUDB)
 			$(mysql-cmake_use_plugin pam AUTH_PAM)
 		)
@@ -214,11 +222,11 @@ configure_cmake_standard() {
 			# Disable mroonga until the groonga options can be analyzed
 			# Groonga is bundled in and lots of defaults and possible dep magic
 			# It can be a package on its own
-			mycmakeargs+=( -DWITHOUT_HA_MROONGA=1 )
+			mycmakeargs+=( -DWITHOUT_MROONGA=1 )
 		fi
 
 		if in_iuse mroonga ; then
-			use mroonga || mycmakeargs+=( -DWITHOUT_HA_MROONGA=1 )
+			use mroonga || mycmakeargs+=( -DWITHOUT_MROONGA=1 )
 		fi
 
 		if in_iuse galera ; then
@@ -229,6 +237,8 @@ configure_cmake_standard() {
 			mycmakeargs+=(  $(cmake-utils_use_with innodb-lz4 INNODB_LZ4)
 					$(cmake-utils_use_with innodb-lzo INNODB_LZO) )
 		fi
+	else
+		mycmakeargs+=( $(cmake-utils_use_with extraengine FEDERATED_STORAGE_ENGINE) )
 	fi
 
 	if [[ ${PN} == "percona-server" ]]; then
