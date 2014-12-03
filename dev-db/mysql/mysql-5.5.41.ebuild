@@ -1,10 +1,10 @@
 # Copyright 1999-2014 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: /var/cvsroot/gentoo-x86/dev-db/mysql/mysql-5.5.39.ebuild,v 1.12 2014/10/06 17:35:01 grknight Exp $
+# $Header: $
 
 EAPI="5"
 
-MY_EXTRAS_VER="20140801-1950Z"
+MY_EXTRAS_VER="20141203-2105Z"
 MY_PV="${PV//_alpha_pre/-m}"
 MY_PV="${MY_PV//_/-}"
 
@@ -19,7 +19,7 @@ IUSE="$IUSE"
 EGIT_REPO_URI="git://git.overlays.gentoo.org/proj/mysql-extras.git"
 
 # REMEMBER: also update eclass/mysql*.eclass before committing!
-KEYWORDS="alpha amd64 arm hppa ia64 ppc ppc64 ~s390 ~sh sparc x86 ~sparc-fbsd ~x86-fbsd ~x86-freebsd ~amd64-linux ~x86-linux ~ppc-macos ~x64-macos ~x86-macos ~x64-solaris ~x86-solaris"
+KEYWORDS="~alpha ~amd64 ~arm ~hppa ~ia64 ~mips ~ppc ~ppc64 ~s390 ~sh ~sparc ~x86 ~sparc-fbsd ~x86-fbsd ~x86-freebsd ~amd64-linux ~x86-linux ~ppc-macos ~x64-macos ~x86-macos ~x64-solaris ~x86-solaris"
 
 # When MY_EXTRAS is bumped, the index should be revised to exclude these.
 EPATCH_EXCLUDE=''
@@ -63,6 +63,10 @@ src_test() {
 
 		# Ensure that parallel runs don't die
 		export MTR_BUILD_THREAD="$((${RANDOM} % 100))"
+		# Enable parallel testing, auto will try to detect number of cores
+		# You may set this by hand.
+		# The default maximum is 8 unless MTR_MAX_PARALLEL is increased
+		export MTR_PARALLEL="${MTR_PARALLEL:-auto}"
 
 		# create directories because mysqladmin might right out of order
 		mkdir -p "${T}"/var-tests{,/log}
@@ -79,28 +83,10 @@ src_test() {
 		#
 		# main.mysql_client_test:
 		# segfaults at random under Portage only, suspect resource limits.
-		#
-		# sys_vars.plugin_dir_basic
-		# fails because PLUGIN_DIR is set to MYSQL_LIBDIR64/plugin
-		# instead of MYSQL_LIBDIR/plugin
-		#
-		# main.flush_read_lock_kill
-		# fails because of unknown system variable 'DEBUG_SYNC'
-		#
-		# main.openssl_1
-		# error message changing
-		# -mysqltest: Could not open connection 'default': 2026 SSL connection
-		#  error: ASN: bad other signature confirmation
-		# +mysqltest: Could not open connection 'default': 2026 SSL connection
-		#  error: error:00000001:lib(0):func(0):reason(1)
-		#
-		# main.mysql_tzinfo_to_sql_symlink
-		# fails due to missing mysql_test/std_data/zoneinfo/GMT file from archive
 
 		for t in main.mysql_client_test \
 			binlog.binlog_statement_insert_delayed main.information_schema \
-			main.mysqld--help-notwin main.flush_read_lock_kill \
-			sys_vars.plugin_dir_basic main.openssl_1 mysql_tzinfo_to_sql_symlink ; do
+			main.mysqld--help-notwin ; do
 				mysql-v2_disable_test  "$t" "False positives in Gentoo"
 		done
 

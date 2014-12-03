@@ -1,10 +1,10 @@
 # Copyright 1999-2014 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: /var/cvsroot/gentoo-x86/dev-db/mysql/mysql-5.6.21-r1.ebuild,v 1.1 2014/10/19 20:27:12 grknight Exp $
+# $Header: $
 
 EAPI="5"
 
-MY_EXTRAS_VER="20141019-1948Z"
+MY_EXTRAS_VER="20141203-2105Z"
 MY_PV="${PV//_alpha_pre/-m}"
 MY_PV="${MY_PV//_/-}"
 
@@ -37,7 +37,7 @@ multilib_src_test() {
 		return 0;
 	fi
 
-	local TESTDIR="${CMAKE_BUILD_DIR}/mysql-test"
+	local TESTDIR="${BUILD_DIR}/mysql-test"
 	local retstatus_unit
 	local retstatus_tests
 
@@ -71,7 +71,7 @@ multilib_src_test() {
 		mkdir -p "${T}"/var-tests{,/log}
 
 		# create symlink for the tests to find mysql_tzinfo_to_sql
-		ln -s "${CMAKE_BUILD_DIR}/sql/mysql_tzinfo_to_sql" "${S}/sql/"
+		ln -s "${BUILD_DIR}/sql/mysql_tzinfo_to_sql" "${S}/sql/"
 
 		# These are failing in MySQL 5.5/5.6 for now and are believed to be
 		# false positives:
@@ -98,13 +98,20 @@ multilib_src_test() {
 			funcs_1.is_triggers \
 			main.information_schema \
 			main.mysql_client_test \
-			main.mysqld--help-notwinfuncs_1.is_triggers \
+			main.mysqld--help-notwin \
 			perfschema.binlog_edge_mix \
 			perfschema.binlog_edge_stmt \
 			rpl.rpl_plugin_load \
 		; do
 				mysql-multilib_disable_test  "$t" "False positives in Gentoo"
 		done
+
+		if ! use extraengine ; then
+			# bug 401673, 530766
+			for t in federated.federated_plugin ; do
+				mysql-multilib_disable_test  "$t" "Test $t requires USE=extraengine (Need federated engine)"
+			done
+		fi
 
 		# Run mysql tests
 		pushd "${TESTDIR}"
