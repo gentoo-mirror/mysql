@@ -1,6 +1,6 @@
 # Copyright 1999-2014 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: $
+# $Header: /var/cvsroot/gentoo-x86/dev-db/mysql/mysql-5.5.41.ebuild,v 1.1 2014/12/04 01:27:44 grknight Exp $
 
 EAPI="5"
 
@@ -38,7 +38,7 @@ RDEPEND="${RDEPEND}"
 # digest clean package
 src_test() {
 
-	local TESTDIR="${CMAKE_BUILD_DIR}/mysql-test"
+	local TESTDIR="${BUILD_DIR}/mysql-test"
 	local retstatus_unit
 	local retstatus_tests
 
@@ -72,7 +72,7 @@ src_test() {
 		mkdir -p "${T}"/var-tests{,/log}
 
 		# create symlink for the tests to find mysql_tzinfo_to_sql
-		ln -s "${CMAKE_BUILD_DIR}/sql/mysql_tzinfo_to_sql" "${S}/sql/"
+		ln -s "${BUILD_DIR}/sql/mysql_tzinfo_to_sql" "${S}/sql/"
 
 		# These are failing in MySQL 5.5 for now and are believed to be
 		# false positives:
