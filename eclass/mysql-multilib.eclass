@@ -184,7 +184,7 @@ fi
 LICENSE="GPL-2"
 SLOT="0"
 
-IUSE="+community cluster debug embedded extraengine jemalloc latin1 max-idx-128 minimal
+IUSE="+community cluster debug embedded extraengine jemalloc latin1 minimal
 	+perl profiling selinux ssl systemtap static static-libs tcmalloc test"
 
 # This probably could be simplified, but the syntax would have to be just right
