@@ -1,15 +1,12 @@
-# Copyright 1999-2014 Gentoo Foundation
+# Copyright 1999-2015 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: /var/cvsroot/gentoo-x86/dev-db/mariadb-galera/mariadb-galera-10.0.12.ebuild,v 1.2 2014/10/02 02:33:56 grknight Exp $
+# $Header: /var/cvsroot/gentoo-x86/dev-db/mariadb-galera/mariadb-galera-10.0.15.ebuild,v 1.1 2014/12/16 02:02:07 grknight Exp $
 
 EAPI="5"
-MY_EXTRAS_VER="20140729-2200Z"
+MY_EXTRAS_VER="20141215-0144Z"
 WSREP_REVISION="25"
 
-# Build system
-BUILD="cmake"
-
-inherit toolchain-funcs mysql-v2
+inherit toolchain-funcs mysql-multilib
 # only to make repoman happy. it is really set in the eclass
 IUSE="$IUSE"
 
@@ -31,7 +28,12 @@ RDEPEND="${RDEPEND}"
 # FEATURES='test userpriv -usersandbox' \
 # ebuild mariadb-galera-X.X.XX.ebuild \
 # digest clean package
-src_test() {
+multilib_src_test() {
+
+	if ! multilib_is_native_abi ; then
+		einfo "Server tests not available on non-native abi".
+		return 0;
+	fi
 
 	local TESTDIR="${BUILD_DIR}/mysql-test"
 	local retstatus_unit
@@ -58,9 +60,12 @@ src_test() {
 
 		# Ensure that parallel runs don't die
 		export MTR_BUILD_THREAD="$((${RANDOM} % 100))"
+		# You may set this by hand.
+		# The default maximum is 8 unless MTR_MAX_PARALLEL is increased
+		export MTR_PARALLEL="${MTR_PARALLEL:-auto}"
 
 		# create directories because mysqladmin might right out of order
-		mkdir -p "${S}"/mysql-test/var-tests{,/log}
+		mkdir -p "${T}"/var-tests{,/log}
 
 		# These are failing in MariaDB 10.0 for now and are believed to be
 		# false positives:
@@ -70,27 +75,32 @@ src_test() {
 		# funcs_1.is_columns_mysql
 		# fails due to USE=-latin1 / utf8 default
 		#
-		# main.mysql_client_test, main.mysql_client_test_nonblock:
+		# main.mysql_client_test, main.mysql_client_test_nonblock
+		# mina.mysql_client_test_comp:
 		# segfaults at random under Portage only, suspect resource limits.
 		#
-		# plugins.unix_socket
-		# fails because portage strips out the USER enviornment variable
+		# wsrep.variables:
+		# Expects the sys-cluster/galera library to be installed and configured
+		#
+		# wsrep.foreign_key:
+		# Issues a configuration deprecation warning which does not affect data
 		#
 
 		for t in main.mysql_client_test main.mysql_client_test_nonblock \
+			main.mysql_client_test_comp \
 			binlog.binlog_statement_insert_delayed main.information_schema \
-			main.mysqld--help plugins.unix_socket \
+			main.mysqld--help wsrep.variables wsrep.foreign_key \
 			funcs_1.is_triggers funcs_1.is_tables_mysql funcs_1.is_columns_mysql ; do
-				mysql-v2_disable_test  "$t" "False positives in Gentoo"
+				mysql-multilib_disable_test  "$t" "False positives in Gentoo"
 		done
 
 		# Run mysql tests
 		pushd "${TESTDIR}"
 
 		# run mysql-test tests
-		# Skip all CONNECT engine tests until upstream respondes to how to reference data files
-		perl mysql-test-run.pl --force --vardir="${S}/mysql-test/var-tests" \
-				--skip-test=connect --parallel=auto
+		# The PATH addition is required for the galera suite to find the sst scripts
+		PATH="${BUILD_DIR}/scripts:${PATH}" \
+		perl mysql-test-run.pl --force --vardir="${T}/var-tests"
 		retstatus_tests=$?
 		[[ $retstatus_tests -eq 0 ]] || eerror "tests failed"
 		has usersandbox $FEATURES && eerror "Some tests may fail with FEATURES=usersandbox"
@@ -108,9 +118,6 @@ src_test() {
 
 		[[ -z "$failures" ]] || die "Test failures: $failures"
 		einfo "Tests successfully completed"
-
-		# Cleanup data files after tests
-		rm -r "${S}/mysql-test/var-tests" || die "Cleanup failed"
 	else
 
 		einfo "Skipping server tests due to minimal build."
