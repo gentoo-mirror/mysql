@@ -1,4 +1,4 @@
-# Copyright 1999-2014 Gentoo Foundation
+# Copyright 1999-2015 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
@@ -29,7 +29,7 @@ RDEPEND="${CDEPEND}
 	!dev-db/mysql
 	!dev-db/mysql-cluster
 	!dev-db/mariadb
-	!dev-db/mariadb-connector-c
+	!dev-db/mariadb-connector-c[mysqlcompat]
 	!dev-db/mariadb-galera
 	!dev-db/percona-server
 	"
