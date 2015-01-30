@@ -39,7 +39,7 @@ case "${EAPI:-0}" in
 	*) die "Unsupported EAPI: ${EAPI}" ;;
 esac
 
-EXPORT_FUNCTIONS pkg_setup src_unpack src_prepare src_configure src_compile src_install pkg_preinst pkg_postinst pkg_config
+EXPORT_FUNCTIONS pkg_pretend pkg_setup src_unpack src_prepare src_configure src_compile src_install pkg_preinst pkg_postinst pkg_config
 
 #
 # VARIABLES:
@@ -410,6 +410,31 @@ mysql-multilib_disable_test() {
 # EBUILD FUNCTIONS
 #
 
+# @FUNCTION: mysql-multilib_pkg_pretend
+# @DESCRIPTION:
+# Perform some basic tests and tasks during pkg_pretend phase:
+mysql-multilib_pkg_pretend() {
+	if [[ ${MERGE_TYPE} != binary ]] ; then
+		# Bug 508724
+		if [[ ${PN} == 'mariadb' || ${PN} == 'mariadb-galera' ]] && \
+		   test-flags-CC -fuse-ld=bfd > /dev/null &&
+			$(tc-getLD) --version | grep -q "GNU gold"; then
+			eerror "MariaDB will not build with the gold linker."
+			eerror "Please select the bfd linker with binutils-config."
+			die "GNU gold detected"
+		fi
+		if use_if_iuse tokudb && [[ $(gcc-major-version) -lt 4 || \
+			$(gcc-major-version) -eq 4 && $(gcc-minor-version) -lt 7 ]] ; then
+			eerror "${PN} with tokudb needs to be built with gcc-4.7 or later."
+			eerror "Please use gcc-config to switch to gcc-4.7 or later version."
+			die
+		fi
+	fi
+	if use cluster && [[ "${PN}" != "mysql-cluster" ]]; then
+		die "NDB Cluster support has been removed from all packages except mysql-cluster"
+	fi
+}
+
 # @FUNCTION: mysql-multilib_pkg_setup
 # @DESCRIPTION:
 # Perform some basic tests and tasks during pkg_setup phase:
@@ -430,23 +455,9 @@ mysql-multilib_pkg_setup() {
 	enewgroup mysql 60 || die "problem adding 'mysql' group"
 	enewuser mysql 60 -1 /dev/null mysql || die "problem adding 'mysql' user"
 
-	if use cluster && [[ "${PN}" != "mysql-cluster" ]]; then
-		ewarn "Upstream has noted that the NDB cluster support in the 5.0 and"
-		ewarn "5.1 series should NOT be put into production. In the near"
-		ewarn "future, it will be disabled from building."
-	fi
-
 	if [[ ${PN} == "mysql-cluster" ]] ; then
 		mysql_version_is_at_least "7.2.9" && java-pkg-opt-2_pkg_setup
 	fi
-
-	if use_if_iuse tokudb && [[ "${MERGE_TYPE}" != "binary" && $(gcc-major-version) -lt 4 || \
-		$(gcc-major-version) -eq 4 && $(gcc-minor-version) -lt 7 ]] ; then
-		eerror "${PN} with tokudb needs to be built with gcc-4.7 or later."
-		eerror "Please use gcc-config to switch to gcc-4.7 or later version."
-		die
-	fi
-
 }
 
 # @FUNCTION: mysql-multilib_src_unpack
@@ -479,6 +490,29 @@ mysql-multilib_src_prepare() {
 # @DESCRIPTION:
 # Configure mysql to build the code for Gentoo respecting the use flags.
 mysql-multilib_src_configure() {
+	# Bug #114895, bug #110149
+	filter-flags "-O" "-O[01]"
+
+	CXXFLAGS="${CXXFLAGS} -fno-strict-aliasing"
+	CXXFLAGS="${CXXFLAGS} -felide-constructors"
+	# Causes linkage failures.  Upstream bug #59607 removes it
+	if ! mysql_version_is_at_least "5.6" ; then
+		CXXFLAGS="${CXXFLAGS} -fno-implicit-templates"
+	fi
+	# As of 5.7, exceptions are used!
+	if ! mysql_version_is_at_least "5.7" ; then
+		CXXFLAGS="${CXXFLAGS} -fno-exceptions -fno-rtti"
+	fi
+	export CXXFLAGS
+
+	# bug #283926, with GCC4.4, this is required to get correct behavior.
+	append-flags -fno-strict-aliasing
+
+	# bug 508724 mariadb cannot use ld.gold
+	if [[ ${PN} == "mariadb" || ${PN} == "mariadb-galera" ]] ; then
+		append-ldflags $(test-flags-CXX -fuse-ld=bfd)
+	fi
+
 	multilib-minimal_src_configure
 }
 
@@ -557,24 +591,6 @@ multilib_src_configure() {
 	else
 		configure_cmake_minimal
 	fi
-
-	# Bug #114895, bug #110149
-	filter-flags "-O" "-O[01]"
-
-	CXXFLAGS="${CXXFLAGS} -fno-strict-aliasing"
-	CXXFLAGS="${CXXFLAGS} -felide-constructors"
-	# Causes linkage failures.  Upstream bug #59607 removes it
-	if ! mysql_version_is_at_least "5.6" ; then
-		CXXFLAGS="${CXXFLAGS} -fno-implicit-templates"
-	fi
-	# As of 5.7, exceptions are used!
-	if ! mysql_version_is_at_least "5.7" ; then
-		CXXFLAGS="${CXXFLAGS} -fno-exceptions -fno-rtti"
-	fi
-	export CXXFLAGS
-
-	# bug #283926, with GCC4.4, this is required to get correct behavior.
-	append-flags -fno-strict-aliasing
 
 	cmake-utils_src_configure
 }
