@@ -39,6 +39,11 @@ DEPEND="${CDEPEND}
 
 DOCS=( README Docs/ChangeLog )
 
+src_prepare() {
+	epatch "${FILESDIR}/openssl-cmake-detection.patch"
+	epatch_user
+}
+
 multilib_src_configure() {
 	mycmakeargs+=(
 		-DINSTALL_LAYOUT=RPM
