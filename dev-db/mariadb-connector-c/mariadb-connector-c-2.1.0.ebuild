@@ -33,7 +33,7 @@ HOMEPAGE="http://mariadb.org/"
 LICENSE="LGPL-2.1"
 
 SLOT="0/2"
-IUSE="+mysqlcompat +ssl static-libs"
+IUSE="mysqlcompat +ssl static-libs"
 
 DEPEND="sys-libs/zlib:=[${MULTILIB_USEDEP}]
 	virtual/libiconv:=[${MULTILIB_USEDEP}]
@@ -44,10 +44,10 @@ DEPEND="sys-libs/zlib:=[${MULTILIB_USEDEP}]
 RDEPEND="${DEPEND}
 	!dev-db/mysql
 	!dev-db/mysql-cluster
-	!dev-db/mysql-connector-c
 	!dev-db/mariadb
 	!dev-db/mariadb-galera
 	!dev-db/percona-server
+	mysqlcompat? ( !dev-db/mysql-connector-c )
 	"
 
 src_prepare() {
