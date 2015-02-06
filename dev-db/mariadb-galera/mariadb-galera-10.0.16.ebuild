@@ -1,6 +1,6 @@
 # Copyright 1999-2015 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: /var/cvsroot/gentoo-x86/dev-db/mariadb-galera/mariadb-galera-10.0.15.ebuild,v 1.1 2014/12/16 02:02:07 grknight Exp $
+# $Header: /var/cvsroot/gentoo-x86/dev-db/mariadb-galera/mariadb-galera-10.0.16.ebuild,v 1.1 2015/02/06 14:07:36 grknight Exp $
 
 EAPI="5"
 MY_EXTRAS_VER="20141215-0144Z"
@@ -94,8 +94,14 @@ multilib_src_test() {
 				mysql-multilib_disable_test  "$t" "False positives in Gentoo"
 		done
 
-		for t in rpl.rpl_heartbeat_ssl rpl.rpl_ssl rpl.rpl_ssl1 main.ssl_cipher ; do
+		for t in rpl.rpl_heartbeat_ssl rpl.rpl_ssl rpl.rpl_ssl1 main.ssl_cipher \
+			main.ssl_8k_key main.openssl_6975 main.openssl_1 main.ssl main.ssl_compress \
+			main.ssl_connect; do
 			mysql-multilib_disable_test "$t" "Disabled due to expired certificate"
+		done
+
+		for t in wsrep.binlog_format wsrep.pool_of_threads wsrep.mdev_6832 ; do
+			mysql-multilib_disable_test "$t" "Skipped for MDEV-7544"
 		done
 
 		# Run mysql tests
@@ -103,9 +109,10 @@ multilib_src_test() {
 
 		# run mysql-test tests
 		# The PATH addition is required for the galera suite to find the sst scripts
-		WSREP_LOG_DIR="${T}/var-test/wsrep" \
+		# Skipping galera tests for now until MDEV-7544 is resovled
+		WSREP_LOG_DIR="${T}/var-tests/wsrep" \
 		PATH="${BUILD_DIR}/scripts:${PATH}" \
-		perl mysql-test-run.pl --force --vardir="${T}/var-tests"
+		perl mysql-test-run.pl --force --vardir="${T}/var-tests" --skip-test=galera
 		retstatus_tests=$?
 		[[ $retstatus_tests -eq 0 ]] || eerror "tests failed"
 		has usersandbox $FEATURES && eerror "Some tests may fail with FEATURES=usersandbox"
