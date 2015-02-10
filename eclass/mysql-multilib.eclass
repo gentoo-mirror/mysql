@@ -1,6 +1,6 @@
-# Copyright 1999-2014 Gentoo Foundation
+# Copyright 1999-2015 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: /var/cvsroot/gentoo-x86/eclass/mysql-multilib.eclass,v 1.12 2015/01/28 13:48:58 grknight Exp $
+# $Header: /var/cvsroot/gentoo-x86/eclass/mysql-multilib.eclass,v 1.14 2015/02/10 18:14:23 grknight Exp $
 
 # @ECLASS: mysql-multilib.eclass
 # @MAINTAINER:
@@ -212,8 +212,7 @@ fi
 if [[ ${PN} == "mariadb" || ${PN} == "mariadb-galera" ]]; then
 	IUSE="${IUSE} oqgraph pam sphinx tokudb"
 	# 5.5.33 and 10.0.5 add TokuDB. Authors strongly recommend jemalloc or perfomance suffers
-	mysql_version_is_at_least "10.0.5" && IUSE="${IUSE} odbc xml" && \
-		REQUIRED_USE="odbc? ( extraengine !minimal ) xml? ( extraengine !minimal )"
+	mysql_version_is_at_least "10.0.5" && IUSE="${IUSE} odbc xml"
 	REQUIRED_USE="${REQUIRED_USE} minimal? ( !oqgraph !sphinx ) tokudb? ( jemalloc )"
 
 	# MariaDB 10.1 introduces InnoDB/XtraDB compression with external libraries
@@ -239,7 +238,7 @@ fi
 
 REQUIRED_USE="
 	${REQUIRED_USE} tcmalloc? ( !jemalloc ) jemalloc? ( !tcmalloc )
-	 minimal? ( !cluster !extraengine !embedded ) static? ( !ssl )"
+	 minimal? ( !extraengine !embedded ) static? ( !ssl )"
 
 #
 # DEPENDENCIES:
@@ -254,6 +253,7 @@ DEPEND="
 		sys-process/procps:0=
 		dev-libs/libaio:0=
 	)
+	sys-libs/ncurses
 	>=sys-apps/sed-4
 	>=sys-apps/texinfo-4.7-r1
 	>=sys-libs/zlib-1.2.3:0=[${MULTILIB_USEDEP},static-libs?]
@@ -300,8 +300,10 @@ if [[ ${PN} == "mariadb" || ${PN} == "mariadb-galera" ]] ; then
 		perl? ( !dev-db/mytop )"
 	if mysql_version_is_at_least "10.0.5" ; then
 		DEPEND="${DEPEND}
-			odbc? ( dev-db/unixODBC:0= )
-			xml? ( dev-libs/libxml2:2= )
+			extraengine? (
+				odbc? ( dev-db/unixODBC:0= )
+				xml? ( dev-libs/libxml2:2= )
+			)
 			"
 	fi
 	mysql_version_is_at_least "10.0.7" && DEPEND="${DEPEND} oqgraph? ( dev-libs/judy:0= )"
@@ -375,10 +377,12 @@ if [[ ${PN} == "mysql-cluster" ]] ; then
 fi
 
 # compile-time-only
+# ncurses only needs multilib for compile time due to a binary that will be not installed
 DEPEND="${DEPEND}
 	virtual/yacc
 	static? ( sys-libs/ncurses[static-libs] )
 	>=dev-util/cmake-2.8.9
+	sys-libs/ncurses[${MULTILIB_USEDEP}]
 "
 
 # For other stuff to bring us in
@@ -388,6 +392,9 @@ PDEPEND="perl? ( >=dev-perl/DBD-mysql-2.9004 )
 
 # my_config.h includes ABI specific data
 MULTILIB_WRAPPED_HEADERS=( /usr/include/mysql/my_config.h /usr/include/mysql/private/embedded_priv.h )
+
+[[ ${PN} == "mysql-cluster" ]] && \
+	MULTILIB_WRAPPED_HEADERS+=( /usr/include/mysql/storage/ndb/ndb_types.h )
 
 [[ ${PN} == "mariadb" ]] && mysql_version_is_at_least "10.1.1" && \
 	MULTILIB_WRAPPED_HEADERS+=( /usr/include/mysql/mysql_version.h )
@@ -591,6 +598,11 @@ multilib_src_configure() {
 	else
 		configure_cmake_minimal
 	fi
+
+	# Always build NDB with mysql-cluster for libndbclient
+	[[ ${PN} == "mysql-cluster" ]] && mycmakeargs+=(
+		-DWITH_NDBCLUSTER=1 -DWITH_PARTITION_STORAGE_ENGINE=1
+		-DWITHOUT_PARTITION_STORAGE_ENGINE=0 )
 
 	cmake-utils_src_configure
 }
