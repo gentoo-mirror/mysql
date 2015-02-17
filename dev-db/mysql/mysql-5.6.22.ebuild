@@ -1,6 +1,6 @@
-# Copyright 1999-2014 Gentoo Foundation
+# Copyright 1999-2015 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: /var/cvsroot/gentoo-x86/dev-db/mysql/mysql-5.6.22.ebuild,v 1.1 2014/12/04 01:27:44 grknight Exp $
+# $Header: /var/cvsroot/gentoo-x86/dev-db/mysql/mysql-5.6.22.ebuild,v 1.11 2015/02/16 10:27:41 ago Exp $
 
 EAPI="5"
 
@@ -13,7 +13,7 @@ inherit toolchain-funcs mysql-multilib
 IUSE="$IUSE"
 
 # REMEMBER: also update eclass/mysql*.eclass before committing!
-KEYWORDS="~alpha ~amd64 ~arm ~hppa ~ia64 ~mips ~ppc ~ppc64 ~s390 ~sh ~sparc ~x86 ~sparc-fbsd ~x86-fbsd ~x86-freebsd ~amd64-linux ~x86-linux ~ppc-macos ~x64-macos ~x86-macos ~x64-solaris ~x86-solaris"
+KEYWORDS="alpha amd64 arm hppa ia64 ~mips ppc ppc64 ~s390 ~sh sparc x86 ~sparc-fbsd ~x86-fbsd ~x86-freebsd ~amd64-linux ~x86-linux ~ppc-macos ~x64-macos ~x86-macos ~x64-solaris ~x86-solaris"
 
 # When MY_EXTRAS is bumped, the index should be revised to exclude these.
 EPATCH_EXCLUDE=''
@@ -90,6 +90,11 @@ multilib_src_test() {
 		# rpl.rpl_plugin_load
 		# fails due to included file not listed in expected result
 		# appears to be poor planning
+		#
+		# main.mysqlhotcopy_archive main.mysqlhotcopy_myisam
+		# fails due to bad cleanup of previous tests when run in parallel
+		# The tool is deprecated anyway
+		# Bug 532288
 		for t in \
 			binlog.binlog_mysqlbinlog_filter \
 			binlog.binlog_statement_insert_delayed \
@@ -102,6 +107,7 @@ multilib_src_test() {
 			perfschema.binlog_edge_mix \
 			perfschema.binlog_edge_stmt \
 			rpl.rpl_plugin_load \
+			main.mysqlhotcopy_archive main.mysqlhotcopy_myisam \
 		; do
 				mysql-multilib_disable_test  "$t" "False positives in Gentoo"
 		done

@@ -1,9 +1,9 @@
 # Copyright 1999-2014 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: /var/cvsroot/gentoo-x86/dev-db/mariadb/mariadb-5.5.40-r1.ebuild,v 1.3 2014/10/18 14:09:07 ago Exp $
+# $Header: /var/cvsroot/gentoo-x86/dev-db/mariadb/mariadb-5.5.41.ebuild,v 1.1 2014/12/22 00:55:03 grknight Exp $
 
 EAPI="5"
-MY_EXTRAS_VER="20141017-1419Z"
+MY_EXTRAS_VER="20141215-0144Z"
 
 # Build system
 BUILD="cmake"
@@ -13,7 +13,7 @@ inherit toolchain-funcs mysql-v2
 IUSE="$IUSE"
 
 # REMEMBER: also update eclass/mysql*.eclass before committing!
-KEYWORDS="alpha amd64 ~arm hppa ia64 ~mips ppc ppc64 ~s390 ~sh sparc x86 ~sparc-fbsd ~x86-fbsd ~x86-freebsd ~amd64-linux ~x86-linux ~ppc-macos ~x64-macos ~x86-macos ~x64-solaris ~x86-solaris"
+KEYWORDS="~alpha ~amd64 ~arm ~hppa ~ia64 ~mips ~ppc ~ppc64 ~s390 ~sh ~sparc ~x86 ~sparc-fbsd ~x86-fbsd ~x86-freebsd ~amd64-linux ~x86-linux ~ppc-macos ~x64-macos ~x86-macos ~x64-solaris ~x86-solaris"
 
 # When MY_EXTRAS is bumped, the index should be revised to exclude these.
 EPATCH_EXCLUDE=''
@@ -32,7 +32,7 @@ RDEPEND="${RDEPEND}"
 # digest clean package
 src_test() {
 
-	local TESTDIR="${CMAKE_BUILD_DIR}/mysql-test"
+	local TESTDIR="${BUILD_DIR}/mysql-test"
 	local retstatus_unit
 	local retstatus_tests
 
@@ -65,8 +65,8 @@ src_test() {
 		# create directories because mysqladmin might right out of order
 		mkdir -p "${T}"/var-tests{,/log}
 
-		# create symlink for the tests to find mysql_tzinfo_to_sql
-		ln -s "${CMAKE_BUILD_DIR}/sql/mysql_tzinfo_to_sql" "${S}/sql/"
+		# create symlink for the tests to find the replace util
+		ln -s "${BUILD_DIR}/extra/replace" "${BUILD_DIR}/client/"
 
 		# These are failing in MariaDB 5.5 for now and are believed to be
 		# false positives:
