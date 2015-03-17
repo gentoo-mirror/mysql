@@ -291,7 +291,9 @@ fi
 ### End readline/libedit
 
 if [[ ${PN} == "mysql" || ${PN} == "percona-server" ]] ; then
-	mysql_version_is_at_least "5.7.5" && DEPEND="${DEPEND} >=dev-libs/boost-1.56.0:0="
+	if mysql_version_is_at_least "5.7.6" ; then DEPEND="${DEPEND} >=dev-libs/boost-1.57.0:0=" ; else
+		mysql_version_is_at_least "5.7.5" && DEPEND="${DEPEND} >=dev-libs/boost-1.56.0:0="
+	fi
 fi
 
 if [[ ${PN} == "mariadb" || ${PN} == "mariadb-galera" ]] ; then
