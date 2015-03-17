@@ -1,6 +1,6 @@
 # Copyright 1999-2015 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: /var/cvsroot/gentoo-x86/eclass/mysql-multilib.eclass,v 1.17 2015/03/08 09:42:19 ulm Exp $
+# $Header: /var/cvsroot/gentoo-x86/eclass/mysql-multilib.eclass,v 1.18 2015/03/17 19:39:43 grknight Exp $
 
 # @ECLASS: mysql-multilib.eclass
 # @MAINTAINER:
@@ -426,14 +426,6 @@ mysql-multilib_disable_test() {
 # Perform some basic tests and tasks during pkg_pretend phase:
 mysql-multilib_pkg_pretend() {
 	if [[ ${MERGE_TYPE} != binary ]] ; then
-		# Bug 508724
-		if [[ ${PN} == 'mariadb' || ${PN} == 'mariadb-galera' ]] && \
-		   test-flags-CC -fuse-ld=bfd > /dev/null &&
-			$(tc-getLD) --version | grep -q "GNU gold"; then
-			eerror "MariaDB will not build with the gold linker."
-			eerror "Please select the bfd linker with binutils-config."
-			die "GNU gold detected"
-		fi
 		if use_if_iuse tokudb && [[ $(gcc-major-version) -lt 4 || \
 			$(gcc-major-version) -eq 4 && $(gcc-minor-version) -lt 7 ]] ; then
 			eerror "${PN} with tokudb needs to be built with gcc-4.7 or later."
@@ -521,7 +513,7 @@ mysql-multilib_src_configure() {
 
 	# bug 508724 mariadb cannot use ld.gold
 	if [[ ${PN} == "mariadb" || ${PN} == "mariadb-galera" ]] ; then
-		append-ldflags $(test-flags-CXX -fuse-ld=bfd)
+		tc-ld-disable-gold
 	fi
 
 	multilib-minimal_src_configure
