@@ -37,7 +37,7 @@ IUSE="mysqlcompat +ssl static-libs"
 
 DEPEND="sys-libs/zlib:=[${MULTILIB_USEDEP}]
 	virtual/libiconv:=[${MULTILIB_USEDEP}]
-	ssl? ( dev-libs/openssl:=[${MULTILIB_USEDEP}] )
+	ssl? ( dev-libs/openssl:0=[${MULTILIB_USEDEP}] )
 	"
 # Block server packages due to /usr/bin/mariadb_config symlink there
 # TODO: make server package block only when mysqlcompat is enabled
@@ -51,7 +51,9 @@ RDEPEND="${DEPEND}
 	"
 
 src_prepare() {
-	epatch 	"${FILESDIR}/fix-mariadb_config-2.1.0.patch"
+	epatch \
+		"${FILESDIR}/fix-mariadb_config-2.1.0.patch" \
+		"${FILESDIR}/gentoo-layout.patch"
 	epatch_user
 }
 
@@ -63,6 +65,7 @@ multilib_src_configure() {
 		$(cmake-utils_use_with mysqlcompat MYSQLCOMPAT)
 		-DLIB_INSTALL_DIR=$(get_libdir)
 		-DPLUGIN_INSTALL_DIR=$(get_libdir)/mariadb/plugin
+		-DINSTALL_LAYOUT=GENTOO
 	)
 	cmake-utils_src_configure
 }
