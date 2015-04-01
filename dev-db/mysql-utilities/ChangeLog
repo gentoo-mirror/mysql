@@ -1,0 +1,5 @@
+*mysql-utilities-1.5.4 (01 Apr 2015)
+
+  01 Apr 2015; Brian Evans <grknight@gentoo.org> +metadata.xml,
+  +mysql-utilities-1.5.4.ebuild:
+  Initial commit of mysql-utilities to test modifications
