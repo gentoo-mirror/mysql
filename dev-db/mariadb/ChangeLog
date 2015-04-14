@@ -2,6 +2,13 @@
 # Copyright 1999-2015 Gentoo Foundation; Distributed under the GPL v2
 # $Header: $
 
+*mariadb-10.1.4_beta (14 Apr 2015)
+
+  14 Apr 2015; <grknight@gentoo.org> -mariadb-5.5.41.ebuild,
+  -mariadb-10.1.0_alpha.ebuild, -mariadb-10.1.2_alpha.ebuild,
+  +mariadb-10.1.4_beta.ebuild:
+  Version bump; drop old
+
 *mariadb-10.1.3_beta (16 Mar 2015)
 
   16 Mar 2015; Brian Evans <grknight@gentoo.org> +mariadb-10.1.3_beta.ebuild:

@@ -2,6 +2,15 @@
 # Copyright 1999-2015 Gentoo Foundation; Distributed under the GPL v2
 # $Header: $
 
+*mysql-5.7.7_rc (14 Apr 2015)
+*mysql-5.6.24 (14 Apr 2015)
+*mysql-5.5.43 (14 Apr 2015)
+
+  14 Apr 2015; <grknight@gentoo.org> +mysql-5.5.43.ebuild,
+  +mysql-5.6.24.ebuild, -mysql-5.7.4_alpha_pre14.ebuild,
+  -mysql-5.7.5_alpha_pre15.ebuild, +mysql-5.7.7_rc.ebuild:
+  Version bump
+
 *mysql-5.7.6_alpha_pre16 (10 Mar 2015)
 
   10 Mar 2015; Brian Evans <grknight@gentoo.org>

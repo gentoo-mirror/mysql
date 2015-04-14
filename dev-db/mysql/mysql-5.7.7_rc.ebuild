@@ -1,17 +1,14 @@
-# Copyright 1999-2014 Gentoo Foundation
+# Copyright 1999-2015 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
-EAPI="4"
+EAPI=5
 
-MY_EXTRAS_VER="20140424-1043Z"
+MY_EXTRAS_VER="live"
 MY_PV="${PV//_alpha_pre/-m}"
 MY_PV="${MY_PV//_/-}"
 
-# Build type
-BUILD="cmake"
-
-inherit toolchain-funcs mysql-v2
+inherit toolchain-funcs mysql-multilib
 # only to make repoman happy. it is really set in the eclass
 IUSE="$IUSE"
 
@@ -36,7 +33,7 @@ RDEPEND="${RDEPEND}"
 # FEATURES='test userpriv -usersandbox' \
 # ebuild mysql-X.X.XX.ebuild \
 # digest clean package
-src_test() {
+multilib_src_test() {
 
 	local TESTDIR="${CMAKE_BUILD_DIR}/mysql-test"
 	local retstatus_unit
@@ -92,7 +89,7 @@ src_test() {
 			funcs_1.is_tables_mysql funcs_1.is_triggers \
 			binlog.binlog_mysqlbinlog_filter perfschema.binlog_edge_mix \
 			perfschema.binlog_edge_stmt main.mysql_tzinfo_to_sql_symlink ; do
-				mysql-v2_disable_test  "$t" "False positives in Gentoo"
+				mysql-multilib_disable_test  "$t" "False positives in Gentoo"
 		done
 
 		# Run mysql tests
