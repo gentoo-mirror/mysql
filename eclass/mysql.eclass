@@ -1,4 +1,4 @@
-# Copyright 1999-2014 Gentoo Foundation
+# Copyright 1999-2015 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: /var/cvsroot/gentoo-x86/eclass/mysql.eclass,v 1.181 2014/07/29 20:24:00 robbat2 Exp $
 
@@ -27,7 +27,7 @@ S="${WORKDIR}/mysql"
 
 [[ "${MY_EXTRAS_VER}" == "latest" ]] && MY_EXTRAS_VER="20090228-0714Z"
 if [[ "${MY_EXTRAS_VER}" == "live" ]]; then
-	EGIT_REPO_URI="git://git.overlays.gentoo.org/proj/mysql-extras.git"
+	EGIT_REPO_URI="git://anongit.gentoo.org/proj/mysql-extras.git"
 	EGIT_CHECKOUT_DIR=${WORKDIR}/mysql-extras
 	EGIT_CLONE_TYPE=shallow
 	inherit git-r3
