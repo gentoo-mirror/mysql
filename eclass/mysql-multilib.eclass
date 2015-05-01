@@ -569,11 +569,18 @@ multilib_src_configure() {
 	fi
 
 	if in_iuse bindist ; then
-		mycmakeargs+=(
-			-DWITH_READLINE=$(usex bindist 1 0)
-			-DNOT_FOR_DISTRIBUTION=$(usex bindist 0 1)
-			$(usex bindist -DHAVE_BFD_H=0 '')
-		)
+		# bfd.h is only used starting with 10.1 and can be controlled by NOT_FOR_DISTRIBUTION
+		if multilib_is_native_abi; then
+			mycmakeargs+=(
+				-DWITH_READLINE=$(usex bindist 1 0)
+				-DNOT_FOR_DISTRIBUTION=$(usex bindist 0 1)
+			)
+		else
+			mycmakeargs+=(
+				-DWITH_READLINE=1
+				-DNOT_FOR_DISTRIBUTION=0
+			)
+		fi
 	fi
 
 	### TODO: make this system but issues with UTF-8 prevent it
