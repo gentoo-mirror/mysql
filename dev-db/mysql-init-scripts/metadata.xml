@@ -3,6 +3,6 @@
 <pkgmetadata>
 	<herd>mysql</herd>
 	<use>
-		<flag name="s6">Install an OpenRC service that monitors using <package>sys-apps/s6</package> instead of using start-stop-daemon</flag>
+		<flag name='s6'>Install an OpenRC service that monitors using <pkg>sys-apps/s6</pkg> instead of using start-stop-daemon</flag>
 	</use>
 </pkgmetadata>
