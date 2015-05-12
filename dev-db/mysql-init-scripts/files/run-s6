@@ -1,0 +1,18 @@
+#!/bin/sh
+# Copyright 1999-2015 Gentoo Foundation
+# Distributed under the terms of the GNU General Public License v2
+# $Header: $
+
+get_config() {
+	my_print_defaults --config-file="$1" mysqld |
+	sed -n -e "s/^--$2=//p"
+}
+
+SVCNAME=$(cd `dirname $0` && pwd | awk -F/ '{ print $NF }' )
+
+source "${ROOT:-/}etc/conf.d/${SVCNAME}"
+
+MY_CNF="${MY_CNF:-/etc/${SVCNAME}/my.cnf}"
+
+basedir=$(get_config "${MY_CNF}" basedir | tail -n1)
+exec s6-notifywhenup -t ${STARTUP_TIMEOUT:-900} "${basedir}"/sbin/mysqld --defaults-file="${MY_CNF}" ${MY_ARGS}
