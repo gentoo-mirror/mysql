@@ -78,6 +78,17 @@ start_pre() {
 	fi
 }
 
+start_post() {
+	local socket=$(get_config "${MY_CNF}" socket | tail -n1)
+	local chroot=$(get_config "${MY_CNF}" chroot | tail -n1)
+	local startup_timeout=${STARTUP_TIMEOUT:-900}
+
+	if [ -n "${chroot}" ] ; then
+		socket="${chroot}/${socket}"
+	fi
+	ewaitfile ${startup_timeout} "${socket}"
+}
+
 checkconfig() {
 	local my_cnf="${MY_CNF:-/etc/${SVCNAME}/my.cnf}"
 	local basedir=$(get_config "${my_cnf}" basedir | tail -n1)
