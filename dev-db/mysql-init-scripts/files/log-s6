@@ -8,5 +8,5 @@ mkdir -p "/var/log/mysql/${SVCNAME}"
 if [ ${S6_LOG_OPTIONS} ] ; then
 	exec s6-log ${S6_LOG_OPTIONS}
 else
-	exec s6-log -b n20 S15000000 T !"gzip -nq9" "/var/log/mysql/${SVCNAME}"
+	exec s6-log -b n20 S15000000 !"gzip -nq9" "/var/log/mysql/${SVCNAME}"
 fi
