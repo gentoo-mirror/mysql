@@ -26,6 +26,7 @@ mysql_svcname() {
 extra_commands="checkconfig"
 supervisor=s6
 name=$(mysql_svcname)
+s6_service_timeout_stop="$((1000*${STOP_TIMEOUT:-120}))"
 #s6_svwait_options_start="-U -t $((1000*${STARTUP_EARLY_TIMEOUT:-1000}))"
 
 start_pre() {

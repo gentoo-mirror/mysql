@@ -20,7 +20,7 @@ DEPEND=""
 # It also NEEDS openrc for the save_options/get_options builtins.
 RDEPEND="
 	!<dev-db/mysql-5.1
-	s6? ( >=sys-apps/openrc-0.16.1 sys-apps/s6 )
+	s6? ( >=sys-apps/openrc-0.16.2 sys-apps/s6 )
 	"
 # Need to set S due to PMS saying we need it existing, but no SRC_URI
 S=${WORKDIR}
