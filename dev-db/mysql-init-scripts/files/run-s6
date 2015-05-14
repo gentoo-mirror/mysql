@@ -15,4 +15,4 @@ source "${ROOT:-/}etc/conf.d/${SVCNAME}"
 MY_CNF="${MY_CNF:-/etc/${SVCNAME}/my.cnf}"
 
 basedir=$(get_config "${MY_CNF}" basedir | tail -n1)
-exec s6-notifywhenup -t ${STARTUP_TIMEOUT:-900} "${basedir}"/sbin/mysqld --defaults-file="${MY_CNF}" ${MY_ARGS}
+exec "${basedir}"/sbin/mysqld --defaults-file="${MY_CNF}" ${MY_ARGS} 2>&1
