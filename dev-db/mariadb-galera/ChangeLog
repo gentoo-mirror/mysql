@@ -1,3 +1,9 @@
+*mariadb-galera-10.0.19 (10 Jun 2015)
+
+  10 Jun 2015; Brian Evans <grknight@gentoo.org> +mariadb-galera-10.0.19.ebuild,
+  -mariadb-galera-10.0.16.ebuild, -mariadb-galera-10.0.17.ebuild:
+  Version bump; drop old
+
 *mariadb-galera-10.0.17 (03 Apr 2015)
 
   03 Apr 2015; Brian Evans <grknight@gentoo.org> +mariadb-galera-10.0.17.ebuild:
