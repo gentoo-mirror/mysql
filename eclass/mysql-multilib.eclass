@@ -1,6 +1,6 @@
 # Copyright 1999-2015 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: /var/cvsroot/gentoo-x86/eclass/mysql-multilib.eclass,v 1.19 2015/05/01 12:34:31 grknight Exp $
+# $Header: /var/cvsroot/gentoo-x86/eclass/mysql-multilib.eclass,v 1.21 2015/06/10 18:08:02 grknight Exp $
 
 # @ECLASS: mysql-multilib.eclass
 # @MAINTAINER:
@@ -101,16 +101,6 @@ MYSQL_VERSION_ID=${MYSQL_VERSION_ID##"0"}
 # This eclass should only be used with at least mysql-5.5.35
 mysql_version_is_at_least "5.5.35" || die "This eclass should only be used with >=mysql-5.5.35"
 
-# @ECLASS-VARIABLE: XTRADB_VER
-# @DEFAULT_UNSET
-# @DESCRIPTION:
-# Version of the XTRADB storage engine
-
-# @ECLASS-VARIABLE: PERCONA_VER
-# @DEFAULT_UNSET
-# @DESCRIPTION:
-# Designation by PERCONA for a MySQL version to apply an XTRADB release
-
 # Work out the default SERVER_URI correctly
 if [[ -z ${SERVER_URI} ]]; then
 	[[ -z ${MY_PV} ]] && MY_PV="${PV//_/-}"
@@ -120,8 +110,13 @@ if [[ -z ${SERVER_URI} ]]; then
 			MARIA_FULL_PV=$(replace_version_separator 3 '-' ${MY_PV})
 		MARIA_FULL_P="${PN}-${MARIA_FULL_PV}"
 		SERVER_URI="
-		http://ftp.osuosl.org/pub/mariadb/${MARIA_FULL_P}/kvm-tarbake-jaunty-x86/${MARIA_FULL_P}.tar.gz
 		http://ftp.osuosl.org/pub/mariadb/${MARIA_FULL_P}/source/${MARIA_FULL_P}.tar.gz
+		http://mirror.jmu.edu/pub/mariadb/${MARIA_FULL_P}/source/${MARIA_FULL_P}.tar.gz
+		http://mirrors.coreix.net/mariadb/${MARIA_FULL_P}/source/${MARIA_FULL_P}.tar.gz
+		http://mirrors.syringanetworks.net/mariadb/${MARIA_FULL_P}/source/${MARIA_FULL_P}.tar.gz
+		http://mirrors.fe.up.pt/pub/mariadb/${MARIA_FULL_P}/source/${MARIA_FULL_P}.tar.gz
+		http://mirror2.hs-esslingen.de/mariadb/${MARIA_FULL_P}/source/${MARIA_FULL_P}.tar.gz
+		http://ftp.osuosl.org/pub/mariadb/${MARIA_FULL_P}/kvm-tarbake-jaunty-x86/${MARIA_FULL_P}.tar.gz
 		http://mirror.jmu.edu/pub/mariadb/${MARIA_FULL_P}/kvm-tarbake-jaunty-x86/${MARIA_FULL_P}.tar.gz
 		http://mirrors.coreix.net/mariadb/${MARIA_FULL_P}/kvm-tarbake-jaunty-x86/${MARIA_FULL_P}.tar.gz
 		http://mirrors.syringanetworks.net/mariadb/${MARIA_FULL_P}/kvm-tarbake-jaunty-x86/${MARIA_FULL_P}.tar.gz
@@ -353,6 +348,11 @@ if [[ ${PN} == "mariadb" || ${PN} == "mariadb-galera" ]] ; then
 		virtual/perl-Time-HiRes ) "
 fi
 
+# @ECLASS-VARIABLE: WSREP_REVISION
+# @DEFAULT_UNSET
+# @DESCRIPTION:
+# Version of the sys-cluster/galera API (major version in portage) to use for galera clustering
+
 if [[ -n "${WSREP_REVISION}" ]] ; then
 	# The wsrep API version must match between the ebuild and sys-cluster/galera.
 	# This will be indicated by WSREP_REVISION in the ebuild and the first number
@@ -369,10 +369,11 @@ if [[ -n "${WSREP_REVISION}" ]] ; then
 	RDEPEND="${RDEPEND} ${GALERA_RDEPEND}
 		sst-rsync? ( sys-process/lsof )
 		sst-xtrabackup? (
-			>=dev-db/xtrabackup-bin-2.2.4
 			net-misc/socat[ssl]
 		)
 	"
+	# Causes a circular dependency if DBD-mysql is not already installed
+	PDEPEND="${PDEPEND} sst-xtrabackup? ( >=dev-db/xtrabackup-bin-2.2.4 )"
 fi
 
 if [[ ${PN} == "mysql-cluster" ]] ; then
@@ -391,7 +392,7 @@ DEPEND="${DEPEND}
 
 # For other stuff to bring us in
 # dev-perl/DBD-mysql is needed by some scripts installed by MySQL
-PDEPEND="perl? ( >=dev-perl/DBD-mysql-2.9004 )
+PDEPEND="${PDEPEND} perl? ( >=dev-perl/DBD-mysql-2.9004 )
 	 ~virtual/mysql-${MYSQL_PV_MAJOR}"
 
 # my_config.h includes ABI specific data
@@ -433,7 +434,7 @@ mysql-multilib_pkg_pretend() {
 			die
 		fi
 	fi
-	if use cluster && [[ "${PN}" != "mysql-cluster" ]]; then
+	if use_if_iuse cluster && [[ "${PN}" != "mysql-cluster" ]]; then
 		die "NDB Cluster support has been removed from all packages except mysql-cluster"
 	fi
 }
@@ -883,8 +884,7 @@ mysql-multilib_pkg_config() {
 		mysql_version_is_at_least "5.6" || options="${options} --loose-skip-innodb"
 	fi
 
-	einfo "Creating the mysql database and setting proper"
-	einfo "permissions on it ..."
+	einfo "Creating the mysql database and setting proper permissions on it ..."
 
 	# Now that /var/run is a tmpfs mount point, we need to ensure it exists before using it
 	PID_DIR="${EROOT}/var/run/mysqld"
@@ -959,7 +959,7 @@ mysql-multilib_pkg_config() {
 		-e "${sql}"
 	eend $?
 
-	ebegin "Loading \"zoneinfo\", this step may require a few seconds ..."
+	ebegin "Loading \"zoneinfo\", this step may require a few seconds"
 	"${EROOT}/usr/bin/mysql" \
 		--socket=${socket} \
 		-hlocalhost \
