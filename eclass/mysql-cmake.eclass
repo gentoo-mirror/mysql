@@ -87,7 +87,7 @@ mysql-cmake_use_plugin() {
 # Helper function to configure locale cmake options
 configure_cmake_locale() {
 
-	if ! use minimal && [[ ( -n ${MYSQL_DEFAULT_CHARSET} ) && ( -n ${MYSQL_DEFAULT_COLLATION} ) ]]; then
+	if ( ! use_if_iuse minimal || use_if_iuse server ) && [[ ( -n ${MYSQL_DEFAULT_CHARSET} ) && ( -n ${MYSQL_DEFAULT_COLLATION} ) ]]; then
 		ewarn "You are using a custom charset of ${MYSQL_DEFAULT_CHARSET}"
 		ewarn "and a collation of ${MYSQL_DEFAULT_COLLATION}."
 		ewarn "You MUST file bugs without these variables set."
@@ -375,7 +375,7 @@ mysql-cmake_src_configure() {
 
 	configure_cmake_locale
 
-	if use minimal ; then
+	if use_if_iuse minimal ; then
 		configure_cmake_minimal
 	else
 		configure_cmake_standard
@@ -430,8 +430,10 @@ mysql-cmake_src_install() {
 	dosym "/usr/bin/mysqlcheck" "/usr/bin/mysqlrepair"
 	dosym "/usr/bin/mysqlcheck" "/usr/bin/mysqloptimize"
 
-	# Create a mariadb_config symlink
-	[[ ${PN} == "mariadb" || ${PN} == "mariadb-galera" ]] && dosym "/usr/bin/mysql_config" "/usr/bin/mariadb_config"
+	if [[ -z ${HAS_TOOLS_PATCH} ]] ; then
+		# Create a mariadb_config symlink
+		[[ ${PN} == "mariadb" || ${PN} == "mariadb-galera" ]] && dosym "/usr/bin/mysql_config" "/usr/bin/mariadb_config"
+	fi
 
 	# INSTALL_LAYOUT=STANDALONE causes cmake to create a /usr/data dir
 	rm -Rf "${ED}/usr/data"
@@ -469,7 +471,7 @@ mysql-cmake_src_install() {
 	newins "${TMPDIR}/my.cnf.ok" my.cnf
 
 	# Minimal builds don't have the MySQL server
-	if ! use minimal ; then
+	if ! use_if_iuse minimal || use_if_iuse server ; then
 		einfo "Creating initial directories"
 		# Empty directories ...
 		diropts "-m0750"
@@ -488,7 +490,7 @@ mysql-cmake_src_install() {
 	fi
 
 	# Minimal builds don't have the MySQL server
-	if ! use minimal ; then
+	if ! use_if_iuse minimal || use_if_iuse server; then
 		einfo "Including support files and sample configurations"
 		docinto "support-files"
 		for script in \
