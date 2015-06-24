@@ -10,14 +10,13 @@ diff -aurN a/CMakeLists.txt b/CMakeLists.txt
  
  SET(MALLOC_LIBRARY "system")
  CHECK_JEMALLOC()
-@@ -394,25 +392,36 @@
+@@ -394,24 +392,35 @@
   CONFIGURE_PLUGINS()
  ENDIF()
  
 -ADD_SUBDIRECTORY(include)
 +IF(NOT WITHOUT_CLIENTLIBS)
 +  ADD_SUBDIRECTORY(include)
-+  ADD_SUBDIRECTORY(libmysql)
 +ENDIF(NOT WITHOUT_CLIENTLIBS)
 +
  ADD_SUBDIRECTORY(dbug)
@@ -25,7 +24,7 @@ diff -aurN a/CMakeLists.txt b/CMakeLists.txt
  ADD_SUBDIRECTORY(vio)
  ADD_SUBDIRECTORY(mysys)
  ADD_SUBDIRECTORY(mysys_ssl)
--ADD_SUBDIRECTORY(libmysql)
+ ADD_SUBDIRECTORY(libmysql)
 -ADD_SUBDIRECTORY(client)
  ADD_SUBDIRECTORY(extra)
  ADD_SUBDIRECTORY(libservices)
@@ -98,3 +97,21 @@ diff -aurN a/scripts/CMakeLists.txt b/scripts/CMakeLists.txt
    FOREACH(file ${BIN_SCRIPTS})
      IF(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${file}.sh)
        CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/${file}.sh
+diff -aurN a/libmysql/CMakeLists.txt b/libmysql/CMakeLists.txt
+--- a/libmysql/CMakeLists.txt	2015-06-24 12:32:11.606169100 -0400
++++ b/libmysql/CMakeLists.txt	2015-06-24 13:44:53.857169100 -0400
+@@ -440,12 +440,12 @@
+       SET(${OUTNAME} ${LIBNAME}${EXTENSION}${DOT_VERSION})
+     ENDIF() 
+   ENDMACRO()
+-  IF(ENABLE_STATIC_LIBS)
++  IF(ENABLE_STATIC_LIBS AND NOT WITHOUT_CLIENTLIBS)
+     INSTALL_SYMLINK(${CMAKE_STATIC_LIBRARY_PREFIX}mysqlclient_r.a mysqlclient ${INSTALL_LIBDIR} Development)
+   ENDIF()
+ ENDIF()
+ 
+-IF(NOT DISABLE_SHARED)
++IF(NOT DISABLE_SHARED AND NOT WITHOUT_CLIENTLIBS)
+   MERGE_LIBRARIES(libmysql SHARED ${LIBS}
+     EXPORTS ${CLIENT_API_FUNCTIONS} ${CLIENT_API_5_1_EXTRA} ${CLIENT_API_5_5_EXTRA}
+     COMPONENT SharedLibraries)

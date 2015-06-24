@@ -238,7 +238,7 @@ fi
 
 if [[ ${HAS_TOOLS_PATCH} ]] ; then
 	IUSE="${IUSE} client-libs +server +tools"
-	REQUIRED_USE="${REQUIRED_USE} !server? ( !extraengine !embedded ) server? ( tools )"
+	REQUIRED_USE="${REQUIRED_USE} !server? ( !extraengine !embedded ) server? ( tools ) || ( client-libs server tools )"
 else
 	IUSE="${IUSE} minimal"
 	REQUIRED_USE="${REQUIRED_USE} minimal? ( !extraengine !embedded )"
@@ -370,7 +370,9 @@ RDEPEND="${DEPEND}
 "
 
 if [[ ${HAS_TOOLS_PATCH} ]] ; then
-	RDEPEND="${RDEPEND} server? ( !prefix? ( dev-db/mysql-init-scripts ) )"
+	RDEPEND="${RDEPEND} 
+		server? ( !prefix? ( dev-db/mysql-init-scripts ) )
+		!client-libs? ( virtual/libmysqclient )"
 else
 	RDEPEND="${RDEPEND} !minimal? ( !prefix? ( dev-db/mysql-init-scripts ) )"
 fi
@@ -444,9 +446,6 @@ MULTILIB_WRAPPED_HEADERS=( /usr/include/mysql/my_config.h /usr/include/mysql/pri
 [[ ${PN} == "mariadb" ]] && mysql_version_is_at_least "10.1.1" && \
 	MULTILIB_WRAPPED_HEADERS+=( /usr/include/mysql/mysql_version.h )
 
-# wrap the config script
-MULTILIB_CHOST_TOOLS=( /usr/bin/mysql_config )
-
 #
 # HELPER FUNCTIONS:
 #
@@ -488,7 +487,9 @@ mysql-multilib_pkg_pretend() {
 mysql-multilib_pkg_setup() {
 
 	if has test ${FEATURES} ; then
-		if ! use_if_iuse minimal || use_if_iuse server ; then
+		if use_if_iuse minimal ; then
+			:
+		elif ! in_iuse server || use_if_iuse server ; then
 			if ! has userpriv ${FEATURES} ; then
 				eerror "Testing with FEATURES=-userpriv is no longer supported by upstream. Tests MUST be run as non-root."
 			fi
@@ -574,8 +575,8 @@ multilib_src_configure() {
 		-DMYSQL_DATADIR=${EPREFIX}/var/lib/mysql
 		-DSYSCONFDIR=${EPREFIX}/etc/mysql
 		-DINSTALL_BINDIR=bin
-		-DINSTALL_DOCDIR=share/doc/${P}
-		-DINSTALL_DOCREADMEDIR=share/doc/${P}
+		-DINSTALL_DOCDIR=share/doc/${PF}
+		-DINSTALL_DOCREADMEDIR=share/doc/${PF}
 		-DINSTALL_INCLUDEDIR=include/mysql
 		-DINSTALL_INFODIR=share/info
 		-DINSTALL_LIBDIR=$(get_libdir)
@@ -651,7 +652,9 @@ multilib_src_configure() {
 
 	configure_cmake_locale
 
-	if multilib_is_native_abi && ( ! use_if_iuse minimal || use_if_iuse server ) ; then
+	if use_if_iuse minimal ; then
+		configure_cmake_minimal
+	elif multilib_is_native_abi && use_if_iuse server ; then
 		configure_cmake_standard
 	else
 		configure_cmake_minimal
@@ -680,6 +683,10 @@ multilib_src_compile() {
 # @DESCRIPTION:
 # Install mysql.
 mysql-multilib_src_install() {
+	if ! in_iuse client-libs || use_if_iuse client-libs ; then
+		# wrap the config script
+		MULTILIB_CHOST_TOOLS=( /usr/bin/mysql_config )
+	fi
 	multilib-minimal_src_install
 }
 
@@ -690,9 +697,13 @@ multilib_src_install() {
 		mysql-cmake_src_install
 	else
 		cmake-utils_src_install
-		if ( ! use_if_iuse minimal || use_if_iuse server ) && [[ "${PN}" == "mariadb" || "${PN}" == "mariadb-galera" ]] ; then
-			insinto /usr/include/mysql/private
-			doins "${S}"/sql/*.h
+		if [[ "${PN}" == "mariadb" || "${PN}" == "mariadb-galera" ]] ; then
+			if use_if_iuse minimal ; then
+				:
+			elif  use_if_iuse server || ! in_iuse server ; then
+				insinto /usr/include/mysql/private
+				doins "${S}"/sql/*.h
+			fi
 		fi
 	fi
 }
@@ -731,7 +742,9 @@ mysql-multilib_pkg_postinst() {
 	chmod 0660 "${ROOT}${MY_LOGDIR}"/mysql*
 
 	# Minimal builds don't have the MySQL server
-	if ! use_if_iuse minimal || use_if_iuse server ; then
+	if use_if_iuse minimal ; then
+		:
+	elif ! in_iuse server || use_if_iuse server ; then
 		docinto "support-files"
 		for script in \
 			support-files/my-*.cnf \
