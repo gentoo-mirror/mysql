@@ -18,6 +18,12 @@ EPATCH_EXCLUDE=''
 DEPEND="|| ( >=sys-devel/gcc-3.4.6 >=sys-devel/gcc-apple-4.0 )"
 RDEPEND="${RDEPEND}"
 
+src_prepare() {
+	mysql-multilib_src_prepare
+	einfo "Applying experimental tools patch"
+	epatch "${FILESDIR}/without-clientlibs-tools.patch"
+}
+
 # Official test instructions:
 # USE='embedded extraengine perl ssl static-libs community' \
 # FEATURES='test userpriv -usersandbox' \
