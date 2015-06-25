@@ -370,9 +370,9 @@ RDEPEND="${DEPEND}
 "
 
 if [[ ${HAS_TOOLS_PATCH} ]] ; then
-	RDEPEND="${RDEPEND} 
+	RDEPEND="${RDEPEND}
 		server? ( !prefix? ( dev-db/mysql-init-scripts ) )
-		!client-libs? ( virtual/libmysqclient )"
+		!client-libs? ( virtual/libmysqlclient )"
 else
 	RDEPEND="${RDEPEND} !minimal? ( !prefix? ( dev-db/mysql-init-scripts ) )"
 fi
