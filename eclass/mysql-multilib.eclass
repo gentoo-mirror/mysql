@@ -237,8 +237,8 @@ if [[ ${PN} == "percona-server" ]]; then
 fi
 
 if [[ ${HAS_TOOLS_PATCH} ]] ; then
-	IUSE="${IUSE} client-libs +server"
-	REQUIRED_USE="${REQUIRED_USE} !server? ( !extraengine !embedded ) || ( client-libs server )"
+	IUSE="${IUSE} client-libs +server +tools"
+	REQUIRED_USE="${REQUIRED_USE} !server? ( !extraengine !embedded ) server? ( tools ) || ( client-libs server tools )"
 else
 	IUSE="${IUSE} minimal"
 	REQUIRED_USE="${REQUIRED_USE} minimal? ( !extraengine !embedded )"
@@ -256,11 +256,11 @@ REQUIRED_USE="
 # These are used for both runtime and compiletime
 # MULTILIB_USEDEP only set for libraries used by the client library
 DEPEND="
+	ssl? ( >=dev-libs/openssl-1.0.0:0=[${MULTILIB_USEDEP},static-libs?] )
 	kernel_linux? (
 		sys-process/procps:0=
 		dev-libs/libaio:0=
 	)
-	sys-libs/ncurses
 	>=sys-apps/sed-4
 	>=sys-apps/texinfo-4.7-r1
 	!dev-db/mariadb-native-client[mysqlcompat]
@@ -279,11 +279,13 @@ if [[ ${HAS_TOOLS_PATCH} ]] ; then
 			ssl? ( >=dev-libs/openssl-1.0.0:0=[static-libs?] )
 			>=sys-libs/zlib-1.2.3:0=[static-libs?]
 		)
+		tools? ( sys-libs/ncurses ) embedded? ( sys-libs/ncurses )
 	"
 else
 	DEPEND+="
 		ssl? ( >=dev-libs/openssl-1.0.0:0=[${MULTILIB_USEDEP},static-libs?] )
 		>=sys-libs/zlib-1.2.3:0=[${MULTILIB_USEDEP},static-libs?]
+		sys-libs/ncurses[${MULTILIB_USEDEP}]
 	"
 fi
 
@@ -309,7 +311,7 @@ fi
 if [[ ${PN} == "mariadb" || ${PN} == "mariadb-galera" ]] ; then
 	# Readline is only used for the command-line and embedded example
 	if [[ ${HAS_TOOLS_PATCH} ]] ; then
-		DEPEND="${DEPEND} !bindist? ( >=sys-libs/readline-4.1:0= )"
+		DEPEND="${DEPEND} !bindist? ( tools? ( >=sys-libs/readline-4.1:0= ) embedded? ( >=sys-libs/readline-4.1:0= )  )"
 	else
 		DEPEND="${DEPEND} !bindist? ( >=sys-libs/readline-4.1:0=[${MULTILIB_USEDEP}] )"
 	fi
@@ -630,9 +632,12 @@ multilib_src_configure() {
 
 	if in_iuse client-libs ; then
 		mycmakeargs+=( -DWITHOUT_CLIENTLIBS=$(usex client-libs 0 1) )
+	fi
 
-		# Always build tools on native, but skip when possible on non-native to eliminate multilib dependencies
-		if ! multilib_is_native_abi ; then
+	if in_iuse tools ; then
+		if multilib_is_native_abi ; then
+			mycmakeargs+=( -DWITHOUT_TOOLS=$(usex tools 0 1) )
+		else
 			mycmakeargs+=( -DWITHOUT_TOOLS=1 )
 		fi
 	fi
