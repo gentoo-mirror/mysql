@@ -256,7 +256,6 @@ REQUIRED_USE="
 # These are used for both runtime and compiletime
 # MULTILIB_USEDEP only set for libraries used by the client library
 DEPEND="
-	ssl? ( >=dev-libs/openssl-1.0.0:0=[${MULTILIB_USEDEP},static-libs?] )
 	kernel_linux? (
 		sys-process/procps:0=
 		dev-libs/libaio:0=
@@ -264,12 +263,29 @@ DEPEND="
 	sys-libs/ncurses
 	>=sys-apps/sed-4
 	>=sys-apps/texinfo-4.7-r1
-	>=sys-libs/zlib-1.2.3:0=[${MULTILIB_USEDEP},static-libs?]
 	!dev-db/mariadb-native-client[mysqlcompat]
-	jemalloc? ( dev-libs/jemalloc:0=[${MULTILIB_USEDEP}] )
+	jemalloc? ( dev-libs/jemalloc:0= )
 	tcmalloc? ( dev-util/google-perftools:0= )
 	systemtap? ( >=dev-util/systemtap-1.3:0= )
 "
+
+if [[ ${HAS_TOOLS_PATCH} ]] ; then
+	DEPEND+="
+		client-libs? (
+			ssl? ( >=dev-libs/openssl-1.0.0:0=[${MULTILIB_USEDEP},static-libs?] )
+			>=sys-libs/zlib-1.2.3:0=[${MULTILIB_USEDEP},static-libs?]
+		)
+		!client-libs? (
+			ssl? ( >=dev-libs/openssl-1.0.0:0=[static-libs?] )
+			>=sys-libs/zlib-1.2.3:0=[static-libs?]
+		)
+	"
+else
+	DEPEND+="
+		ssl? ( >=dev-libs/openssl-1.0.0:0=[${MULTILIB_USEDEP},static-libs?] )
+		>=sys-libs/zlib-1.2.3:0=[${MULTILIB_USEDEP},static-libs?]
+	"
+fi
 
 ### Begin readline/libedit
 ### If the world was perfect, we would use external libedit on both to have a similar experience
@@ -326,7 +342,7 @@ if [[ ${PN} == "mariadb" || ${PN} == "mariadb-galera" ]] ; then
 			"
 	fi
 	mysql_version_is_at_least "10.0.7" && DEPEND="${DEPEND} oqgraph? ( dev-libs/judy:0= )"
-	mysql_version_is_at_least "10.0.9" && DEPEND="${DEPEND} >=dev-libs/libpcre-8.35:3=[${MULTILIB_USEDEP}]"
+	mysql_version_is_at_least "10.0.9" && DEPEND="${DEPEND} >=dev-libs/libpcre-8.35:3="
 
 	mysql_version_is_at_least "10.1.1" && DEPEND="${DEPEND}
 		innodb-lz4? ( app-arch/lz4 )
@@ -562,6 +578,13 @@ multilib_src_configure() {
 
 	CMAKE_BUILD_TYPE="RelWithDebInfo"
 
+	if ! multilib_is_native_abi && in_iuse client-libs ; then
+		if ! use client-libs ; then
+			ewarn "Skipping multilib build due to client-libs USE disabled"
+			return 0
+		fi
+	fi
+
 	# debug hack wrt #497532
 	mycmakeargs=(
 		-DCMAKE_C_FLAGS_RELWITHDEBINFO="$(usex debug "" "-DNDEBUG")"
@@ -608,9 +631,8 @@ multilib_src_configure() {
 	if in_iuse client-libs ; then
 		mycmakeargs+=( -DWITHOUT_CLIENTLIBS=$(usex client-libs 0 1) )
 
-		if multilib_is_native_abi ; then
-			mycmakeargs+=( -DWITHOUT_TOOLS=0 )
-		else
+		# Always build tools on native, but skip when possible on non-native to eliminate multilib dependencies
+		if ! multilib_is_native_abi ; then
 			mycmakeargs+=( -DWITHOUT_TOOLS=1 )
 		fi
 	fi
@@ -633,7 +655,7 @@ multilib_src_configure() {
 	### TODO: make this system but issues with UTF-8 prevent it
 	mycmakeargs+=( -DWITH_EDITLINE=bundled )
 
-	if [[ ${PN} == "mariadb" || ${PN} == "mariadb-galera" ]] ; then
+	if [[ ${PN} == "mariadb" || ${PN} == "mariadb-galera" ]] && multilib_is_native_abi ; then
 		mycmakeargs+=(
 			-DWITH_JEMALLOC=$(usex jemalloc system)
 		)
@@ -666,6 +688,13 @@ mysql-multilib_src_compile() {
 }
 
 multilib_src_compile() {
+	if ! multilib_is_native_abi && in_iuse client-libs ; then
+		if ! use client-libs ; then
+			ewarn "Skipping multilib build due to client-libs USE disabled"
+			return 0
+		fi
+	fi
+
 	cmake-utils_src_compile "${_cmake_args[@]}"
 }
 
@@ -678,11 +707,23 @@ mysql-multilib_src_install() {
 		# wrap the config script
 		MULTILIB_CHOST_TOOLS=( /usr/bin/mysql_config )
 	fi
-	multilib-minimal_src_install
+
+	if in_iuse client-libs && ! use client-libs ; then
+		multilib_foreach_abi multilib_src_install
+	else
+		multilib-minimal_src_install
+	fi
 }
 
 multilib_src_install() {
 	debug-print-function ${FUNCNAME} "$@"
+
+	if ! multilib_is_native_abi && in_iuse client-libs ; then
+		if ! use client-libs ; then
+			ewarn "Skipping multilib build due to client-libs USE disabled"
+			return 0
+		fi
+	fi
 
 	if multilib_is_native_abi; then
 		mysql-cmake_src_install
