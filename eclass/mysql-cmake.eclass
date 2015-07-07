@@ -428,13 +428,11 @@ mysql-cmake_src_install() {
 
 	cmake-utils_src_install
 
-	if ! in_iuse tools || use_if_iuse tools ; then
-		# Convenience links
-		einfo "Making Convenience links for mysqlcheck multi-call binary"
-		dosym "/usr/bin/mysqlcheck" "/usr/bin/mysqlanalyze"
-		dosym "/usr/bin/mysqlcheck" "/usr/bin/mysqlrepair"
-		dosym "/usr/bin/mysqlcheck" "/usr/bin/mysqloptimize"
-	fi
+	# Convenience links
+	einfo "Making Convenience links for mysqlcheck multi-call binary"
+	dosym "/usr/bin/mysqlcheck" "/usr/bin/mysqlanalyze"
+	dosym "/usr/bin/mysqlcheck" "/usr/bin/mysqlrepair"
+	dosym "/usr/bin/mysqlcheck" "/usr/bin/mysqloptimize"
 
 	if [[ -z ${HAS_TOOLS_PATCH} ]] ; then
 		# Create a mariadb_config symlink

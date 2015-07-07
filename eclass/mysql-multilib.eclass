@@ -237,8 +237,8 @@ if [[ ${PN} == "percona-server" ]]; then
 fi
 
 if [[ ${HAS_TOOLS_PATCH} ]] ; then
-	IUSE="${IUSE} client-libs +server +tools"
-	REQUIRED_USE="${REQUIRED_USE} !server? ( !extraengine !embedded ) server? ( tools ) || ( client-libs server tools )"
+	IUSE="${IUSE} client-libs +server"
+	REQUIRED_USE="${REQUIRED_USE} !server? ( !extraengine !embedded ) || ( client-libs server )"
 else
 	IUSE="${IUSE} minimal"
 	REQUIRED_USE="${REQUIRED_USE} minimal? ( !extraengine !embedded )"
@@ -261,6 +261,7 @@ DEPEND="
 		sys-process/procps:0=
 		dev-libs/libaio:0=
 	)
+	sys-libs/ncurses
 	>=sys-apps/sed-4
 	>=sys-apps/texinfo-4.7-r1
 	>=sys-libs/zlib-1.2.3:0=[${MULTILIB_USEDEP},static-libs?]
@@ -269,12 +270,6 @@ DEPEND="
 	tcmalloc? ( dev-util/google-perftools:0= )
 	systemtap? ( >=dev-util/systemtap-1.3:0= )
 "
-
-if [[ ${HAS_TOOLS_PATCH} ]] ; then
-	DEPEND="${DEPEND} tools? ( sys-libs/ncurses ) embedded? ( sys-libs/ncurses )"
-else
-	DEPEND="${DEPEND} sys-libs/ncurses"
-fi
 
 ### Begin readline/libedit
 ### If the world was perfect, we would use external libedit on both to have a similar experience
@@ -298,7 +293,7 @@ fi
 if [[ ${PN} == "mariadb" || ${PN} == "mariadb-galera" ]] ; then
 	# Readline is only used for the command-line and embedded example
 	if [[ ${HAS_TOOLS_PATCH} ]] ; then
-		DEPEND="${DEPEND} !bindist? ( tools? ( >=sys-libs/readline-4.1:0= ) embedded? ( >=sys-libs/readline-4.1:0= )  )"
+		DEPEND="${DEPEND} !bindist? ( >=sys-libs/readline-4.1:0= )"
 	else
 		DEPEND="${DEPEND} !bindist? ( >=sys-libs/readline-4.1:0=[${MULTILIB_USEDEP}] )"
 	fi
@@ -427,7 +422,7 @@ DEPEND="${DEPEND}
 	>=dev-util/cmake-2.8.9
 "
 
-# Transition dep until all ebuilds have tools USE
+# Transition dep until all ebuilds have client-libs patch and USE
 if ! [[ ${HAS_TOOLS_PATCH} ]] ; then
 	DEPEND="${DEPEND} sys-libs/ncurses[${MULTILIB_USEDEP}]"
 fi
@@ -612,11 +607,9 @@ multilib_src_configure() {
 
 	if in_iuse client-libs ; then
 		mycmakeargs+=( -DWITHOUT_CLIENTLIBS=$(usex client-libs 0 1) )
-	fi
 
-	if in_iuse tools ; then
 		if multilib_is_native_abi ; then
-			mycmakeargs+=( -DWITHOUT_TOOLS=$(usex tools 0 1) )
+			mycmakeargs+=( -DWITHOUT_TOOLS=0 )
 		else
 			mycmakeargs+=( -DWITHOUT_TOOLS=1 )
 		fi
@@ -629,13 +622,11 @@ multilib_src_configure() {
 				-DWITH_READLINE=$(usex bindist 1 0)
 				-DNOT_FOR_DISTRIBUTION=$(usex bindist 0 1)
 			)
-		else
-			if ! in_iuse tools ; then
-				mycmakeargs+=(
-					-DWITH_READLINE=1
-					-DNOT_FOR_DISTRIBUTION=0
-				)
-			fi
+		elif ! in_iuse client-libs ; then
+			mycmakeargs+=(
+				-DWITH_READLINE=1
+				-DNOT_FOR_DISTRIBUTION=0
+			)
 		fi
 	fi
 
