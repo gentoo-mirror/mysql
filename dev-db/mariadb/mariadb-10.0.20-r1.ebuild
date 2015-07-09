@@ -40,11 +40,11 @@ multilib_src_test() {
 	local retstatus_unit
 	local retstatus_tests
 
-	# Bug #213475 - MySQL _will_ object strenously if your machine is named
-	# localhost. Also causes weird failures.
-	[[ "${HOSTNAME}" == "localhost" ]] && die "Your machine must NOT be named localhost"
+	if use server ; then
 
-	if ! use "minimal" ; then
+		# Bug #213475 - MySQL _will_ object strenously if your machine is named
+		# localhost. Also causes weird failures.
+		[[ "${HOSTNAME}" == "localhost" ]] && die "Your machine must NOT be named localhost"
 
 		if [[ $UID -eq 0 ]]; then
 			die "Testing with FEATURES=-userpriv is no longer supported by upstream. Tests MUST be run as non-root."
@@ -59,6 +59,13 @@ multilib_src_test() {
 		retstatus_unit=$?
 		[[ $retstatus_unit -eq 0 ]] || eerror "test-unit failed"
 
+		# Create a symlink to provided binaries so the tests can find them when client-libs is off
+		if ! use client-libs ; then
+			ln -srf /usr/bin/my_print_defaults "${BUILD_DIR}/client/my_print_defaults" || die
+			ln -srf /usr/bin/perror "${BUILD_DIR}/client/perror" || die
+			mysql-multilib_disable_test main.perror "String mismatch due to not building local perror"
+		fi
+
 		# Ensure that parallel runs don't die
 		export MTR_BUILD_THREAD="$((${RANDOM} % 100))"
 		# Enable parallel testing, auto will try to detect number of cores
@@ -66,7 +73,7 @@ multilib_src_test() {
 		# The default maximum is 8 unless MTR_MAX_PARALLEL is increased
 		export MTR_PARALLEL="${MTR_PARALLEL:-auto}"
 
-		# create directories because mysqladmin might right out of order
+		# create directories because mysqladmin might run out of order
 		mkdir -p "${T}"/var-tests{,/log}
 
 		# These are failing in MariaDB 10.0 for now and are believed to be
@@ -94,7 +101,7 @@ multilib_src_test() {
 		pushd "${TESTDIR}"
 
 		# run mysql-test tests
-		perl mysql-test-run.pl --force --vardir="${T}/var-tests"
+		perl mysql-test-run.pl --force --vardir="${T}/var-tests" --reorder
 
 		retstatus_tests=$?
 		[[ $retstatus_tests -eq 0 ]] || eerror "tests failed"
@@ -115,7 +122,6 @@ multilib_src_test() {
 		einfo "Tests successfully completed"
 
 	else
-
 		einfo "Skipping server tests due to minimal build."
 	fi
 }
