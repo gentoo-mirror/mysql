@@ -1,0 +1,125 @@
+diff -aurN a/CMakeLists.txt b/CMakeLists.txt
+--- a/CMakeLists.txt	2015-07-09 09:04:00.118091000 -0400
++++ b/CMakeLists.txt	2015-07-09 09:17:06.291091000 -0400
+@@ -405,8 +405,6 @@
+ MYSQL_CHECK_ZLIB_WITH_COMPRESS()
+ # Add bundled yassl/taocrypt or system openssl.
+ MYSQL_CHECK_SSL()
+-# Add system/bundled editline.
+-MYSQL_CHECK_EDITLINE()
+ # Add libevent
+ MYSQL_CHECK_LIBEVENT()
+ 
+@@ -436,7 +434,10 @@
+   ADD_SUBDIRECTORY(storage/ndb)
+ ENDIF()
+ 
+-ADD_SUBDIRECTORY(include)
++IF(NOT WITHOUT_CLIENTLIBS)
++  ADD_SUBDIRECTORY(include)
++ENDIF(NOT WITHOUT_CLIENTLIBS)
++
+ ADD_SUBDIRECTORY(dbug)
+ ADD_SUBDIRECTORY(strings)
+ ADD_SUBDIRECTORY(vio)
+@@ -462,7 +463,6 @@
+ ENDIF()
+ 
+ ADD_SUBDIRECTORY(extra)
+-ADD_SUBDIRECTORY(client)
+ ADD_SUBDIRECTORY(sql/share)
+ ADD_SUBDIRECTORY(libservices)
+ 
+@@ -470,11 +470,20 @@
+   ADD_SUBDIRECTORY(man)
+ ENDIF()
+ 
++IF(NOT WITHOUT_TOOLS)
++  # Add system/bundled editline
++  MYSQL_CHECK_EDITLINE()
++  ADD_SUBDIRECTORY(client)
++ENDIF(NOT WITHOUT_TOOLS)
++
+ IF(NOT WITHOUT_SERVER)
+   ADD_SUBDIRECTORY(tests)
+   ADD_SUBDIRECTORY(sql)
+   OPTION (WITH_EMBEDDED_SERVER "Compile MySQL with embedded server" OFF)
+   IF(WITH_EMBEDDED_SERVER) 
++   IF(WITHOUT_TOOLS)
++     MYSQL_CHECK_EDITLINE()
++   ENDIF(WITHOUT_TOOLS)
+    ADD_SUBDIRECTORY(libmysqld)
+    ADD_SUBDIRECTORY(libmysqld/examples)
+   ENDIF(WITH_EMBEDDED_SERVER)
+diff -aurN a/extra/CMakeLists.txt b/extra/CMakeLists.txt
+--- a/extra/CMakeLists.txt	2015-05-05 07:05:53.000000000 -0400
++++ b/extra/CMakeLists.txt	2015-07-09 09:18:16.982091000 -0400
+@@ -59,15 +59,16 @@
+   ADD_DEPENDENCIES(GenError copy_openssl_extra)
+ ENDIF()
+ 
++IF(NOT WITHOUT_CLIENTLIBS)
++  MYSQL_ADD_EXECUTABLE(my_print_defaults my_print_defaults.c)
++  TARGET_LINK_LIBRARIES(my_print_defaults  mysys mysys_ssl)
++  SET_TARGET_PROPERTIES(my_print_defaults PROPERTIES LINKER_LANGUAGE CXX)
+ 
+-MYSQL_ADD_EXECUTABLE(my_print_defaults my_print_defaults.c)
+-TARGET_LINK_LIBRARIES(my_print_defaults  mysys mysys_ssl)
+-SET_TARGET_PROPERTIES(my_print_defaults PROPERTIES LINKER_LANGUAGE CXX)
+-
+-MYSQL_ADD_EXECUTABLE(perror perror.c)
+-ADD_DEPENDENCIES(perror GenError)
+-TARGET_LINK_LIBRARIES(perror mysys mysys_ssl)
+-SET_TARGET_PROPERTIES(perror PROPERTIES LINKER_LANGUAGE CXX)
++  MYSQL_ADD_EXECUTABLE(perror perror.c)
++  ADD_DEPENDENCIES(perror GenError)
++  TARGET_LINK_LIBRARIES(perror mysys mysys_ssl)
++  SET_TARGET_PROPERTIES(perror PROPERTIES LINKER_LANGUAGE CXX)
++ENDIF(NOT WITHOUT_CLIENTLIBS)
+ 
+ MYSQL_ADD_EXECUTABLE(resolveip resolveip.c)
+ TARGET_LINK_LIBRARIES(resolveip mysys mysys_ssl)
+diff -aurN a/libmysql/CMakeLists.txt b/libmysql/CMakeLists.txt
+--- a/libmysql/CMakeLists.txt	2015-07-09 09:04:01.217091000 -0400
++++ b/libmysql/CMakeLists.txt	2015-07-09 09:22:47.903091000 -0400
+@@ -217,14 +217,14 @@
+ 
+ IF(UNIX)
+   GET_TARGET_NAME(mysqlclient lib_name)
+-  IF(ENABLE_STATIC_LIBS)
++  IF(ENABLE_STATIC_LIBS AND NOT WITHOUT_CLIENTLIBS)
+     INSTALL_SYMLINK(mysqlclient
+       ${lib_name} ${CMAKE_STATIC_LIBRARY_PREFIX}mysqlclient_r.a
+       ${INSTALL_LIBDIR} Development)
+   ENDIF()
+ ENDIF()
+ 
+-IF(NOT DISABLE_SHARED)
++IF(NOT DISABLE_SHARED AND NOT WITHOUT_CLIENTLIBS)
+   # Merge several convenience libraries into one big mysqlclient
+   # and link them together into shared library.
+   MERGE_LIBRARIES(libmysql SHARED ${LIBS}
+diff -aurN a/scripts/CMakeLists.txt b/scripts/CMakeLists.txt
+--- a/scripts/CMakeLists.txt	2015-07-09 09:04:00.401091000 -0400
++++ b/scripts/CMakeLists.txt	2015-07-09 09:20:25.723091000 -0400
+@@ -347,7 +347,6 @@
+   SET(mysql_config_COMPONENT COMPONENT Development)
+   SET(BIN_SCRIPTS
+     msql2mysql
+-    mysql_config
+     mysql_fix_extensions
+     mysql_setpermission
+     mysql_zap
+@@ -360,6 +359,12 @@
+     mysqld_multi
+     mysqld_safe
+   )
++  IF(NOT WITHOUT_CLIENTLIBS)
++    SET(BIN_SCRIPTS
++      ${BIN_SCRIPTS}
++      mysql_config
++    )
++  ENDIF(NOT WITHOUT_CLIENTLIBS)
+   FOREACH(file ${BIN_SCRIPTS})
+     IF(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${file}.sh)
+       CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/${file}.sh
