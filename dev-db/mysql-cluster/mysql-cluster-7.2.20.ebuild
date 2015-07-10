@@ -1,6 +1,6 @@
 # Copyright 1999-2015 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: /var/cvsroot/gentoo-x86/dev-db/mysql-cluster/mysql-cluster-7.2.19.ebuild,v 1.1 2015/02/10 18:15:07 grknight Exp $
+# $Header: /var/cvsroot/gentoo-x86/dev-db/mysql-cluster/mysql-cluster-7.2.20.ebuild,v 1.1 2015/07/10 20:37:23 grknight Exp $
 
 EAPI=4
 MY_EXTRAS_VER="20150210-1758Z"
@@ -15,7 +15,7 @@ KEYWORDS="~amd64 ~x86"
 
 # When MY_EXTRAS is bumped, the index should be revised to exclude these.
 # This is often broken still
-EPATCH_EXCLUDE='02040_all_embedded-library-shared-5.1.43.patch '
+#EPATCH_EXCLUDE=''
 
 DEPEND="|| ( >=sys-devel/gcc-3.4.6 >=sys-devel/gcc-apple-4.0 )"
 RDEPEND="!media-sound/amarok[embedded]"
