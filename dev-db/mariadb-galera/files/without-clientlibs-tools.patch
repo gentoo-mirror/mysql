@@ -1,0 +1,120 @@
+diff -aurN a/CMakeLists.txt b/CMakeLists.txt
+--- a/CMakeLists.txt	2015-06-17 10:54:11.000000000 -0400
++++ b/CMakeLists.txt	2015-06-24 10:34:17.314169100 -0400
+@@ -354,8 +354,6 @@
+ MYSQL_CHECK_ZLIB_WITH_COMPRESS()
+ # Add bundled yassl/taocrypt or system openssl.
+ MYSQL_CHECK_SSL()
+-# Add readline or libedit.
+-MYSQL_CHECK_READLINE()
+ 
+ SET(MALLOC_LIBRARY "system")
+ CHECK_JEMALLOC()
+@@ -394,27 +392,38 @@
+  CONFIGURE_PLUGINS()
+ ENDIF()
+ 
+-ADD_SUBDIRECTORY(include)
++IF(NOT WITHOUT_CLIENTLIBS)
++  ADD_SUBDIRECTORY(include)
++ENDIF(NOT WITHOUT_CLIENTLIBS)
++
+ ADD_SUBDIRECTORY(dbug)
+ ADD_SUBDIRECTORY(strings)
+ ADD_SUBDIRECTORY(vio)
+ ADD_SUBDIRECTORY(mysys)
+ ADD_SUBDIRECTORY(mysys_ssl)
+ ADD_SUBDIRECTORY(libmysql)
+ IF(WITH_WSREP)
+ ADD_SUBDIRECTORY(wsrep)
+ ENDIF()
+-ADD_SUBDIRECTORY(client)
+ ADD_SUBDIRECTORY(extra)
+ ADD_SUBDIRECTORY(libservices)
+ ADD_SUBDIRECTORY(scripts)
+ ADD_SUBDIRECTORY(sql/share)
+ ADD_SUBDIRECTORY(support-files)
+ 
++IF(NOT WITHOUT_TOOLS)
++  # Add readline or libedit.
++  MYSQL_CHECK_READLINE()
++  ADD_SUBDIRECTORY(client)
++ENDIF(NOT WITHOUT_TOOLS)
++
+ IF(NOT WITHOUT_SERVER)
+   ADD_SUBDIRECTORY(tests)
+   ADD_SUBDIRECTORY(sql)
+   OPTION (WITH_EMBEDDED_SERVER "Compile MySQL with embedded server" OFF)
+-  IF(WITH_EMBEDDED_SERVER) 
++  IF(WITH_EMBEDDED_SERVER)
++   IF(WITHOUT_TOOLS)
++      MYSQL_CHECK_READLINE()
++   ENDIF(WITHOUT_TOOLS)
+    ADD_SUBDIRECTORY(libmysqld)
+    ADD_SUBDIRECTORY(libmysqld/examples)
+   ENDIF(WITH_EMBEDDED_SERVER)
+diff -aurN a/extra/CMakeLists.txt b/extra/CMakeLists.txt
+--- a/extra/CMakeLists.txt	2015-06-17 10:54:11.000000000 -0400
++++ b/extra/CMakeLists.txt	2015-06-24 10:37:31.879169100 -0400
+@@ -54,12 +54,14 @@
+                   DEPENDS 
+                   ${CMAKE_BINARY_DIR}/include/mysqld_error.h.tmp)
+ 
+-MYSQL_ADD_EXECUTABLE(my_print_defaults my_print_defaults.c)
+-TARGET_LINK_LIBRARIES(my_print_defaults  mysys)
++IF(NOT WITHOUT_CLIENTLIBS)
++  MYSQL_ADD_EXECUTABLE(my_print_defaults my_print_defaults.c)
++  TARGET_LINK_LIBRARIES(my_print_defaults  mysys)
+ 
+-MYSQL_ADD_EXECUTABLE(perror perror.c)
+-ADD_DEPENDENCIES(perror GenError)
+-TARGET_LINK_LIBRARIES(perror mysys)
++  MYSQL_ADD_EXECUTABLE(perror perror.c)
++  ADD_DEPENDENCIES(perror GenError)
++  TARGET_LINK_LIBRARIES(perror mysys)
++ENDIF(NOT WITHOUT_CLIENTLIBS)
+ 
+ IF(UNIX)
+ MYSQL_ADD_EXECUTABLE(resolveip resolveip.c)
+diff -aurN a/scripts/CMakeLists.txt b/scripts/CMakeLists.txt
+--- a/scripts/CMakeLists.txt	2015-06-24 10:28:12.800169100 -0400
++++ b/scripts/CMakeLists.txt	2015-06-24 10:42:49.682169100 -0400
+@@ -327,7 +327,6 @@
+   # On Unix, most of the files end up in the bin directory
+   SET(BIN_SCRIPTS
+     msql2mysql
+-    mysql_config
+     mysql_fix_extensions
+     mysql_setpermission
+     mysql_secure_installation
+@@ -341,6 +340,12 @@
+     mysqld_multi
+     mysqld_safe
+   )
++  IF(NOT WITHOUT_CLIENTLIBS)
++    SET(BIN_SCRIPTS
++      ${BIN_SCRIPTS}
++      mysql_config
++    )
++  ENDIF(NOT WITHOUT_CLIENTLIBS)
+   FOREACH(file ${BIN_SCRIPTS})
+     IF(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${file}.sh)
+       CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/${file}.sh
+diff -aurN a/libmysql/CMakeLists.txt b/libmysql/CMakeLists.txt
+--- a/libmysql/CMakeLists.txt	2015-06-24 12:32:11.606169100 -0400
++++ b/libmysql/CMakeLists.txt	2015-06-24 13:44:53.857169100 -0400
+@@ -440,12 +440,12 @@
+       SET(${OUTNAME} ${LIBNAME}${EXTENSION}${DOT_VERSION})
+     ENDIF() 
+   ENDMACRO()
+-  IF(ENABLE_STATIC_LIBS)
++  IF(ENABLE_STATIC_LIBS AND NOT WITHOUT_CLIENTLIBS)
+     INSTALL_SYMLINK(${CMAKE_STATIC_LIBRARY_PREFIX}mysqlclient_r.a mysqlclient ${INSTALL_LIBDIR} Development)
+   ENDIF()
+ ENDIF()
+ 
+-IF(NOT DISABLE_SHARED)
++IF(NOT DISABLE_SHARED AND NOT WITHOUT_CLIENTLIBS)
+   MERGE_LIBRARIES(libmysql SHARED ${LIBS}
+     EXPORTS ${CLIENT_API_FUNCTIONS} ${CLIENT_API_5_1_EXTRA} ${CLIENT_API_5_5_EXTRA}
+     COMPONENT SharedLibraries)
