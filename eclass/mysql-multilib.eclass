@@ -178,7 +178,7 @@ if [[ ${PN} == "percona-server" ]]; then
 	DESCRIPTION="An enhanced, drop-in replacement for MySQL from the Percona team"
 fi
 LICENSE="GPL-2"
-SLOT="0"
+SLOT="0/${SUBSLOT:=0}"
 
 IUSE="+community cluster debug embedded extraengine jemalloc latin1
 	+perl profiling selinux ssl systemtap static static-libs tcmalloc test"

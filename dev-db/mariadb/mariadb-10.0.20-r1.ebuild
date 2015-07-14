@@ -5,6 +5,7 @@
 EAPI="5"
 MY_EXTRAS_VER="20141215-0144Z"
 HAS_TOOLS_PATCH="1"
+SUBSLOT="18"
 
 inherit toolchain-funcs mysql-multilib
 IUSE="${IUSE}"

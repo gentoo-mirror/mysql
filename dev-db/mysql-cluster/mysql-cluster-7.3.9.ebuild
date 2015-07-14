@@ -4,6 +4,7 @@
 
 EAPI=5
 MY_EXTRAS_VER="20150710-1911Z"
+SUBSLOT="18"
 
 inherit toolchain-funcs java-pkg-opt-2 mysql-multilib
 # only to make repoman happy. it is really set in the eclass

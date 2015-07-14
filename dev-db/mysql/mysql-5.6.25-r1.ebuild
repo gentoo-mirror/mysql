@@ -8,6 +8,7 @@ MY_EXTRAS_VER="20150410-1944Z"
 MY_PV="${PV//_alpha_pre/-m}"
 MY_PV="${MY_PV//_/-}"
 HAS_TOOLS_PATCH="1"
+SUBSLOT="18"
 
 inherit toolchain-funcs mysql-multilib
 # only to make repoman happy. it is really set in the eclass

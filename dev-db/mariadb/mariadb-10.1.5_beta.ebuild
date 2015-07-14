@@ -5,6 +5,7 @@
 EAPI="5"
 MY_EXTRAS_VER="live"
 WSREP_REVISION="25"
+SUBSLOT="18"
 
 inherit toolchain-funcs mysql-multilib
 # only to make repoman happy. it is really set in the eclass
