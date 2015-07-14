@@ -14,3 +14,4 @@
 >=dev-db/mariadb-10.1
 >=dev-db/mysql-5.7
 >=virtual/mysql-5.7
+>=virtual/libmysqlclient-20
