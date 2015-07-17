@@ -1,12 +1,13 @@
 # Copyright 1999-2015 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: /var/cvsroot/gentoo-x86/dev-db/mysql/mysql-5.6.25.ebuild,v 1.1 2015/06/01 16:18:23 grknight Exp $
+# $Heaher: $
 
 EAPI="5"
 
-MY_EXTRAS_VER="20150410-1944Z"
+MY_EXTRAS_VER="20150717-1707Z"
 MY_PV="${PV//_alpha_pre/-m}"
 MY_PV="${MY_PV//_/-}"
+HAS_TOOLS_PATCH="1"
 SUBSLOT="18"
 
 inherit toolchain-funcs mysql-multilib
@@ -27,7 +28,7 @@ RDEPEND="${RDEPEND}"
 # and create your own mysql-extras tarball, looking at 000_index.txt
 
 # Official test instructions:
-# USE='embedded extraengine perl ssl static-libs community' \
+# USE='server embedded extraengine perl ssl static-libs community' \
 # FEATURES='test userpriv -usersandbox' \
 # ebuild mysql-X.X.XX.ebuild \
 # digest clean package
@@ -46,7 +47,7 @@ multilib_src_test() {
 	# localhost. Also causes weird failures.
 	[[ "${HOSTNAME}" == "localhost" ]] && die "Your machine must NOT be named localhost"
 
-	if ! use "minimal" ; then
+	if use server ; then
 
 		if [[ $UID -eq 0 ]]; then
 			die "Testing with FEATURES=-userpriv is no longer supported by upstream. Tests MUST be run as non-root."
@@ -60,6 +61,13 @@ multilib_src_test() {
 		cmake-utils_src_test
 		retstatus_unit=$?
 		[[ $retstatus_unit -eq 0 ]] || eerror "test-unit failed"
+
+		# Create a symlink to provided binaries so the tests can find them when client-libs is off
+		if ! use client-libs ; then
+			ln -srf /usr/bin/my_print_defaults "${BUILD_DIR}/client/my_print_defaults" || die
+			ln -srf /usr/bin/perror "${BUILD_DIR}/client/perror" || die
+			mysql-multilib_disable_test main.perror "String mismatch due to not building local perror"
+		fi
 
 		# Ensure that parallel runs don't die
 		export MTR_BUILD_THREAD="$((${RANDOM} % 100))"
@@ -128,7 +136,7 @@ multilib_src_test() {
 
 		# run mysql-test tests
 		perl mysql-test-run.pl --force --vardir="${T}/var-tests" \
-			--suite-timeout=5000
+			--suite-timeout=5000 --reorder
 		retstatus_tests=$?
 		[[ $retstatus_tests -eq 0 ]] || eerror "tests failed"
 		has usersandbox $FEATURES && eerror "Some tests may fail with FEATURES=usersandbox"
@@ -148,7 +156,6 @@ multilib_src_test() {
 		einfo "Tests successfully completed"
 
 	else
-
 		einfo "Skipping server tests due to minimal build."
 	fi
 }

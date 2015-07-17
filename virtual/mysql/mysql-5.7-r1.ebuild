@@ -4,17 +4,18 @@
 
 EAPI="5"
 
-DESCRIPTION="Virtual for MySQL client or database"
+DESCRIPTION="Virtual for MySQL database server"
 HOMEPAGE=""
 SRC_URI=""
 
 LICENSE=""
 SLOT="0/20"
 KEYWORDS="~alpha ~amd64 ~arm ~arm64 ~hppa ~ia64 ~mips ~ppc ~ppc64 ~s390 ~sh ~sparc ~x86 ~sparc-fbsd ~x86-fbsd ~x86-freebsd ~amd64-linux ~x86-linux ~ppc-macos ~x64-macos ~x86-macos ~x64-solaris ~x86-solaris"
-IUSE="embedded minimal static static-libs"
+IUSE="embedded static static-libs"
 
 DEPEND=""
-RDEPEND="|| (
-	=dev-db/mariadb-10.1*[embedded=,minimal=,static=,static-libs=]
-	=dev-db/mysql-${PV}*[embedded=,minimal=,static=,static-libs=]
-)"
+RDEPEND="
+	virtual/libmysqlclient
+	|| (
+		=dev-db/mysql-${PV}*[embedded=,static=,static-libs=]
+	)"

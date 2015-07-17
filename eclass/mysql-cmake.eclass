@@ -87,26 +87,30 @@ mysql-cmake_use_plugin() {
 # Helper function to configure locale cmake options
 configure_cmake_locale() {
 
-	if ! use minimal && [[ ( -n ${MYSQL_DEFAULT_CHARSET} ) && ( -n ${MYSQL_DEFAULT_COLLATION} ) ]]; then
-		ewarn "You are using a custom charset of ${MYSQL_DEFAULT_CHARSET}"
-		ewarn "and a collation of ${MYSQL_DEFAULT_COLLATION}."
-		ewarn "You MUST file bugs without these variables set."
+	if use_if_iuse minimal ; then
+		:
+	elif ! in_iuse server || use_if_iuse server ; then
+		if [[ ( -n ${MYSQL_DEFAULT_CHARSET} ) && ( -n ${MYSQL_DEFAULT_COLLATION} ) ]]; then
+			ewarn "You are using a custom charset of ${MYSQL_DEFAULT_CHARSET}"
+			ewarn "and a collation of ${MYSQL_DEFAULT_COLLATION}."
+			ewarn "You MUST file bugs without these variables set."
 
-		mycmakeargs+=(
-			-DDEFAULT_CHARSET=${MYSQL_DEFAULT_CHARSET}
-			-DDEFAULT_COLLATION=${MYSQL_DEFAULT_COLLATION}
-		)
+			mycmakeargs+=(
+				-DDEFAULT_CHARSET=${MYSQL_DEFAULT_CHARSET}
+				-DDEFAULT_COLLATION=${MYSQL_DEFAULT_COLLATION}
+			)
 
-	elif ! use latin1 ; then
-		mycmakeargs+=(
-			-DDEFAULT_CHARSET=utf8
-			-DDEFAULT_COLLATION=utf8_general_ci
-		)
-	else
-		mycmakeargs+=(
-			-DDEFAULT_CHARSET=latin1
-			-DDEFAULT_COLLATION=latin1_swedish_ci
-		)
+		elif ! use latin1 ; then
+			mycmakeargs+=(
+				-DDEFAULT_CHARSET=utf8
+				-DDEFAULT_COLLATION=utf8_general_ci
+			)
+		else
+			mycmakeargs+=(
+				-DDEFAULT_CHARSET=latin1
+				-DDEFAULT_COLLATION=latin1_swedish_ci
+			)
+		fi
 	fi
 }
 
@@ -375,7 +379,7 @@ mysql-cmake_src_configure() {
 
 	configure_cmake_locale
 
-	if use minimal ; then
+	if use_if_iuse minimal ; then
 		configure_cmake_minimal
 	else
 		configure_cmake_standard
@@ -424,14 +428,18 @@ mysql-cmake_src_install() {
 
 	cmake-utils_src_install
 
-	# Convenience links
-	einfo "Making Convenience links for mysqlcheck multi-call binary"
-	dosym "/usr/bin/mysqlcheck" "/usr/bin/mysqlanalyze"
-	dosym "/usr/bin/mysqlcheck" "/usr/bin/mysqlrepair"
-	dosym "/usr/bin/mysqlcheck" "/usr/bin/mysqloptimize"
+	if ! in_iuse tools || use_if_iuse tools ; then
+		# Convenience links
+		einfo "Making Convenience links for mysqlcheck multi-call binary"
+		dosym "/usr/bin/mysqlcheck" "/usr/bin/mysqlanalyze"
+		dosym "/usr/bin/mysqlcheck" "/usr/bin/mysqlrepair"
+		dosym "/usr/bin/mysqlcheck" "/usr/bin/mysqloptimize"
+	fi
 
-	# Create a mariadb_config symlink
-	[[ ${PN} == "mariadb" || ${PN} == "mariadb-galera" ]] && dosym "/usr/bin/mysql_config" "/usr/bin/mariadb_config"
+	if [[ -z ${HAS_TOOLS_PATCH} ]] ; then
+		# Create a mariadb_config symlink
+		[[ ${PN} == "mariadb" || ${PN} == "mariadb-galera" ]] && dosym "/usr/bin/mysql_config" "/usr/bin/mariadb_config"
+	fi
 
 	# INSTALL_LAYOUT=STANDALONE causes cmake to create a /usr/data dir
 	rm -Rf "${ED}/usr/data"
@@ -469,7 +477,9 @@ mysql-cmake_src_install() {
 	newins "${TMPDIR}/my.cnf.ok" my.cnf
 
 	# Minimal builds don't have the MySQL server
-	if ! use minimal ; then
+	if use_if_iuse minimal ; then
+		:
+	elif ! in_iuse server || use_if_iuse server ; then
 		einfo "Creating initial directories"
 		# Empty directories ...
 		diropts "-m0750"
@@ -488,7 +498,9 @@ mysql-cmake_src_install() {
 	fi
 
 	# Minimal builds don't have the MySQL server
-	if ! use minimal ; then
+	if use_if_iuse minimal ; then
+		:
+	elif ! in_iuse server || use_if_iuse server; then
 		einfo "Including support files and sample configurations"
 		docinto "support-files"
 		for script in \
@@ -508,6 +520,8 @@ mysql-cmake_src_install() {
 	#Remove mytop if perl is not selected
 	[[ ${PN} == "mariadb" || ${PN} == "mariadb-galera" ]] && ! use perl \
 	&& rm -f "${ED}/usr/bin/mytop"
+
+	in_iuse client-libs && ! use client-libs && return
 
 	# Percona has decided to rename libmysqlclient to libperconaserverclient
 	# Use a symlink to preserve linkages for those who don't use mysql_config

@@ -9,6 +9,7 @@ dev-db/mariadb
 -->
 <use>
   <flag name='big-tables'>Make tables contain up to 1.844E+19 rows</flag>
+  <flag name='client-libs'>Build the libmysqlclient libraries</flag>
   <flag name='cluster'>Add support for NDB clustering (deprecated)</flag>
   <flag name='community'>Enables the community features from upstream.</flag>
   <flag name='embedded'>Build embedded server (libmysqld)</flag>
@@ -25,10 +26,12 @@ dev-db/mariadb
   <flag name='pam'>Enable the optional PAM authentication plugin for the server</flag>
   <flag name='pbxt'>Add experimental support for PBXT storage engine</flag>
   <flag name='profiling'>Add support for statement profiling (requires USE=community).</flag>
+  <flag name='server'>Build the server program</flag>
+  <flag name='sphinx'>Add suport for the sphinx full-text search engine</flag>
   <flag name='sst-rsync'>Add tools needed to support the rsync SST method</flag>
   <flag name='sst-xtrabackup'>Add tools needed to support the xtrabackup and xtrabackup-v2 SST methods</flag>
   <flag name="systemtap">Build support for profiling and tracing using <pkg>dev-util/systemtap</pkg></flag>
-  <flag name='sphinx'>Add suport for the sphinx full-text search engine</flag>
+  <flag name='tools'>Build the command line tools (mysql, mysqldump, mysqladmin, etc)</flag>
   <flag name='test'>Install upstream testsuites for end use.</flag>
   <flag name='tokudb'>Add support for TokuDB storage engine</flag>
 </use>

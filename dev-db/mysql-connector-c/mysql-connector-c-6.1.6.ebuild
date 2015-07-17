@@ -10,6 +10,9 @@ MULTILIB_WRAPPED_HEADERS+=(
 	/usr/include/mysql/my_config.h
 )
 
+# wrap the config script
+MULTILIB_CHOST_TOOLS=( /usr/bin/mysql_config )
+
 DESCRIPTION="C client library for MariaDB/MySQL"
 HOMEPAGE="https://dev.mysql.com/downloads/connector/c/"
 LICENSE="GPL-2"
@@ -26,12 +29,12 @@ CDEPEND="
 	ssl? ( dev-libs/openssl:=[${MULTILIB_USEDEP}] )
 	"
 RDEPEND="${CDEPEND}
-	!dev-db/mysql
-	!dev-db/mysql-cluster
-	!dev-db/mariadb
+	!dev-db/mysql[client-libs(+)]
+	!dev-db/mysql-cluster[client-libs(+)]
+	!dev-db/mariadb[client-libs(+)]
 	!dev-db/mariadb-connector-c[mysqlcompat]
-	!dev-db/mariadb-galera
-	!dev-db/percona-server
+	!dev-db/mariadb-galera[client-libs(+)]
+	!dev-db/percona-server[client-libs(+)]
 	"
 DEPEND="${CDEPEND}
 	>=dev-util/cmake-2.8.9
@@ -40,7 +43,8 @@ DEPEND="${CDEPEND}
 DOCS=( README Docs/ChangeLog )
 
 src_prepare() {
-	epatch "${FILESDIR}/openssl-cmake-detection.patch"
+	epatch "${FILESDIR}/openssl-cmake-detection.patch" \
+		"${FILESDIR}/conn-c-includes.patch"
 	epatch_user
 }
 

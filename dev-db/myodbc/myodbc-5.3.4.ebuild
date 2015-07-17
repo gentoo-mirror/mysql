@@ -1,9 +1,9 @@
-# Copyright 1999-2014 Gentoo Foundation
+# Copyright 1999-2015 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: /var/cvsroot/gentoo-x86/dev-db/myodbc/myodbc-5.2.7.ebuild,v 1.2 2014/08/20 18:52:50 grknight Exp $
+# $Header: /var/cvsroot/gentoo-x86/dev-db/myodbc/myodbc-5.2.7-r1.ebuild,v 1.4 2015/04/19 07:02:28 pacho Exp $
 
 EAPI=5
-inherit cmake-utils eutils flag-o-matic versionator
+inherit cmake-multilib eutils flag-o-matic versionator
 
 MAJOR="$(get_version_component_range 1-2 $PV)"
 MY_PN="mysql-connector-odbc"
@@ -17,13 +17,16 @@ RESTRICT="primaryuri"
 LICENSE="GPL-2"
 SLOT="${MAJOR}"
 KEYWORDS="~amd64 ~ppc ~x86"
-IUSE=""
+IUSE="gtk"
 
+# Does not build with mysql-connector-c
 RDEPEND="
-	dev-db/unixODBC
-	>=virtual/mysql-5.5
+	dev-db/unixODBC[${MULTILIB_USEDEP}]
+	~virtual/libmysqlclient-18[${MULTILIB_USEDEP}]
+	gtk? ( x11-libs/gtk+:2= )
+	!dev-db/mysql-connector-c
 "
-DEPEND="${DEPEND} ${RDEPEND}"
+DEPEND="${RDEPEND}"
 S=${WORKDIR}/${MY_P}
 
 # Careful!
@@ -40,25 +43,29 @@ src_prepare() {
 	# Patch document path so it doesn't install files to /usr
 	epatch "${FILESDIR}/cmake-doc-path.patch" \
 		"${FILESDIR}/${PV}-cxxlinkage.patch" \
-		"${FILESDIR}/${PV}-mariadb-dynamic-array.patch"
+		"${FILESDIR}/5.2.7-mariadb-dynamic-array.patch"
 }
 
-src_configure() {
+multilib_src_configure() {
 	# The RPM_BUILD flag does nothing except install to /usr/lib64 when "x86_64"
 	# MYSQL_CXX_LINKAGE expects "mysql_config --cxxflags" which doesn't exist on MariaDB
+
+#	append-ldflags
 	mycmakeargs+=(
 		-DMYSQL_CXX_LINKAGE=0
 		-DWITH_UNIXODBC=1
-		-DRPM_BUILD=1
-		-DMYSQLCLIENT_LIB_NAME="libmysqlclient_r.so"
-		-DWITH_DOCUMENTATION_INSTALL_PATH=/usr/share/doc/${P}
+		-DMYSQLCLIENT_LIB_NAME="libmysqlclient.so"
+		-DWITH_DOCUMENTATION_INSTALL_PATH=/usr/share/doc/${PF}
+		-DMYSQL_LIB_DIR="${ROOT}/usr/$(get_libdir)"
+		-DLIB_SUBDIR="$(get_libdir)"
+		-DMYSQL_CONFIG_EXECUTABLE="/usr/bin/${CHOST}-mysql_config"
+		-DDISABLE_GUI=$(usex gtk 0 1)
 	)
-
 	cmake-utils_src_configure
 }
 
-src_install() {
-	cmake-utils_src_install
+multilib_src_install_all() {
+	debug-print-function ${FUNCNAME} "$@"
 
 	dodir /usr/share/${PN}-${SLOT}
 	for i in odbc.ini odbcinst.ini; do
