@@ -22,7 +22,7 @@ IUSE=""
 # Does not build with mysql-connector-c
 RDEPEND="
 	dev-db/unixODBC[${MULTILIB_USEDEP}]
-	=virtual/libmysqlclient-18[${MULTILIB_USEDEP}]
+	~virtual/libmysqlclient-18[${MULTILIB_USEDEP}]
 	abi_x86_32? (
 		!app-emulation/emul-linux-x86-db[-abi_x86_32(-)]
 	)
