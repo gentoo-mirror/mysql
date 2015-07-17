@@ -10,6 +10,9 @@ MULTILIB_WRAPPED_HEADERS+=(
 	/usr/include/mysql/my_config.h
 )
 
+# wrap the config script
+MULTILIB_CHOST_TOOLS=( /usr/bin/mysql_config )
+
 DESCRIPTION="C client library for MariaDB/MySQL"
 HOMEPAGE="https://dev.mysql.com/downloads/connector/c/"
 LICENSE="GPL-2"
@@ -40,7 +43,8 @@ DEPEND="${CDEPEND}
 DOCS=( README Docs/ChangeLog )
 
 src_prepare() {
-	epatch "${FILESDIR}/openssl-cmake-detection.patch"
+	epatch "${FILESDIR}/openssl-cmake-detection.patch" \
+		"${FILESDIR}/conn-c-includes.patch"
 	epatch_user
 }
 
