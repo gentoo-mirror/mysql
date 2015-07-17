@@ -75,7 +75,7 @@ fi
 if [[ ${PN} == "mariadb" || ${PN} == "mariadb-galera" ]]; then
 	case ${PV} in
 		10.0*) MYSQL_PV_MAJOR="5.6" ;;
-		10.1*) MYSQL_PV_MAJOR="5.7" ;;
+		10.1*) MYSQL_PV_MAJOR="5.6" ;;
 	esac
 fi
 
