@@ -18,10 +18,10 @@ IUSE="static-libs"
 DEPEND=""
 RDEPEND="
 	|| (
-		dev-db/mysql-connector-c:${SLOT}[${MULTILIB_USEDEP}]
-		dev-db/mariadb:${SLOT}[client-libs(+),static-libs=,${MULTILIB_USEDEP}]
-		dev-db/mysql:${SLOT}[client-libs(+),static-libs=,${MULTILIB_USEDEP}]
-		dev-db/percona-server:${SLOT}[client-libs(+),static-libs=,${MULTILIB_USEDEP}]
-		dev-db/mariadb-galera:${SLOT}[client-libs(+),static-libs=,${MULTILIB_USEDEP}]
-		dev-db/mysql-cluster:${SLOT}[client-libs(+),static-libs=,${MULTILIB_USEDEP}]
+		dev-db/mysql-connector-c:${SLOT}[static-libs?,${MULTILIB_USEDEP}]
+		dev-db/mariadb:${SLOT}[client-libs(+),static-libs?,${MULTILIB_USEDEP}]
+		dev-db/mysql:${SLOT}[client-libs(+),static-libs?,${MULTILIB_USEDEP}]
+		dev-db/percona-server:${SLOT}[client-libs(+),static-libs?,${MULTILIB_USEDEP}]
+		dev-db/mariadb-galera:${SLOT}[client-libs(+),static-libs?,${MULTILIB_USEDEP}]
+		dev-db/mysql-cluster:${SLOT}[client-libs(+),static-libs?,${MULTILIB_USEDEP}]
 	)"
