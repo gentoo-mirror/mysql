@@ -1,9 +1,9 @@
 # Copyright 1999-2015 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: /var/cvsroot/gentoo-x86/dev-db/percona-server/percona-server-5.6.25.73.0.ebuild,v 1.1 2015/07/06 18:00:05 grknight Exp $
+# $Header: $
 
 EAPI="5"
-MY_EXTRAS_VER="20150113-1853Z"
+MY_EXTRAS_VER="20150717-1707Z"
 HAS_TOOLS_PATCH="1"
 SUBSLOT="18"
 
@@ -23,12 +23,6 @@ RDEPEND="${RDEPEND}"
 # Please do not add a naive src_unpack to this ebuild
 # If you want to add a single patch, copy the ebuild to an overlay
 # and create your own mysql-extras tarball, looking at 000_index.txt
-
-src_prepare() {
-	mysql-multilib_src_prepare
-	einfo "Applying experimental tools patch"
-	epatch "${FILESDIR}/without-clientlibs-tools.patch"
-}
 
 # Official test instructions:
 # USE='extraengine perl ssl static-libs community' \

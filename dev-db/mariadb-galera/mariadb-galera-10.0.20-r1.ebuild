@@ -3,7 +3,7 @@
 # $Header: $
 
 EAPI="5"
-MY_EXTRAS_VER="20141215-0144Z"
+MY_EXTRAS_VER="20150717-1707Z"
 WSREP_REVISION="25"
 HAS_TOOLS_PATCH="1"
 SUBSLOT="18"
@@ -24,12 +24,6 @@ RDEPEND="${RDEPEND}"
 # Please do not add a naive src_unpack to this ebuild
 # If you want to add a single patch, copy the ebuild to an overlay
 # and create your own mysql-extras tarball, looking at 000_index.txt
-
-src_prepare() {
-	mysql-multilib_src_prepare
-	einfo "Applying experimental tools patch"
-	epatch "${FILESDIR}/without-clientlibs-tools.patch"
-}
 
 # Official test instructions:
 # USE='embedded extraengine perl ssl static-libs community' \

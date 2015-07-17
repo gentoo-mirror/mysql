@@ -3,7 +3,7 @@
 # $Header: $
 
 EAPI="5"
-MY_EXTRAS_VER="20141215-0144Z"
+MY_EXTRAS_VER="20150717-1707Z"
 HAS_TOOLS_PATCH="1"
 SUBSLOT="18"
 
@@ -18,12 +18,6 @@ EPATCH_EXCLUDE=''
 
 DEPEND="|| ( >=sys-devel/gcc-3.4.6 >=sys-devel/gcc-apple-4.0 )"
 RDEPEND="${RDEPEND}"
-
-src_prepare() {
-	mysql-multilib_src_prepare
-	einfo "Applying experimental tools patch"
-	epatch "${FILESDIR}/without-clientlibs-tools.patch"
-}
 
 # Official test instructions:
 # USE='embedded extraengine perl ssl static-libs community' \

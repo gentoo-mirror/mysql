@@ -1,10 +1,10 @@
 # Copyright 1999-2015 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: /var/cvsroot/gentoo-x86/dev-db/mysql/mysql-5.6.25.ebuild,v 1.1 2015/06/01 16:18:23 grknight Exp $
+# $Heaher: $
 
 EAPI="5"
 
-MY_EXTRAS_VER="20150410-1944Z"
+MY_EXTRAS_VER="20150717-1707Z"
 MY_PV="${PV//_alpha_pre/-m}"
 MY_PV="${MY_PV//_/-}"
 HAS_TOOLS_PATCH="1"
@@ -26,13 +26,6 @@ RDEPEND="${RDEPEND}"
 # Please do not add a naive src_unpack to this ebuild
 # If you want to add a single patch, copy the ebuild to an overlay
 # and create your own mysql-extras tarball, looking at 000_index.txt
-
-src_prepare() {
-	mysql-multilib_src_prepare
-	einfo "Applying experimental tools patch"
-	epatch "${FILESDIR}/without-clientlibs-tools.patch"
-}
-
 
 # Official test instructions:
 # USE='server embedded extraengine perl ssl static-libs community' \
