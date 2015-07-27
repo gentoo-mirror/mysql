@@ -672,10 +672,14 @@ multilib_src_configure() {
 
 	if use_if_iuse minimal ; then
 		configure_cmake_minimal
-	elif multilib_is_native_abi && use_if_iuse server ; then
-		configure_cmake_standard
+	elif in_iuse server ; then
+		if multilib_is_native_abi && use server ; then
+			configure_cmake_standard
+		else
+			configure_cmake_minimal
+		fi
 	else
-		configure_cmake_minimal
+		configure_cmake_standard
 	fi
 
 	# Always build NDB with mysql-cluster for libndbclient
