@@ -1,6 +1,6 @@
 # Copyright 1999-2015 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: /var/cvsroot/gentoo-x86/eclass/mysql-multilib.eclass,v 1.21 2015/06/10 18:08:02 grknight Exp $
+# $Header: /var/cvsroot/gentoo-x86/eclass/mysql-multilib.eclass,v 1.23 2015/07/28 20:51:40 grknight Exp $
 
 # @ECLASS: mysql-multilib.eclass
 # @MAINTAINER:
@@ -679,7 +679,11 @@ multilib_src_configure() {
 			configure_cmake_minimal
 		fi
 	else
-		configure_cmake_standard
+		if multilib_is_native_abi ; then
+			configure_cmake_standard
+		else
+			configure_cmake_minimal
+		fi
 	fi
 
 	# Always build NDB with mysql-cluster for libndbclient
