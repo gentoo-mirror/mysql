@@ -1,10 +1,10 @@
 # Copyright 1999-2015 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: $
+# $Header: /var/cvsroot/gentoo-x86/dev-db/mysql/mysql-5.5.45.ebuild,v 1.1 2015/07/29 19:01:43 grknight Exp $
 
 EAPI="5"
 
-MY_EXTRAS_VER="20150127-1351Z"
+MY_EXTRAS_VER="20150729-1849Z"
 MY_PV="${PV//_alpha_pre/-m}"
 MY_PV="${MY_PV//_/-}"
 
@@ -16,7 +16,7 @@ inherit toolchain-funcs mysql-v2
 IUSE="$IUSE"
 
 # Define the mysql-extras source
-EGIT_REPO_URI="git://git.overlays.gentoo.org/proj/mysql-extras.git"
+EGIT_REPO_URI="git://anongit.gentoo.org/proj/mysql-extras.git"
 
 # REMEMBER: also update eclass/mysql*.eclass before committing!
 KEYWORDS="~alpha ~amd64 ~arm ~hppa ~ia64 ~mips ~ppc ~ppc64 ~s390 ~sh ~sparc ~x86 ~sparc-fbsd ~x86-fbsd ~x86-freebsd ~amd64-linux ~x86-linux ~ppc-macos ~x64-macos ~x86-macos ~x64-solaris ~x86-solaris"
@@ -32,7 +32,7 @@ RDEPEND="${RDEPEND}"
 # and create your own mysql-extras tarball, looking at 000_index.txt
 
 # Official test instructions:
-# USE='-cluster embedded extraengine perl ssl static-libs community' \
+# USE='embedded extraengine perl ssl static-libs community' \
 # FEATURES='test userpriv -usersandbox' \
 # ebuild mysql-X.X.XX.ebuild \
 # digest clean package
@@ -100,7 +100,7 @@ src_test() {
 
 		# run mysql-test tests
 		perl mysql-test-run.pl --force --vardir="${T}/var-tests" \
-			--testcase-timeout=30
+			--testcase-timeout=30 --reorder
 		retstatus_tests=$?
 		[[ $retstatus_tests -eq 0 ]] || eerror "tests failed"
 		has usersandbox $FEATURES && eerror "Some tests may fail with FEATURES=usersandbox"
