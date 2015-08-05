@@ -1,0 +1,14 @@
+_eclasses_=versionator	cd0bcdb170807e4a1984115e9d53a26f	toolchain-funcs	42408102d713fbad60ca21349865edb4	flag-o-matic	c9602887773166fe300444712fc7ff98	mysql	8e2ee5a6f30bfe95aa1f8cb9db509abc	multilib	62927b3db3a589b0806255f3a002d5d3	mysql_fx	ab94d85c3c822792c72f7eeff96f2365	libtool	52d0e17251d04645ffaa61bfdd858944	gnuconfig	a0530e40148c254cebb925df0e87ef	autotools	2264f05fbbbaaf83d34ec81e72b38ffd	eutils	9fb270e417e0e83d64ca52586c4a79de
+_md5_=57fd4099f5be832f8e12cadd113f873a
+SLOT=0
+DEFINED_PHASES=compile install postinst postrm preinst setup test unpack
+EAPI=0
+DEPEND=sys-devel/gnuconfig !<sys-devel/gettext-0.18.1.1-r3 || ( >=sys-devel/automake-1.15 ) >=sys-devel/autoconf-2.69 >=sys-devel/libtool-2.4 ssl? ( >=dev-libs/openssl-0.9.6d ) kernel_linux? ( sys-process/procps ) >=sys-apps/sed-4 >=sys-apps/texinfo-4.7-r1 >=sys-libs/readline-4.1 >=sys-libs/zlib-1.2.3 !dev-db/mysql-community !dev-db/mysql-cluster !dev-db/mariadb virtual/yacc berkdb? ( sys-apps/ed )
+DESCRIPTION=A fast, multi-threaded, multi-user SQL database server.
+LICENSE=GPL-2
+IUSE=big-tables debug embedded minimal perl selinux ssl static test raid berkdb
+PDEPEND=perl? ( >=dev-perl/DBD-mysql-2.9004 ) =virtual/mysql-4.0
+SRC_URI=mirror://mysql/Downloads/MySQL-4.0/mysql-4.0.27.tar.gz mirror://gentoo/mysql-extras-20070105.tar.bz2 http://g3nt8.org/patches/mysql-extras-20070105.tar.bz2 http://dev.gentoo.org/~robbat2/distfiles/mysql-extras-20070105.tar.bz2
+KEYWORDS=amd64 arm hppa ia64 ~mips ppc ppc64 s390 sh sparc x86
+HOMEPAGE=http://www.mysql.com/
+RDEPEND=ssl? ( >=dev-libs/openssl-0.9.6d ) kernel_linux? ( sys-process/procps ) >=sys-apps/sed-4 >=sys-apps/texinfo-4.7-r1 >=sys-libs/readline-4.1 >=sys-libs/zlib-1.2.3 !dev-db/mysql-community !dev-db/mysql-cluster !dev-db/mariadb !minimal? ( !prefix? ( dev-db/mysql-init-scripts ) ) selinux? ( sec-policy/selinux-mysql )

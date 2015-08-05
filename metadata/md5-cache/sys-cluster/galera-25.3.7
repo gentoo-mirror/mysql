@@ -1,0 +1,13 @@
+_eclasses_=toolchain-funcs	42408102d713fbad60ca21349865edb4	versionator	cd0bcdb170807e4a1984115e9d53a26f	multilib	62927b3db3a589b0806255f3a002d5d3	scons-utils	988e24b9e2e4642189b4e97c03e5ae71	base	87f7447ccfc06fd0729ff4684e11e0d6	user	f54e098dd38ba1c0847a13e685b87747	eutils	9fb270e417e0e83d64ca52586c4a79de
+_md5_=e7a254661e5ff0c7c7e78a6d19e2206e
+SLOT=0
+DEFINED_PHASES=compile configure install preinst prepare unpack
+EAPI=5
+DEPEND=ssl? ( dev-libs/openssl ) >=dev-libs/boost-1.41 dev-libs/check >=sys-devel/gcc-4.4 >=dev-cpp/asio-1.4.8[ssl?] dev-util/scons
+DESCRIPTION=Synchronous multi-master replication engine that provides its service through wsrep API
+LICENSE=GPL-2 BSD
+IUSE=garbd ssl test
+SRC_URI=https://github.com/codership/galera/archive/release_25.3.7.tar.gz
+KEYWORDS=~amd64 ~x86
+HOMEPAGE=http://www.codership.org/
+RDEPEND=ssl? ( dev-libs/openssl ) >=dev-libs/boost-1.41 garbd? ( || ( net-analyzer/netcat net-analyzer/netcat6 net-analyzer/gnu-netcat net-analyzer/openbsd-netcat ) )
