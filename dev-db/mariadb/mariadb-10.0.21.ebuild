@@ -1,6 +1,6 @@
 # Copyright 1999-2015 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: /var/cvsroot/gentoo-x86/dev-db/mariadb/mariadb-10.0.20.ebuild,v 1.1 2015/06/20 01:04:32 grknight Exp $
+# $Header: /var/cvsroot/gentoo-x86/dev-db/mariadb/mariadb-10.0.21.ebuild,v 1.1 2015/08/08 03:41:14 grknight Exp $
 
 EAPI="5"
 MY_EXTRAS_VER="20141215-0144Z"
@@ -76,11 +76,18 @@ multilib_src_test() {
 		# main.mysql_client_test_comp:
 		# segfaults at random under Portage only, suspect resource limits.
 		#
+		# archive.mysqlhotcopy_archive main.mysqlhotcopy_myisam
+		#
+		# archive.mysqlhotcopy_archive main.mysqlhotcopy_myisam
+		# fails due to bad cleanup of previous tests when run in parallel
+		# The tool is deprecated anyway
+		# Bug 532288
 
 		for t in main.mysql_client_test main.mysql_client_test_nonblock \
 			main.mysql_client_test_comp \
 			binlog.binlog_statement_insert_delayed main.information_schema \
 			main.mysqld--help main.bootstrap \
+			archive.mysqlhotcopy_archive main.mysqlhotcopy_myisam \
 			funcs_1.is_triggers funcs_1.is_tables_mysql funcs_1.is_columns_mysql ; do
 				mysql-multilib_disable_test  "$t" "False positives in Gentoo"
 		done
