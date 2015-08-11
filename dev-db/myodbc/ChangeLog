@@ -1,6 +1,6 @@
 # ChangeLog for dev-db/myodbc
 # Copyright 1999-2015 Gentoo Foundation; Distributed under the GPL v2
-# $Header: /var/cvsroot/gentoo-x86/dev-db/myodbc/ChangeLog,v 1.44 2015/05/17 21:24:37 grknight Exp $
+# $Id$
 
   17 May 2015; Brian Evans <grknight@gentoo.org> -files/5.2.7-cxxlinkage.patch,
   -files/myodbc-5.1.6-qt4-includedir.patch, -myodbc-5.1.6.ebuild,

@@ -1,6 +1,6 @@
 # Copyright 1999-2015 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: /var/cvsroot/gentoo-x86/eclass/mysql-v2.eclass,v 1.38 2015/05/01 12:34:31 grknight Exp $
+# $Id$
 
 # @ECLASS: mysql-v2.eclass
 # @MAINTAINER:

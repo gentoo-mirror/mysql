@@ -1,8 +1,6 @@
-_eclasses_=
-_md5_=5752feb691c1901a4cad64525130914d
-SLOT=0
 DEFINED_PHASES=-
-EAPI=0
 DESCRIPTION=Virtual for MySQL client or database
 KEYWORDS=amd64 arm hppa ia64 ~mips ppc ppc64 s390 sh sparc x86 ~x86-freebsd ~amd64-linux ~x86-linux ~ppc-macos ~x64-macos ~x86-macos ~x64-solaris ~x86-solaris
 RDEPEND=|| ( =dev-db/mysql-4.0* )
+SLOT=0
+_md5_=4b01fc8e46ef998dbd97a27db64123b7

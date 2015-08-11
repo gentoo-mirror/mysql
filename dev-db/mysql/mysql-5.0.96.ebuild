@@ -1,6 +1,6 @@
 # Copyright 1999-2013 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: /var/cvsroot/gentoo-x86/dev-db/mysql/mysql-5.0.96.ebuild,v 1.4 2013/01/20 01:49:23 robbat2 Exp $
+# $Id$
 
 EAPI="4"
 MY_EXTRAS_VER="20120401-2131Z"
