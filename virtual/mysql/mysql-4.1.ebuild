@@ -1,6 +1,6 @@
 # Copyright 1999-2014 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: /var/cvsroot/gentoo-x86/virtual/mysql/mysql-4.1.ebuild,v 1.7 2010/11/06 19:21:13 leio Exp $
+# $Id$
 
 DESCRIPTION="Virtual for MySQL client or database"
 HOMEPAGE=""

@@ -1,6 +1,6 @@
 # Copyright 1999-2013 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: Exp $
+# $Id$
 
 # Brian Evans <grknight@tuffmail.com> (8 Oct 2013)
 # Mask embedded for percona server.

@@ -1,6 +1,6 @@
 # Copyright 1999-2011 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: /var/cvsroot/gentoo-x86/dev-db/mysql-init-scripts/files/mysql-5.1.53-conf.d,v 1.2 2011/01/15 17:54:31 robbat2 Exp $
+# $Id$
 
 # If you want a non-stock location for the config file, uncomment or update
 # either of these as needed. If you do use it, you must make sure that none of

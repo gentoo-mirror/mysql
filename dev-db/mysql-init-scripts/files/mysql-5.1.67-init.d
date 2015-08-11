@@ -1,7 +1,7 @@
 #!/sbin/runscript
 # Copyright 1999-2013 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: /var/cvsroot/gentoo-x86/dev-db/mysql-init-scripts/files/mysql-5.1.67-init.d,v 1.1 2013/01/18 01:51:47 robbat2 Exp $
+# $Id$
 
 depend() {
 	use net.lo
