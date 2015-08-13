@@ -7,13 +7,14 @@ EAPI=5
 MY_EXTRAS_VER="live"
 MY_PV="${PV//_alpha_pre/-m}"
 MY_PV="${MY_PV//_/-}"
+SUBSLOT="20"
 
 inherit toolchain-funcs mysql-multilib
 # only to make repoman happy. it is really set in the eclass
 IUSE="$IUSE"
 
 # Define the mysql-extras source
-EGIT_REPO_URI="git://git.overlays.gentoo.org/proj/mysql-extras.git"
+EGIT_REPO_URI="git://anongit.gentoo.org/proj/mysql-extras.git"
 
 # REMEMBER: also update eclass/mysql*.eclass before committing!
 KEYWORDS="~alpha ~amd64 ~arm ~hppa ~ia64 ~ppc ~ppc64 ~s390 ~sh ~sparc ~x86 ~sparc-fbsd ~x86-fbsd ~x86-linux"
