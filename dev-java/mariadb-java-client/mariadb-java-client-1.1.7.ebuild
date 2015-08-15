@@ -1,4 +1,4 @@
-# Copyright 1999-2014 Gentoo Foundation
+# Copyright 1999-2015 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Id$
 
@@ -8,14 +8,10 @@ VCS_INHERIT=""
 MY_PN="client-java"
 
 if [[ "${PV}" == 9999 ]] ; then
-	VCS_INHERIT="bzr"
-	EBZR_REPO_URI="lp:${PN}"
+	VCS_INHERIT="git-r3"
+	EGIT_REPO_URI="https://github.com/MariaDB/mariadb-connector-j.git"
 else
-SRC_URI="
-	http://ftp.osuosl.org/pub/mariadb/${MY_PN}-${PV}/${P}.tar.gz
-	http://mirrors.fe.up.pt/pub/mariadb/${MY_PN}-${PV}/${P}.tar.gz
-	http://ftp-stud.hs-esslingen.de/pub/Mirrors/mariadb/${MY_PN}-${PV}/${P}.tar.gz
-	"
+SRC_URI="http://archive.mariadb.org/${MY_PN}-${PV}/${P}.tar.gz"
 fi
 
 JAVA_PKG_IUSE="doc"
