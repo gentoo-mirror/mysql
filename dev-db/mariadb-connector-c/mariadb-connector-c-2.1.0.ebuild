@@ -20,7 +20,7 @@ else
 	KEYWORDS="~amd64 ~x86"
 fi
 
-inherit cmake-multilib eutils "${VCS_INHERIT}"
+inherit cmake-multilib eutils ${VCS_INHERIT}
 
 MULTILIB_CHOST_TOOLS=( /usr/bin/mariadb_config )
 

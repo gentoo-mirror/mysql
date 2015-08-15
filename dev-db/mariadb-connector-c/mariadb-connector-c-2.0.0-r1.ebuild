@@ -1,4 +1,4 @@
-# Copyright 1999-2014 Gentoo Foundation
+# Copyright 1999-2015 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Id$
 
@@ -20,7 +20,7 @@ else
 	KEYWORDS="~amd64 ~x86"
 fi
 
-inherit cmake-multilib eutils "${VCS_INHERIT}"
+inherit cmake-multilib eutils ${VCS_INHERIT}
 
 MULTILIB_WRAPPED_HEADERS+=(
 	/usr/include/mariadb/my_config.h

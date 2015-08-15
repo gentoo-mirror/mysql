@@ -1,3 +1,8 @@
+  15 Aug 2015; Brian Evans <grknight@gentoo.org>
+  mariadb-connector-c-2.0.0-r1.ebuild, mariadb-connector-c-2.1.0.ebuild,
+  mariadb-connector-c-9999.ebuild:
+  dev-db/mariadb-connector-c: fix QA inherit wrt bug 557730
+
 *mariadb-native-client-2.0.0 (29 Apr 2014)
 
   29 Apr 2014; Brian Evans <grknight@tuffmail.com> +files/fix-libdir.patch,
