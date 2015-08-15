@@ -16,7 +16,7 @@ fi
 
 JAVA_PKG_IUSE="doc"
 
-inherit java-pkg-2 java-ant-2 "${VCS_INHERIT}"
+inherit java-pkg-2 java-ant-2 ${VCS_INHERIT}
 
 DESCRIPTION="Java client library for MariaDB/MySQL"
 HOMEPAGE="http://mariadb.org/"

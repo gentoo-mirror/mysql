@@ -1,5 +1,9 @@
   15 Aug 2015; Brian Evans <grknight@gentoo.org>
   mariadb-java-client-1.1.7.ebuild, mariadb-java-client-9999.ebuild:
+  dev-java/mariadb-java-client: fix QA inherit wrt bug 557730
+
+  15 Aug 2015; Brian Evans <grknight@gentoo.org>
+  mariadb-java-client-1.1.7.ebuild, mariadb-java-client-9999.ebuild:
   dev-java/mariadb-java-client: Fix download locations
 
 *mariadb-java-client-1.1.4 (10 Sep 2013)
