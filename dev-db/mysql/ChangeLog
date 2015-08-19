@@ -2,6 +2,12 @@
 # Copyright 1999-2015 Gentoo Foundation; Distributed under the GPL v2
 # $Id$
 
+  19 Aug 2015; Brian Evans <grknight@gentoo.org> mysql-5.7.7_rc.ebuild,
+  mysql-5.7.8_rc.ebuild:
+  dev-db/mysql: Drop keywords ~hppa ~ppc ~sparc ~sparc-fbsd  MySQL 5.7 requires
+  native GCC atomics and these platforms do not provide it. Need to patch or
+  leave unkeyworded.
+
 *mysql-5.7.8_rc (13 Aug 2015)
 
   13 Aug 2015; Brian Evans <grknight@gentoo.org> +mysql-5.7.8_rc.ebuild,
