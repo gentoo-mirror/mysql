@@ -6,18 +6,20 @@ EAPI="5"
 MY_EXTRAS_VER="live"
 WSREP_REVISION="25"
 SUBSLOT="18"
+HAS_TOOLS_PATCH="yes"
 
 inherit toolchain-funcs mysql-multilib
 # only to make repoman happy. it is really set in the eclass
-IUSE="$IUSE"
+IUSE="$IUSE mroonga"
 
 # REMEMBER: also update eclass/mysql*.eclass before committing!
 KEYWORDS="~alpha ~amd64 ~arm ~ia64 ~hppa ~mips ~ppc ~ppc64 ~s390 ~sh ~sparc ~x86 ~sparc-fbsd ~x86-fbsd ~x86-freebsd ~amd64-linux ~x86-linux ~ppc-macos ~x64-macos ~x86-macos ~x64-solaris ~x86-solaris"
 
 # When MY_EXTRAS is bumped, the index should be revised to exclude these.
-EPATCH_EXCLUDE='20014_all_mariadb-innodb-compression.patch'
+#EPATCH_EXCLUDE='20014_all_mariadb-innodb-compression.patch'
 
-DEPEND="|| ( >=sys-devel/gcc-3.4.6 >=sys-devel/gcc-apple-4.0 )"
+DEPEND="|| ( >=sys-devel/gcc-3.4.6 >=sys-devel/gcc-apple-4.0 )
+	mroonga? ( app-text/groonga-normalizer-mysql )"
 RDEPEND="${RDEPEND}"
 
 # Official test instructions:
@@ -79,15 +81,12 @@ multilib_src_test() {
 		#
 		# plugins.cracklib_password_check
 		# Can randomly fail due to cracklib return message
-		#
-		# sys_vars.all_vars
-		# Fails when galera support is disabled
 
+#			main.bootstrap \
 		for t in main.mysql_client_test main.mysql_client_test_nonblock \
 			main.mysql_client_test_comp \
 			binlog.binlog_statement_insert_delayed main.information_schema \
 			main.mysqld--help plugins.cracklib_password_check \
-			main.bootstrap sys_vars.all_vars \
 			funcs_1.is_triggers funcs_1.is_tables_mysql funcs_1.is_columns_mysql ; do
 				mysql-multilib_disable_test  "$t" "False positives in Gentoo"
 		done
