@@ -1025,7 +1025,7 @@ mysql-multilib_pkg_config() {
 	help_tables="${TMPDIR}/fill_help_tables.sql"
 
 	# Figure out which options we need to disable to do the setup
-	helpfile="${TMPDIR}/mysqld-help"
+	local helpfile="${TMPDIR}/mysqld-help"
 	${EROOT}/usr/sbin/mysqld --verbose --help >"${helpfile}" 2>/dev/null
 	for opt in grant-tables host-cache name-resolve networking slave-start \
 		federated ssl log-bin relay-log slow-query-log external-locking \
@@ -1039,11 +1039,6 @@ mysql-multilib_pkg_config() {
 	options="${options/skip-locking/skip-external-locking}"
 
 	use prefix || options="${options} --user=mysql"
-
-	# MySQL 5.6+ needs InnoDB
-	if [[ ${PN} == "mysql" || ${PN} == "percona-server" ]] ; then
-		mysql_version_is_at_least "5.6" || options="${options} --loose-skip-innodb"
-	fi
 
 	einfo "Creating the mysql database and setting proper permissions on it ..."
 
@@ -1062,11 +1057,12 @@ mysql-multilib_pkg_config() {
 	"${EROOT}/usr/bin/mysql_tzinfo_to_sql" "${EROOT}/usr/share/zoneinfo" > "${sqltmp}" 2>/dev/null
 
 	local cmd
+	local initialize_options
         if [[ ${PN} == "mysql" || ${PN} == "percona-server" ]] && mysql_version_is_at_least "5.7.6" ; then
 		# --initialize-insecure will not set root password
 		# --initialize would set a random one in the log which we don't need as we set it ourselves
 		cmd="${EROOT}usr/sbin/mysqld"
-		options="${options}  --initialize-insecure  '--init-file=${sqltmp}'"
+		initialize_options="--initialize-insecure  '--init-file=${sqltmp}'"
 		sqltmp="" # the initialize will take care of it
 	else
 		cmd="${EROOT}usr/share/mysql/scripts/mysql_install_db"
@@ -1075,7 +1071,7 @@ mysql-multilib_pkg_config() {
 			cat "${help_tables}" >> "${sqltmp}"
 		fi
 	fi
-	cmd="'$cmd' '--basedir=${EPREFIX}/usr' ${options} '--datadir=${ROOT}/${MY_DATADIR}' '--tmpdir=${ROOT}/${MYSQL_TMPDIR}'"
+	cmd="'$cmd' '--basedir=${EPREFIX}/usr' ${options} '--datadir=${ROOT}/${MY_DATADIR}' '--tmpdir=${ROOT}/${MYSQL_TMPDIR}' ${initialize_options}"
 	einfo "Command: $cmd"
 	eval $cmd \
 		>"${TMPDIR}"/mysql_install_db.log 2>&1
