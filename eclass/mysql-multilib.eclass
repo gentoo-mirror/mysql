@@ -1056,30 +1056,38 @@ mysql-multilib_pkg_config() {
 	fi
 
 	pushd "${TMPDIR}" &>/dev/null
-	#cmd="'${EROOT}/usr/share/mysql/scripts/mysql_install_db' '--basedir=${EPREFIX}/usr' ${options}"
-	cmd=${EROOT}usr/share/mysql/scripts/mysql_install_db
-	[[ -f ${cmd} ]] || cmd=${EROOT}usr/bin/mysql_install_db
+
+	# Filling timezones, see
+	# http://dev.mysql.com/doc/mysql/en/time-zone-support.html
+	"${EROOT}/usr/bin/mysql_tzinfo_to_sql" "${EROOT}/usr/share/zoneinfo" > "${sqltmp}" 2>/dev/null
+
+	local cmd
+        if [[ ${PN} == "mysql" || ${PN} == "percona-server" ]] && mysql_version_is_at_least "5.7.6" ; then
+		# --initialize-insecure will not set root password
+		# --initialize would set a random one in the log which we don't need as we set it ourselves
+		cmd="${EROOT}usr/sbin/mysqld"
+		options="${options}  --initialize-insecure  '--init-file=${sqltmp}'"
+		sqltmp="" # the initialize will take care of it
+	else
+		cmd="${EROOT}usr/share/mysql/scripts/mysql_install_db"
+		[[ -f "${cmd}" ]] || cmd="${EROOT}usr/bin/mysql_install_db"
+		if [[ -r "${help_tables}" ]] ; then
+			cat "${help_tables}" >> "${sqltmp}"
+		fi
+	fi
 	cmd="'$cmd' '--basedir=${EPREFIX}/usr' ${options} '--datadir=${ROOT}/${MY_DATADIR}' '--tmpdir=${ROOT}/${MYSQL_TMPDIR}'"
 	einfo "Command: $cmd"
 	eval $cmd \
 		>"${TMPDIR}"/mysql_install_db.log 2>&1
 	if [ $? -ne 0 ]; then
 		grep -B5 -A999 -i "ERROR" "${TMPDIR}"/mysql_install_db.log 1>&2
-		die "Failed to run mysql_install_db. Please review ${EPREFIX}/var/log/mysql/mysqld.err AND ${TMPDIR}/mysql_install_db.log"
+		die "Failed to initialize mysqld. Please review ${EPREFIX}/var/log/mysql/mysqld.err AND ${TMPDIR}/mysql_install_db.log"
 	fi
 	popd &>/dev/null
 	[[ -f "${ROOT}/${MY_DATADIR}/mysql/user.frm" ]] \
 	|| die "MySQL databases not installed"
 	chown -R mysql:mysql "${ROOT}/${MY_DATADIR}" 2>/dev/null
 	chmod 0750 "${ROOT}/${MY_DATADIR}" 2>/dev/null
-
-	# Filling timezones, see
-	# http://dev.mysql.com/doc/mysql/en/time-zone-support.html
-	"${EROOT}/usr/bin/mysql_tzinfo_to_sql" "${EROOT}/usr/share/zoneinfo" > "${sqltmp}" 2>/dev/null
-
-	if [[ -r "${help_tables}" ]] ; then
-		cat "${help_tables}" >> "${sqltmp}"
-	fi
 
 	local socket="${EROOT}/var/run/mysqld/mysqld${RANDOM}.sock"
 	local pidfile="${EROOT}/var/run/mysqld/mysqld${RANDOM}.pid"
@@ -1120,16 +1128,18 @@ mysql-multilib_pkg_config() {
 		-e "${sql}"
 	eend $?
 
-	ebegin "Loading \"zoneinfo\", this step may require a few seconds"
-	"${EROOT}/usr/bin/mysql" \
-		--socket=${socket} \
-		-hlocalhost \
-		-uroot \
-		--password="${MYSQL_ROOT_PASSWORD}" \
-		mysql < "${sqltmp}"
-	rc=$?
-	eend $?
-	[[ $rc -ne 0 ]] && ewarn "Failed to load zoneinfo!"
+	if [[ -n "${sqltmp}" ]] ; then
+		ebegin "Loading \"zoneinfo\", this step may require a few seconds"
+		"${EROOT}/usr/bin/mysql" \
+			--socket=${socket} \
+			-hlocalhost \
+			-uroot \
+			--password="${MYSQL_ROOT_PASSWORD}" \
+			mysql < "${sqltmp}"
+		rc=$?
+		eend $?
+		[[ $rc -ne 0 ]] && ewarn "Failed to load zoneinfo!"
+	fi
 
 	# Stop the server and cleanup
 	einfo "Stopping the server ..."
