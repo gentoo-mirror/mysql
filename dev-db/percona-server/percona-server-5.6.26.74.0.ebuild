@@ -6,20 +6,21 @@ EAPI="5"
 MY_EXTRAS_VER="20150717-1707Z"
 HAS_TOOLS_PATCH="1"
 SUBSLOT="18"
-
-inherit toolchain-funcs mysql-multilib
+PYTHON_COMPAT=( python2_7 )
+inherit toolchain-funcs python-any-r1 mysql-multilib
 # only to make repoman happy. it is really set in the eclass
 IUSE="$IUSE tokudb tokudb-backup-plugin"
 
 # REMEMBER: also update eclass/mysql*.eclass before committing!
-KEYWORDS="~alpha ~amd64 ~arm ~hppa ~ia64 ~ppc ~ppc64 ~s390 ~sh ~sparc ~x86 ~sparc-fbsd ~x86-fbsd ~x86-linux"
+KEYWORDS="~alpha ~amd64 ~arm ~ia64 ~ppc ~ppc64 ~s390 ~sh ~sparc ~x86 ~sparc-fbsd ~x86-fbsd ~x86-linux"
 
 # When MY_EXTRAS is bumped, the index should be revised to exclude these.
 EPATCH_EXCLUDE=''
 
 DEPEND="|| ( >=sys-devel/gcc-3.4.6 >=sys-devel/gcc-apple-4.0 )
 	tokudb? ( app-arch/snappy )
-	tokudb-backup-plugin? ( dev-util/valgrind )"
+	tokudb-backup-plugin? ( dev-util/valgrind )
+	test? ( $(python_gen_any_dep 'dev-python/mysql-python[${PYTHON_USEDEP}]') )"
 RDEPEND="${RDEPEND}"
 
 REQUIRED_USE="tokudb? ( jemalloc ) tokudb-backup-plugin? ( tokudb )"
@@ -27,6 +28,10 @@ REQUIRED_USE="tokudb? ( jemalloc ) tokudb-backup-plugin? ( tokudb )"
 # Please do not add a naive src_unpack to this ebuild
 # If you want to add a single patch, copy the ebuild to an overlay
 # and create your own mysql-extras tarball, looking at 000_index.txt
+
+python_check_deps() {
+	has_version "dev-python/mysql-python[${PYTHON_USEDEP}]"
+}
 
 # Official test instructions:
 # USE='extraengine perl ssl static-libs community' \
@@ -104,12 +109,6 @@ multilib_src_test() {
 		# main.mysqlhotcopy_archive main.mysqlhotcopy_myisam
 		# Called with bad parameters should be reported upstream
 		#
-		# innodb_stress.innodb_stress
-		# innodb_stress.innodb_stress_blob innodb_stress.innodb_stress_blob_nocompress
-		# innodb_stress.innodb_stress_crash innodb_stress.innodb_stress_crash_blob
-		# innodb_stress.innodb_stress_crash_blob_nocompress innodb_stress.innodb_stress_crash_nocompress
-		# innodb_stress.innodb_stress_nocompress
-		# Dependent on python2 being the system python
 
 		for t in main.mysql_client_test \
 			binlog.binlog_statement_insert_delayed main.information_schema \
@@ -124,20 +123,12 @@ multilib_src_test() {
 				mysql-multilib_disable_test  "$t" "False positives in Gentoo"
 		done
 
-		for t in innodb_stress.innodb_stress \
-			innodb_stress.innodb_stress_blob innodb_stress.innodb_stress_blob_nocompress \
-			innodb_stress.innodb_stress_crash innodb_stress.innodb_stress_crash_blob \
-			innodb_stress.innodb_stress_crash_blob_nocompress innodb_stress.innodb_stress_crash_nocompress \
-			innodb_stress.innodb_stress_nocompress ; do
-				mysql-multilib_disable_test "$t" "False positives due to python exception syntax"
-		done
-
 		# Run mysql tests
 		pushd "${TESTDIR}"
 
 		# Set file limits higher so tests run
 		ulimit -n 3000
-
+		python_setup
 		# run mysql-test tests
 		perl mysql-test-run.pl --force --vardir="${T}/var-tests" \
 			--testcase-timeout=30 --reorder
