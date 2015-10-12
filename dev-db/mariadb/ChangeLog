@@ -2,6 +2,9 @@
 # Copyright 1999-2015 Gentoo Foundation; Distributed under the GPL v2
 # $Id$
 
+  12 Oct 2015; Brian Evans <grknight@gentoo.org> mariadb-10.1.7_rc.ebuild:
+  dev-db/mariadb: Readd ~arm64 which was dropped accidentally
+
 *mariadb-5.5.46 (12 Oct 2015)
 
   12 Oct 2015; Brian Evans <grknight@gentoo.org> +mariadb-5.5.46.ebuild,
