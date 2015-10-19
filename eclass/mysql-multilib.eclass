@@ -647,6 +647,10 @@ multilib_src_configure() {
 		-DWITH_DEFAULT_FEATURE_SET=0
 	)
 
+	if in_iuse systemd ; then
+		mycmakeargs+=( -DWITH_SYSTEMD=$(usex systemd) )
+	fi
+
 	if use openssl || use libressl ; then
 		mycmakeargs+=( -DWITH_SSL=system )
 	else
