@@ -213,6 +213,9 @@ REQUIRED_USE="^^ ( yassl openssl libressl )"
 #	IUSE="bindist ${IUSE}"
 #fi
 
+# Tests always fail when libressl is enabled due to hard-coded ciphers in the tests
+RESTRICT="libressl? ( test )"
+
 if [[ ${PN} == "mariadb" || ${PN} == "mariadb-galera" ]] ; then
 	IUSE="bindist ${IUSE}"
 	RESTRICT="${RESTRICT} !bindist? ( bindist )"
