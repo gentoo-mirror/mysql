@@ -34,7 +34,7 @@ python_check_deps() {
 }
 
 # Official test instructions:
-# USE='extraengine perl ssl static-libs community' \
+# USE='extraengine perl openssl static-libs' \
 # FEATURES='test userpriv -usersandbox' \
 # ebuild percona-server-X.X.XX.ebuild \
 # digest clean package

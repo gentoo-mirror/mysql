@@ -39,7 +39,7 @@ src_prepare() {
 }
 
 # Official test instructions:
-# USE='embedded extraengine perl ssl static-libs community' \
+# USE='embedded extraengine perl openssl static-libs' \
 # FEATURES='test userpriv -usersandbox' \
 # ebuild mysql-X.X.XX.ebuild \
 # digest clean package

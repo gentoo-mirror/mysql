@@ -26,7 +26,7 @@ RDEPEND="${RDEPEND}"
 # and create your own mysql-extras tarball, looking at 000_index.txt
 
 # Official test instructions:
-# USE='client-libs community embedded extraengine perl server ssl static-libs tools' \
+# USE='client-libs embedded extraengine perl server openssl static-libs tools' \
 # FEATURES='test userpriv -usersandbox' \
 # ebuild mariadb-galera-X.X.XX.ebuild \
 # digest clean package

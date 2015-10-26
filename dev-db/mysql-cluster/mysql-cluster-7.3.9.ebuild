@@ -25,7 +25,7 @@ RDEPEND="!media-sound/amarok[embedded]"
 # and create your own mysql-extras tarball, looking at 000_index.txt
 
 # Official test instructions:
-# USE='cluster extraengine perl ssl community' \
+# USE='cluster extraengine perl ssl' \
 # FEATURES='test userpriv -usersandbox' \
 # ebuild mysql-cluster-X.X.XX.ebuild \
 # digest clean package
