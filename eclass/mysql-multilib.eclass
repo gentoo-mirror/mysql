@@ -273,8 +273,6 @@ REQUIRED_USE="
 # These are used for both runtime and compiletime
 # MULTILIB_USEDEP only set for libraries used by the client library
 DEPEND="
-	openssl? ( >=dev-libs/openssl-1.0.0:0=[${MULTILIB_USEDEP},static-libs?] )
-	libressl? ( dev-libs/libressl:0=[${MULTILIB_USEDEP},static-libs?] )
 	kernel_linux? (
 		sys-process/procps:0=
 		dev-libs/libaio:0=
@@ -645,7 +643,7 @@ multilib_src_configure() {
 		-DINSTALL_UNIX_ADDRDIR=${EPREFIX}/var/run/mysqld/mysqld.sock
 		-DWITH_DEFAULT_COMPILER_OPTIONS=0
 		-DWITH_DEFAULT_FEATURE_SET=0
-		-DINSTALL_SYSTEMD_UNITDIR=$(systemd_get_unitdir)
+		-DINSTALL_SYSTEMD_UNITDIR="$(systemd_get_unitdir)"
 	)
 
 	if in_iuse systemd ; then
