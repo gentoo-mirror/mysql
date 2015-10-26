@@ -192,7 +192,7 @@ fi
 LICENSE="GPL-2"
 SLOT="0/${SUBSLOT:-0}"
 
-IUSE="+community cluster debug embedded extraengine jemalloc latin1 libressl +openssl
+IUSE="cluster debug embedded extraengine jemalloc latin1 libressl +openssl
 	+perl profiling selinux systemtap static static-libs tcmalloc test yassl"
 
 REQUIRED_USE="^^ ( yassl openssl libressl )"
