@@ -873,7 +873,7 @@ mysql-multilib_pkg_postinst() {
 				einfo
 				elog "This install includes the PAM authentication plugin."
 				elog "To activate and configure the PAM plugin, please read:"
-				elog "https://kb.askmonty.org/en/pam-authentication-plugin/"
+				elog "https://mariadb.com/kb/en/mariadb/pam-authentication-plugin/"
 				einfo
 			fi
 		fi
