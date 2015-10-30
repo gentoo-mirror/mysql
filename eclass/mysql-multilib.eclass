@@ -608,7 +608,7 @@ multilib_src_configure() {
 
 	if ! multilib_is_native_abi && in_iuse client-libs ; then
 		if ! use client-libs ; then
-			ewarn "Skipping multilib build due to client-libs USE disabled"
+			einfo "Skipping multilib build due to client-libs USE disabled"
 			return 0
 		fi
 	fi
@@ -743,7 +743,6 @@ mysql-multilib_src_compile() {
 multilib_src_compile() {
 	if ! multilib_is_native_abi && in_iuse client-libs ; then
 		if ! use client-libs ; then
-			ewarn "Skipping multilib build due to client-libs USE disabled"
 			return 0
 		fi
 	fi
@@ -773,7 +772,6 @@ multilib_src_install() {
 
 	if ! multilib_is_native_abi && in_iuse client-libs ; then
 		if ! use client-libs ; then
-			ewarn "Skipping multilib build due to client-libs USE disabled"
 			return 0
 		fi
 	fi
