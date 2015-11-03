@@ -914,9 +914,10 @@ mysql-multilib_getopt() {
 # Use my_print_defaults to extract specific config options
 mysql-multilib_getoptval() {
 	local mypd="${EROOT}"/usr/bin/my_print_defaults
-	section="$1"
-	flag="--${2}="
-	"${mypd}" $section | sed -n "/^${flag}/s,${flag},,gp"
+	local section="$1"
+	local flag="--${2}="
+	local extra_options="${3}"
+	"${mypd}" $extra_options $section | sed -n "/^${flag}/s,${flag},,gp"
 }
 
 # @FUNCTION: mysql-multilib_pkg_config
@@ -977,6 +978,10 @@ mysql-multilib_pkg_config() {
 
 	if [ -z "${MYSQL_ROOT_PASSWORD}" ]; then
 		MYSQL_ROOT_PASSWORD="$(mysql-multilib_getoptval 'client mysql' password)"
+		# Sometimes --show is required to display passwords in some implementations of my_print_defaults
+		if [[ "${MYSQL_ROOT_PASSWORD}" == '*****' ]]; then
+			MYSQL_ROOT_PASSWORD="$(mysql-multilib_getoptval 'client mysql' password --show)"
+		fi
 	fi
 	MYSQL_TMPDIR="$(mysql-multilib_getoptval mysqld tmpdir)"
 	# These are dir+prefix
