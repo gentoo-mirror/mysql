@@ -3,7 +3,7 @@
 # $Id$
 
 EAPI=5
-inherit cmake-multilib eutils flag-o-matic versionator
+inherit cmake-utils multilib-minimal eutils flag-o-matic versionator
 
 MAJOR="$(get_version_component_range 1-2 $PV)"
 MY_PN="mysql-connector-odbc"
@@ -35,10 +35,10 @@ DRIVER_NAME="${PN}-${SLOT}"
 src_prepare() {
 	# Remove Tests
 	sed -i -e "s/ADD_SUBDIRECTORY(test)//" \
-		"${S}/CMakeLists.txt"
+		"${S}/CMakeLists.txt" || die
 
 	# Fix as-needed on the installer binary
-	echo "TARGET_LINK_LIBRARIES(myodbc-installer odbc)" >> "${S}/installer/CMakeLists.txt"
+	echo "TARGET_LINK_LIBRARIES(myodbc-installer odbc)" >> "${S}/installer/CMakeLists.txt" || die
 
 	# Patch document path so it doesn't install files to /usr
 	epatch "${FILESDIR}/cmake-doc-path.patch" \
@@ -51,7 +51,7 @@ multilib_src_configure() {
 	# MYSQL_CXX_LINKAGE expects "mysql_config --cxxflags" which doesn't exist on MariaDB
 
 #	append-ldflags
-	mycmakeargs+=(
+	local mycmakeargs=(
 		-DMYSQL_CXX_LINKAGE=0
 		-DWITH_UNIXODBC=1
 		-DMYSQLCLIENT_LIB_NAME="libmysqlclient.so"

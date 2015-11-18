@@ -2,6 +2,10 @@
 # Copyright 1999-2015 Gentoo Foundation; Distributed under the GPL v2
 # $Id$
 
+  18 Nov 2015; Brian Evans <grknight@gentoo.org> myodbc-5.3.4.ebuild:
+  dev-db/myodbc: Clean up build process using multilib-minimal; adding die to
+  external commands
+
   11 Aug 2015; Brian Evans <grknight@gentoo.org> +files/5.2.7-my_malloc.patch,
   myodbc-5.2.7-r2.ebuild:
   dev-db/myodbc Add patch from bug 548912
