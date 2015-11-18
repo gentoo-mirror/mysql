@@ -2,6 +2,14 @@
 # Copyright 1999-2015 Gentoo Foundation; Distributed under the GPL v2
 # $Id$
 
+*mysql-cluster-7.2.22 (18 Nov 2015)
+*mysql-cluster-7.3.11 (18 Nov 2015)
+
+  18 Nov 2015; Brian Evans <grknight@gentoo.org> +mysql-cluster-7.2.22.ebuild,
+  +mysql-cluster-7.3.11.ebuild, -mysql-cluster-7.2.20.ebuild,
+  -mysql-cluster-7.3.9.ebuild:
+  dev-db/mysql-cluster: Version bumps
+
 *mysql-cluster-7.2.19 (10 Feb 2015)
 *mysql-cluster-7.3.8 (10 Feb 2015)
 
