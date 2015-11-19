@@ -35,13 +35,11 @@ dev-db/mariadb:tools - Build the command line tools (mysql, mysqldump, mysqladmi
 dev-db/mariadb:yassl - Enable SSL connections and crypto functions using the bundled yaSSL
 dev-db/mariadb-connector-c:mysqlcompat - Enable mysqlclient library symbolic links
 dev-db/mariadb-galera:client-libs - Build the libmysqlclient libraries
-dev-db/mariadb-galera:cluster - Add support for NDB clustering (deprecated)
 dev-db/mariadb-galera:embedded - Build embedded server (libmysqld)
 dev-db/mariadb-galera:extraengine - Add support for alternative storage engines (Archive, CSV, Blackhole, Federated(X), Partition)
 dev-db/mariadb-galera:jemalloc - Use dev-libs/jemalloc for allocations.
 dev-db/mariadb-galera:latin1 - Use LATIN1 encoding instead of UTF8
 dev-db/mariadb-galera:libressl - Enable SSL connections and crypto functions using dev-libs/libressl
-dev-db/mariadb-galera:minimal - Install client programs only, no server
 dev-db/mariadb-galera:openssl - Enable SSL connections and crypto functions using dev-libs/openssl
 dev-db/mariadb-galera:oqgraph - Add support for the Open Query GRAPH engine
 dev-db/mariadb-galera:profiling - Add support for statement profiling (requires USE=community).
