@@ -13,13 +13,11 @@ dev-db/mariadb
 -->
 <use>
   <flag name='client-libs'>Build the libmysqlclient libraries</flag>
-  <flag name='cluster'>Add support for NDB clustering (deprecated)</flag>
   <flag name='embedded'>Build embedded server (libmysqld)</flag>
   <flag name='extraengine'>Add support for alternative storage engines (Archive, CSV, Blackhole, Federated(X), Partition)</flag>
   <flag name="jemalloc">Use <pkg>dev-libs/jemalloc</pkg> for allocations.</flag>
   <flag name='latin1'>Use LATIN1 encoding instead of UTF8</flag>
   <flag name='libressl'>Enable SSL connections and crypto functions using <pkg>dev-libs/libressl</pkg></flag>
-  <flag name='minimal'>Install client programs only, no server</flag>
   <flag name='oqgraph'>Add support for the Open Query GRAPH engine</flag>
   <flag name='openssl'>Enable SSL connections and crypto functions using <pkg>dev-libs/openssl</pkg></flag>
   <flag name='profiling'>Add support for statement profiling (requires USE=community).</flag>

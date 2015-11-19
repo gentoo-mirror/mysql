@@ -1,3 +1,15 @@
+  19 Nov 2015; Brian Evans <grknight@gentoo.org> -mariadb-galera-10.0.20.ebuild,
+  -mariadb-galera-10.0.21.ebuild, metadata.xml:
+  dev-db/mariadb-galera: Drop old vulnerable versions
+
+  19 Nov 2015; Brian Evans <grknight@gentoo.org> metadata.xml:
+  dev-db/mariadb-galera: Remove old cluster description from metadata
+
+*mariadb-galera-10.0.22 (19 Nov 2015)
+
+  19 Nov 2015; Brian Evans <grknight@gentoo.org> +mariadb-galera-10.0.22.ebuild:
+  dev-db/mariadb-galera: Version bump
+
 *mariadb-galera-10.0.21 (19 Aug 2015)
 
   19 Aug 2015; Brian Evans <grknight@gentoo.org> +mariadb-galera-10.0.21.ebuild,

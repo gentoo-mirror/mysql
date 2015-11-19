@@ -109,10 +109,9 @@ multilib_src_test() {
 
 		# run mysql-test tests
 		# The PATH addition is required for the galera suite to find the sst scripts
-		# Skipping galera tests for now until MDEV-7544 is resovled
 		WSREP_LOG_DIR="${T}/var-tests/wsrep" \
 		PATH="${BUILD_DIR}/scripts:${PATH}" \
-		perl mysql-test-run.pl --force --vardir="${T}/var-tests" --skip-test=galera
+		perl mysql-test-run.pl --force --vardir="${T}/var-tests"
 		retstatus_tests=$?
 		[[ $retstatus_tests -eq 0 ]] || eerror "tests failed"
 		has usersandbox $FEATURES && eerror "Some tests may fail with FEATURES=usersandbox"
