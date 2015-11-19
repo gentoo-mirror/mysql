@@ -1,3 +1,6 @@
+  19 Nov 2015; Brian Evans <grknight@gentoo.org> metadata.xml:
+  dev-db/mariadb-galera: Remove old cluster description from metadata
+
 *mariadb-galera-10.0.22 (19 Nov 2015)
 
   19 Nov 2015; Brian Evans <grknight@gentoo.org> +mariadb-galera-10.0.22.ebuild:
