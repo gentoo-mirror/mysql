@@ -1,0 +1,8 @@
+DEFINED_PHASES=-
+DESCRIPTION=Virtual for MySQL client or database
+EAPI=5
+IUSE=embedded minimal static static-libs
+RDEPEND=|| ( =dev-db/mariadb-9999[embedded=,minimal=,static=,static-libs=] )
+SLOT=0/18
+_eclass_exported_funcs=-
+_md5_=a50e339e65b4006d59d6649492fed7e8
