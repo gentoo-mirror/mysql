@@ -110,7 +110,8 @@ if [[ -z ${SERVER_URI} ]]; then
 		URI_A="${URI_FILE}-${MY_PV}.tar.gz"
 		MIRROR_PV=$(get_version_component_range 1-2 ${PV})
 		# Recently upstream switched to an archive site, and not on mirrors
-		SERVER_URI="http://downloads.mysql.com/archives/${URI_FILE}-${MIRROR_PV}/${URI_A}"
+		SERVER_URI="http://cdn.mysql.com/Downloads/${URI_DIR}-${MIRROR_PV}/${URI_A}
+			http://downloads.mysql.com/archives/${URI_DIR}-${MIRROR_PV}/${URI_A}"
 	fi
 fi
 
@@ -328,19 +329,7 @@ mysql-multilib-r1_src_configure() {
 	# Bug #114895, bug #110149
 	filter-flags "-O" "-O[01]"
 
-	CXXFLAGS="${CXXFLAGS} -fno-strict-aliasing"
-	CXXFLAGS="${CXXFLAGS} -felide-constructors"
-	# Causes linkage failures.  Upstream bug #59607 removes it
-	if ! mysql_version_is_at_least "5.6" ; then
-		CXXFLAGS="${CXXFLAGS} -fno-implicit-templates"
-	fi
-	# As of 5.7, exceptions are used!
-	if [[ ${PN} == "percona-server" ]] && mysql_version_is_at_least "5.6.26" ; then
-                CXXFLAGS="${CXXFLAGS} -fno-rtti"
-        elif ! mysql_version_is_at_least "5.7" ; then
-		CXXFLAGS="${CXXFLAGS} -fno-exceptions -fno-rtti"
-	fi
-	export CXXFLAGS
+	append-cxxflags -felide-constructors -fno-rtti
 
 	# bug #283926, with GCC4.4, this is required to get correct behavior.
 	append-flags -fno-strict-aliasing
@@ -485,14 +474,14 @@ multilib_src_configure() {
 
 	# systemtap only works on native ABI  bug 530132
 	if multilib_is_native_abi; then
-		mycmakeargs+=( -DENABLE_DTRACE=$(usex systemtap) )
-		[[ ${MYSQL_CMAKE_NATIVE_DEFINES} ]] && mycmakeargs+=( ${MYSQL_CMAKE_NATIVE_DEFINES} )
+		mycmakeargs+=( -DENABLE_DTRACE=$(usex systemtap)
+			"${MYSQL_CMAKE_NATIVE_DEFINES[@]}" )
 	else
-		mycmakeargs+=( -DENABLE_DTRACE=0 )
-		[[ ${MYSQL_CMAKE_NONNATIVE_DEFINES} ]] && mycmakeargs+=( ${MYSQL_CMAKE_NONNATIVE_DEFINES} )
+		mycmakeargs+=( -DENABLE_DTRACE=0
+			"${MYSQL_CMAKE_NONNATIVE_DEFINES[@]}" )
 	fi
 
-	[[ ${MYSQL_CMAKE_EXTRA_DEFINES} ]] && mycmakeargs+=( ${MYSQL_CMAKE_EXTRA_DEFINES} )
+	mycmakeargs+=( "${MYSQL_CMAKE_EXTRA_DEFINES[@]}" )
 
 	cmake-utils_src_configure
 }

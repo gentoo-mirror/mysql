@@ -66,19 +66,19 @@ MULTILIB_WRAPPED_HEADERS+=( /usr/include/mysql/mysql_version.h )
 src_configure(){
 	# bug 508724 mariadb cannot use ld.gold
 	tc-ld-disable-gold
-	local MYSQL_CMAKE_NATIVE_DEFINES="
+	local MYSQL_CMAKE_NATIVE_DEFINES=(
 			-DWITH_JEMALLOC=$(usex jemalloc system)
 			-DWITH_PCRE=system
-	"
+	)
 	if use server ; then
 		# Federated{,X} must be treated special otherwise they will not be built as plugins
 		if ! use extraengine ; then
-			MYSQL_CMAKE_NATIVE_DEFINES+="
+			MYSQL_CMAKE_NATIVE_DEFINES+=(
 				-DPLUGIN_FEDERATED=NO
-				-DPLUGIN_FEDERATEDX=NO"
+				-DPLUGIN_FEDERATEDX=NO )
 		fi
 
-		MYSQL_CMAKE_NATIVE_DEFINES+="
+		MYSQL_CMAKE_NATIVE_DEFINES+=(
 			-DPLUGIN_OQGRAPH=$(usex oqgraph YES NO)
 			-DPLUGIN_SPHINX=$(usex sphinx YES NO)
 			-DPLUGIN_TOKUDB=$(usex tokudb YES NO)
@@ -95,9 +95,9 @@ src_configure(){
 			-DWITH_INNODB_LZ4=$(usex innodb-lz4)
 			-DWITH_INNODB_LZO=$(usex innodb-lzo)
 			-DWITH_INNODB_SNAPPY=$(usex innodb-snappy)
-		"
+		)
 
-		use mroonga || MYSQL_CMAKE_NATIVE_DEFINES+="-DWITHOUT_MROONGA=1"
+		use mroonga || MYSQL_CMAKE_NATIVE_DEFINES+=( -DWITHOUT_MROONGA=1 )
 	fi
 	mysql-multilib-r1_src_configure
 }
