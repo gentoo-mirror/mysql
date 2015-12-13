@@ -39,14 +39,16 @@ python_check_deps() {
 }
 
 src_configure() {
-	local MYSQL_CMAKE_NATIVE_DEFINES="-DWITH_PAM=$(usex pam)"
+	local MYSQL_CMAKE_NATIVE_DEFINES=( -DWITH_PAM=$(usex pam)
+			$(mysql-cmake_use_plugin tokudb TOKUDB)
+	)
 	if use tokudb ; then
 		# TokuDB Backup plugin requires valgrind unconditionally
-		MYSQL_CMAKE_NATIVE_DEFINES+="
-			$(mysql-cmake_use_plugin tokudb TOKUDB)
+		MYSQL_CMAKE_NATIVE_DEFINES+=(
 			$(usex tokudb-backup-plugin '' -DTOKUDB_BACKUP_DISABLED=1)
-		"
+		)
 	fi
+	mysql-multilib-r1_src_configure
 }
 
 # Official test instructions:
