@@ -4,7 +4,7 @@
 
 EAPI="5"
 
-MY_EXTRAS_VER="20150717-1707Z"
+MY_EXTRAS_VER="20151105-2051Z"
 MY_PV="${PV//_alpha_pre/-m}"
 MY_PV="${MY_PV//_/-}"
 HAS_TOOLS_PATCH="1"
@@ -74,13 +74,6 @@ multilib_src_test() {
 		retstatus_unit=$?
 		[[ $retstatus_unit -eq 0 ]] || eerror "test-unit failed"
 
-		# Create a symlink to provided binaries so the tests can find them when client-libs is off
-		if ! use client-libs ; then
-			ln -srf /usr/bin/my_print_defaults "${BUILD_DIR}/client/my_print_defaults" || die
-			ln -srf /usr/bin/perror "${BUILD_DIR}/client/perror" || die
-			mysql-multilib_disable_test main.perror "String mismatch due to not building local perror"
-		fi
-
 		# Ensure that parallel runs don't die
 		export MTR_BUILD_THREAD="$((${RANDOM} % 100))"
 		# Enable parallel testing, auto will try to detect number of cores
@@ -130,13 +123,13 @@ multilib_src_test() {
 			rpl.rpl_plugin_load \
 			main.mysqlhotcopy_archive main.mysqlhotcopy_myisam \
 		; do
-				mysql-multilib_disable_test  "$t" "False positives in Gentoo"
+				mysql-multilib-r1_disable_test  "$t" "False positives in Gentoo"
 		done
 
 		if ! use extraengine ; then
 			# bug 401673, 530766
 			for t in federated.federated_plugin ; do
-				mysql-multilib_disable_test  "$t" "Test $t requires USE=extraengine (Need federated engine)"
+				mysql-multilib-r1_disable_test  "$t" "Test $t requires USE=extraengine (Need federated engine)"
 			done
 		fi
 
