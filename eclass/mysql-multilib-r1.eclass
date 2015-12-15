@@ -26,6 +26,18 @@ MYSQL_EXTRAS=""
 # Use "none" to disable it's use
 [[ ${MY_EXTRAS_VER} == "live" ]] && MYSQL_EXTRAS="git-r3"
 
+# @ECLASS-VARIABLE: MYSQL_CMAKE_NATIVE_DEFINES
+# @DESCRIPTION:
+# An array of extra CMake arguments for native multilib builds
+
+# @ECLASS-VARIABLE: MYSQL_CMAKE_NONNATIVE_DEFINES
+# @DESCRIPTION:
+# An array of extra CMake arguments for non-native multilib builds
+
+# @ECLASS-VARIABLE: MYSQL_CMAKE_EXTRA_DEFINES
+# @DESCRIPTION:
+# An array of CMake arguments added to native and non-native
+
 inherit eutils systemd flag-o-matic ${MYSQL_EXTRAS} mysql_fx versionator \
 	multilib prefix toolchain-funcs user cmake-utils multilib-minimal
 
@@ -498,7 +510,7 @@ multilib_src_compile() {
 }
 
 
-# @FUNCTION: mysql-multilib_src_install
+# @FUNCTION: mysql-multilib-r1_src_install
 # @DESCRIPTION:
 # Install mysql.
 mysql-multilib-r1_src_install() {
@@ -609,8 +621,9 @@ multilib_src_install() {
 	fi
 }
 
-# @FUNCTION: mysql-multilib_pkg_preinst
+# @FUNCTION: mysql-multilib-r1_pkg_preinst
 # @DESCRIPTION:
+# Warn about ABI changes when switching providers
 mysql-multilib-r1_pkg_preinst() {
 	debug-print-function ${FUNCNAME} "$@"
 
@@ -727,7 +740,7 @@ mysql-multilib-r1_getoptval() {
 	"${mypd}" $extra_options $section | sed -n "/^${flag}/s,${flag},,gp"
 }
 
-# @FUNCTION: mysql-multilib_pkg_config
+# @FUNCTION: mysql-multilib-r1_pkg_config
 # @DESCRIPTION:
 # Configure mysql environment.
 mysql-multilib-r1_pkg_config() {
