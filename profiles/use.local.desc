@@ -84,11 +84,11 @@ dev-db/mysql-cluster:max-idx-128 - Raise the max index per table limit from 64 t
 dev-db/mysql-cluster:minimal - Install client programs only, no server
 dev-db/mysql-cluster:openssl - Enable SSL connections and crypto functions using dev-libs/openssl
 dev-db/mysql-cluster:profiling - Add support for statement profiling (requires USE=community).
+dev-db/mysql-cluster:server - Install server daemon
 dev-db/mysql-cluster:systemtap - Build support for profiling and tracing using dev-util/systemtap
 dev-db/mysql-cluster:test - Install upstream testsuites for end use.
 dev-db/mysql-cluster:yassl - Enable SSL connections and crypto functions using the bundled yaSSL
 dev-db/percona-server:client-libs - Build the libmysqlclient libraries
-dev-db/percona-server:cluster - Add support for NDB clustering (deprecated)
 dev-db/percona-server:embedded - Build embedded server (libmysqld)
 dev-db/percona-server:extraengine - Add support for alternative storage engines (Archive, CSV, Blackhole, Federated(X), Partition)
 dev-db/percona-server:jemalloc - Use dev-libs/jemalloc for allocations.
