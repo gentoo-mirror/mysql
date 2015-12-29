@@ -2,6 +2,9 @@
 # Copyright 1999-2015 Gentoo Foundation; Distributed under the GPL v2
 # $Id$
 
+  29 Dec 2015; Brian Evans <grknight@gentoo.org> mariadb-10.1.10.ebuild:
+  dev-db/mariadb: Fix Mroonga Engine cmake option
+
   28 Dec 2015; Brian Evans <grknight@gentoo.org> -mariadb-10.0.19.ebuild,
   -mariadb-10.0.22-r1.ebuild, -mariadb-10.0.22.ebuild, -mariadb-10.1.8.ebuild,
   -mariadb-10.1.9-r1.ebuild, -mariadb-10.1.9.ebuild, metadata.xml:
