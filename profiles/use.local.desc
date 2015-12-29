@@ -3,7 +3,6 @@
 # * generated automatically using pmaint *
 
 dev-db/mariadb:big-tables - Make tables contain up to 1.844E+19 rows
-dev-db/mariadb:client-libs - Build the libmysqlclient libraries
 dev-db/mariadb:cluster - Add support for NDB clustering (deprecated)
 dev-db/mariadb:community - Enables the community features from upstream.
 dev-db/mariadb:embedded - Build embedded server (libmysqld)
@@ -31,7 +30,6 @@ dev-db/mariadb:sst-xtrabackup - Add tools needed to support the xtrabackup and x
 dev-db/mariadb:systemtap - Build support for profiling and tracing using dev-util/systemtap
 dev-db/mariadb:test - Install upstream testsuites for end use.
 dev-db/mariadb:tokudb - Add support for TokuDB storage engine
-dev-db/mariadb:tools - Build the command line tools (mysql, mysqldump, mysqladmin, etc)
 dev-db/mariadb:yassl - Enable SSL connections and crypto functions using the bundled yaSSL
 dev-db/mariadb-connector-c:mysqlcompat - Enable mysqlclient library symbolic links
 dev-db/mariadb-galera:client-libs - Build the libmysqlclient libraries
