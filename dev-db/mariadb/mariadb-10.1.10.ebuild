@@ -3,7 +3,7 @@
 # $Id$
 
 EAPI="5"
-MY_EXTRAS_VER="20151123-1643Z"
+MY_EXTRAS_VER="20151223-1501Z"
 # The wsrep API version must match between upstream WSREP and sys-cluster/galera major number
 WSREP_REVISION="25"
 SUBSLOT="18"
