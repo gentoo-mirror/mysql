@@ -95,9 +95,8 @@ src_configure(){
 			-DWITH_INNODB_LZ4=$(usex innodb-lz4)
 			-DWITH_INNODB_LZO=$(usex innodb-lzo)
 			-DWITH_INNODB_SNAPPY=$(usex innodb-snappy)
+			-DPLUGIN_MROONGA=$(usex mroonga YES NO)
 		)
-
-		use mroonga || MYSQL_CMAKE_NATIVE_DEFINES+=( -DWITHOUT_MROONGA=1 )
 	fi
 	mysql-multilib-r1_src_configure
 }
