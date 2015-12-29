@@ -2,6 +2,11 @@
 # Copyright 1999-2015 Gentoo Foundation; Distributed under the GPL v2
 # $Id$
 
+  29 Dec 2015; Brian Evans <grknight@gentoo.org> mariadb-10.0.23.ebuild,
+  mariadb-10.1.10.ebuild:
+  dev-db/mariadb: Add missing build dependency wrt bug 570114  app-arch/snappy
+  is needed for TokuDB
+
   29 Dec 2015; Brian Evans <grknight@gentoo.org> mariadb-10.1.10.ebuild:
   dev-db/mariadb: Fix Mroonga Engine cmake option
 
