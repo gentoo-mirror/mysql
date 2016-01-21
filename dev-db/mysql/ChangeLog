@@ -1,6 +1,11 @@
 # ChangeLog for dev-db/mysql
-# Copyright 1999-2015 Gentoo Foundation; Distributed under the GPL v2
+# Copyright 1999-2016 Gentoo Foundation; Distributed under the GPL v2
 # $Id$
+
+*mysql-5.7.10 (21 Jan 2016)
+
+  21 Jan 2016; Brian Evans <grknight@gentoo.org> +mysql-5.7.10.ebuild:
+  dev-db/mysql: Add new 5.7 version.  Needs more testing
 
   19 Aug 2015; Brian Evans <grknight@gentoo.org> mysql-5.7.7_rc.ebuild,
   mysql-5.7.8_rc.ebuild:
