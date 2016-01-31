@@ -2,6 +2,9 @@
 # Copyright 1999-2016 Gentoo Foundation; Distributed under the GPL v2
 # $Id$
 
+  31 Jan 2016; Brian Evans <grknight@gentoo.org> mariadb-10.1.11.ebuild:
+  dev-db/mariadb: Bump patch version to fix kerberos plugin MDEV-9494
+
 *mariadb-10.1.11 (29 Jan 2016)
 
   29 Jan 2016; Brian Evans <grknight@gentoo.org> +mariadb-10.1.11.ebuild:

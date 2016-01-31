@@ -3,7 +3,7 @@
 # $Id$
 
 EAPI="5"
-MY_EXTRAS_VER="20151223-1501Z"
+MY_EXTRAS_VER="20160131-0252Z"
 # The wsrep API version must match between upstream WSREP and sys-cluster/galera major number
 WSREP_REVISION="25"
 SUBSLOT="18"
@@ -14,7 +14,6 @@ inherit toolchain-funcs mysql-multilib-r1
 HOMEPAGE="http://mariadb.org/"
 DESCRIPTION="An enhanced, drop-in replacement for MySQL"
 
-# Now includes a kerberos plugin but the server pieces doesn't build MDEV-9494
 IUSE="bindist cracklib galera kerberos innodb-lz4 innodb-lzo innodb-snappy mroonga odbc oqgraph pam sphinx sst-rsync sst-xtrabackup tokudb systemd xml"
 RESTRICT="!bindist? ( bindist )"
 
@@ -101,10 +100,8 @@ src_configure(){
 			-DWITH_INNODB_LZO=$(usex innodb-lzo)
 			-DWITH_INNODB_SNAPPY=$(usex innodb-snappy)
 			-DPLUGIN_MROONGA=$(usex mroonga YES NO)
-			-DPLUGIN_AUTH_GSSAPI=NO
+			-DPLUGIN_AUTH_GSSAPI=$(usex kerberos YES NO)
 		)
-# Disable until upstream fixes it
-#			-DPLUGIN_AUTH_GSSAPI=$(usex kerberos YES NO)
 	fi
 	mysql-multilib-r1_src_configure
 }
