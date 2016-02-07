@@ -47,7 +47,7 @@ MYSQL_EXTRAS=""
 # Use "none" to disable it's use
 [[ ${MY_EXTRAS_VER} == "live" ]] && MYSQL_EXTRAS="git-r3"
 
-inherit eutils flag-o-matic gnuconfig ${MYSQL_EXTRAS} ${BUILD_INHERIT} mysql_fx versionator toolchain-funcs user
+inherit eutils flag-o-matic ${MYSQL_EXTRAS} ${BUILD_INHERIT} mysql_fx versionator toolchain-funcs user
 
 #
 # Supported EAPI versions and export functions
@@ -184,9 +184,9 @@ if [[ ${MY_EXTRAS_VER} != "live" && ${MY_EXTRAS_VER} != "none" ]]; then
 	SRC_URI="${SRC_URI}
 		mirror://gentoo/mysql-extras-${MY_EXTRAS_VER}.tar.bz2
 		http://g3nt8.org/patches/mysql-extras-${MY_EXTRAS_VER}.tar.bz2
-		http://dev.gentoo.org/~robbat2/distfiles/mysql-extras-${MY_EXTRAS_VER}.tar.bz2
-		http://dev.gentoo.org/~jmbsvicetto/distfiles/mysql-extras-${MY_EXTRAS_VER}.tar.bz2
-		http://dev.gentoo.org/~grknight/distfiles/mysql-extras-${MY_EXTRAS_VER}.tar.bz2"
+		https://dev.gentoo.org/~robbat2/distfiles/mysql-extras-${MY_EXTRAS_VER}.tar.bz2
+		https://dev.gentoo.org/~jmbsvicetto/distfiles/mysql-extras-${MY_EXTRAS_VER}.tar.bz2
+		https://dev.gentoo.org/~grknight/distfiles/mysql-extras-${MY_EXTRAS_VER}.tar.bz2"
 fi
 
 DESCRIPTION="A fast, multi-threaded, multi-user SQL database server"
@@ -291,10 +291,6 @@ else
 	else
 		DEPEND="${DEPEND} >=sys-libs/readline-4.1:0"
 	fi
-fi
-
-if [[ ${PN} == "mysql" || ${PN} == "percona-server" ]] ; then
-	mysql_version_is_at_least "5.7.5" && DEPEND="${DEPEND} dev-libs/boost"
 fi
 
 if [[ ${PN} == "mariadb" || ${PN} == "mariadb-galera" ]] ; then
@@ -826,8 +822,7 @@ mysql-v2_pkg_config() {
 		mysql_version_is_at_least "5.6" || options="${options} --loose-skip-innodb"
 	fi
 
-	einfo "Creating the mysql database and setting proper"
-	einfo "permissions on it ..."
+	einfo "Creating the mysql database and setting proper permissions on it ..."
 
 	# Now that /var/run is a tmpfs mount point, we need to ensure it exists before using it
 	PID_DIR="${EROOT}/var/run/mysqld"
