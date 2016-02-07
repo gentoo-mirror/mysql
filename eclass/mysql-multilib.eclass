@@ -1067,6 +1067,11 @@ mysql-multilib_pkg_config() {
 
 	use prefix || options="${options} --user=mysql"
 
+	# MySQL 5.6+ needs InnoDB
+	if [[ ${PN} == "mysql" || ${PN} == "percona-server" ]] ; then
+		mysql_version_is_at_least "5.6" || options="${options} --loose-skip-innodb"
+	fi
+
 	einfo "Creating the mysql database and setting proper permissions on it ..."
 
 	# Now that /var/run is a tmpfs mount point, we need to ensure it exists before using it
