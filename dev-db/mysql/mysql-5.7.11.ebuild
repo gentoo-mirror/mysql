@@ -143,7 +143,7 @@ multilib_src_test() {
 		pushd "${TESTDIR}"
 
 		# Set file limits higher so tests run
-		ulimit -n 3000
+#		ulimit -n 3000
 
 		# run mysql-test tests
 		perl mysql-test-run.pl --force --vardir="${T}/var-tests" \

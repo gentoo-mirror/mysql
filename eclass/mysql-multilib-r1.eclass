@@ -342,7 +342,7 @@ mysql-multilib-r1_src_configure() {
 	# Bug #114895, bug #110149
 	filter-flags "-O" "-O[01]"
 
-	append-cxxflags -felide-constructors -fno-rtti
+	append-cxxflags -felide-constructors
 
 	# bug #283926, with GCC4.4, this is required to get correct behavior.
 	append-flags -fno-strict-aliasing
