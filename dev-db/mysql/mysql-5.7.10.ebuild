@@ -22,7 +22,7 @@ EPATCH_EXCLUDE=''
 
 DEPEND="|| ( >=sys-devel/gcc-3.4.6 >=sys-devel/gcc-apple-4.0 )
 	>=dev-libs/boost-1.59:=
-	app-arch/lz4:="
+	>=app-arch/lz4-0_p131:="
 RDEPEND="${RDEPEND}"
 
 # Please do not add a naive src_unpack to this ebuild
