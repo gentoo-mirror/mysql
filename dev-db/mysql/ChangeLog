@@ -2,6 +2,11 @@
 # Copyright 1999-2016 Gentoo Foundation; Distributed under the GPL v2
 # $Id$
 
+  12 Feb 2016; Brian Evans <grknight@gentoo.org> -mysql-5.5.46.ebuild,
+  -mysql-5.6.27-r1.ebuild, -mysql-5.6.27.ebuild, -mysql-5.6.28.ebuild,
+  -mysql-5.7.7_rc.ebuild, -mysql-5.7.8_rc.ebuild:
+  dev-db/mysql: Drop old version
+
 *mysql-5.5.48 (12 Feb 2016)
 
   12 Feb 2016; Brian Evans <grknight@gentoo.org> +mysql-5.5.48.ebuild:
