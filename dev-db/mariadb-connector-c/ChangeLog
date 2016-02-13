@@ -1,3 +1,9 @@
+*mariadb-connector-c-2.2.2 (13 Feb 2016)
+
+  13 Feb 2016; Brian Evans <grknight@gentoo.org>
+  +files/gentoo-layout-2.2.2.patch, +mariadb-connector-c-2.2.2.ebuild:
+  dev-db/mariadb-connector-c: Version bump
+
   15 Aug 2015; Brian Evans <grknight@gentoo.org>
   mariadb-connector-c-2.0.0-r1.ebuild, mariadb-connector-c-2.1.0.ebuild,
   mariadb-connector-c-9999.ebuild:
