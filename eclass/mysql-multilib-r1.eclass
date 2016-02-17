@@ -46,7 +46,7 @@ inherit eutils systemd flag-o-matic ${MYSQL_EXTRAS} mysql_fx versionator \
 #
 
 case "${EAPI:-0}" in
-	5) ;;
+	5|6) ;;
 	*) die "Unsupported EAPI: ${EAPI}" ;;
 esac
 
@@ -223,7 +223,7 @@ mysql-multilib-r1_pkg_pretend() {
 	if [[ ${MERGE_TYPE} != binary ]] ; then
 		local GCC_MAJOR_SET=$(gcc-major-version)
 		local GCC_MINOR_SET=$(gcc-minor-version)
-		if use_if_iuse tokudb && [[ ${GCC_MAJOR_SET} -lt 4 || \
+		if in_iuse tokudb && use tokudb && [[ ${GCC_MAJOR_SET} -lt 4 || \
 			${GCC_MAJOR_SET} -eq 4 && ${GCC_MINOR_SET} -lt 7 ]] ; then
 			eerror "${PN} with tokudb needs to be built with gcc-4.7 or later."
 			eerror "Please use gcc-config to switch to gcc-4.7 or later version."
@@ -285,14 +285,22 @@ mysql-multilib-r1_src_prepare() {
 	if [[ ${MY_EXTRAS_VER} != none ]]; then
 
 		# Apply the patches for this MySQL version
-		EPATCH_SUFFIX="patch"
-		mkdir -p "${EPATCH_SOURCE}" || die "Unable to create epatch directory"
-		# Clean out old items
-		rm -f "${EPATCH_SOURCE}"/*
-		# Now link in right patches
-		mysql_mv_patches
-		# And apply
-		epatch
+		if [[ "${EAPI}x" == "5x" ]]; then
+			EPATCH_SUFFIX="patch"
+			mkdir -p "${EPATCH_SOURCE}" || die "Unable to create epatch directory"
+			# Clean out old items
+			rm -f "${EPATCH_SOURCE}"/*
+			# Now link in right patches
+			mysql_mv_patches
+			# And apply
+			epatch
+		else
+			mkdir -p "${WORKDIR}/patch" || die "Unable to create epatch directory"
+			# Clean out old items
+			rm -f "${WORKDIR}"/patch/*
+			EPATCH_SOURCE="${WORKDIR}/patch" mysql_mv_patches
+			eapply "${WORKDIR}/patch"
+		fi
 	fi
 
 	# last -fPIC fixup, per bug #305873
@@ -332,7 +340,11 @@ mysql-multilib-r1_src_prepare() {
 		rm -r "${S}"/storage/mroonga/vendor/groonga || die "could not remove packaged groonga"
 	fi
 
-	epatch_user
+	if [[ "${EAPI}x" == "5x" ]] ; then
+		epatch_user
+	else
+		eapply_user
+	fi
 }
 
 # @FUNCTION: mysql-multilib-r1_src_configure
@@ -388,7 +400,7 @@ multilib_src_configure() {
 		-DINSTALL_UNIX_ADDRDIR=${EPREFIX}/var/run/mysqld/mysqld.sock
 		-DWITH_DEFAULT_COMPILER_OPTIONS=0
 		-DWITH_DEFAULT_FEATURE_SET=0
-		-DINSTALL_SYSTEMD_UNITDIR="$(systemd_get_unitdir)"
+		-DINSTALL_SYSTEMD_UNITDIR="$(systemd_get_systemunitdir)"
 	)
 
 	if in_iuse systemd ; then
@@ -680,7 +692,7 @@ mysql-multilib-r1_pkg_postinst() {
 			fi
 		done
 
-		if use_if_iuse pam ; then
+		if in_iuse pam && use pam; then
 			einfo
 			elog "This install includes the PAM authentication plugin."
 			elog "To activate and configure the PAM plugin, please read:"
@@ -708,7 +720,7 @@ mysql-multilib-r1_pkg_postinst() {
 			einfo
 		fi
 
-		if use_if_iuse galera ; then
+		if in_iuse galera && use galera ; then
 			einfo
 			elog "Be sure to edit the my.cnf file to activate your cluster settings."
 			elog "This should be done after running \"emerge --config =${CATEGORY}/${PF}\""
@@ -1038,7 +1050,7 @@ mysql-multilib-r1_disable_test() {
 # and some check WITHOUT_. Also, this can easily extend to non-storage plugins.
 mysql-cmake_use_plugin() {
 	[[ -z $2 ]] && die "mysql-cmake_use_plugin <USE flag> <flag name>"
-	if use_if_iuse $1 ; then
+	if in_iuse $1 && use $1 ; then
 		echo "-DWITH_$2=1 -DPLUGIN_$2=YES"
 	else
 		echo "-DWITHOUT_$2=1 -DWITH_$2=0 -DPLUGIN_$2=NO"
