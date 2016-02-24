@@ -2,10 +2,10 @@
 # Distributed under the terms of the GNU General Public License v2
 # $Id$
 
-EAPI=5
+EAPI=6
 
 PYTHON_COMPAT=( python2_7 )
-inherit eutils distutils-r1 multilib
+inherit distutils-r1
 
 DESCRIPTION="Set of command-line utilities for common MySQL tasks"
 HOMEPAGE="http://dev.mysql.com/doc/mysql-utilities/"
@@ -16,12 +16,13 @@ KEYWORDS="~amd64 ~x86"
 
 IUSE=""
 
-DEPEND="dev-python/mysql-connector-python[${PYTHON_USEDEP}]"
+DEPEND=">=dev-python/mysql-connector-python-2.1.2[${PYTHON_USEDEP}]"
 RDEPEND="${DEPEND}"
 
 src_prepare() {
 	# conflicts with dev-python/mysql-connector-python
 	rm -r "${S}/mysql/connector" || die
+	default
 }
 
 python_install() {
