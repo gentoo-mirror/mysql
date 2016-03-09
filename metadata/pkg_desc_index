@@ -7,8 +7,8 @@ dev-db/mysql-cluster 7.2.22 7.3.11: A fast, multi-threaded, multi-user SQL datab
 dev-db/mysql-connector-c 6.1.5 6.1.6 6.1.6-r2: C client library for MariaDB/MySQL
 dev-db/mysql-init-scripts 1.2 2.0_pre1 2.0 2.1_alpha4: Gentoo MySQL init scripts.
 dev-db/mysql-utilities 1.5.4 1.5.6: Set of command-line utilities for common MySQL tasks
-dev-db/percona-server 5.6.26.74.0 5.6.27.75.0-r1 5.6.27.76.0: An enhanced, drop-in replacement for MySQL from the Percona team
+dev-db/percona-server 5.6.26.74.0 5.6.27.75.0-r1 5.6.27.76.0 5.6.29.76.2: An enhanced, drop-in replacement for MySQL from the Percona team
 dev-java/mariadb-java-client 1.1.7 9999: Java client library for MariaDB/MySQL
 sys-cluster/galera 23.2.7 25.3.5 25.3.7: Synchronous multi-master replication engine that provides its service through wsrep API
 virtual/libmysqlclient 18 20: Virtual for MySQL client libraries
-virtual/mysql 4.0 4.1 5.0 5.1 5.2 5.3 5.5-r1 5.6-r2 5.6-r3 5.6-r4 5.7-r1 9999: Virtual for MySQL client or database
+virtual/mysql 4.0 4.1 5.0 5.1 5.2 5.3 5.5-r1 5.6-r2 5.6-r3 5.6-r4 5.6-r8 5.7-r1 9999: Virtual for MySQL client or database
