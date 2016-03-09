@@ -4,8 +4,6 @@
 
 EAPI="6"
 
-inherit multilib-build
-
 DESCRIPTION="Virtual for MySQL database server"
 HOMEPAGE=""
 SRC_URI=""
@@ -17,11 +15,11 @@ IUSE="embedded static"
 
 DEPEND=""
 RDEPEND="|| (
-		=dev-db/mariadb-10.1*[embedded?,static?]
-		=dev-db/mariadb-10.0*[embedded?,static?]
-		=dev-db/mysql-${PV}*[embedded?,static?]
-		=dev-db/percona-server-${PV}*[embedded?,static?]
-		=dev-db/mariadb-galera-10.0*[embedded?,static?]
-		=dev-db/mysql-cluster-7.3*[embedded?,static?]
+		=dev-db/mariadb-10.1*[embedded?,server,static?]
+		=dev-db/mariadb-10.0*[embedded?,server,static?]
+		=dev-db/mysql-${PV}*[embedded?,server,static?]
+		=dev-db/percona-server-${PV}*[embedded?,server,static?]
+		=dev-db/mariadb-galera-10.0*[embedded?,server,static?]
+		=dev-db/mysql-cluster-7.3*[embedded?,server,static?]
 	)
 "

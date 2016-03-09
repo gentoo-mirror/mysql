@@ -2,6 +2,9 @@
 # Copyright 1999-2016 Gentoo Foundation; Distributed under the GPL v2
 # $Id$
 
+  09 Mar 2016; Brian Evans <grknight@gentoo.org> mysql-5.6-r8.ebuild:
+  virtual/mysql: Drop unused inherit; Add server required USE
+
 *mysql-5.6-r8 (09 Mar 2016)
 
   09 Mar 2016; Brian Evans <grknight@gentoo.org> +mysql-5.6-r8.ebuild:
