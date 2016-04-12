@@ -2,6 +2,13 @@
 # Copyright 1999-2016 Gentoo Foundation; Distributed under the GPL v2
 # $Id$
 
+*mysql-5.5.49 (12 Apr 2016)
+*mysql-5.6.30 (12 Apr 2016)
+
+  12 Apr 2016; Brian Evans <grknight@gentoo.org> +mysql-5.5.49.ebuild,
+  +mysql-5.6.30.ebuild, -mysql-5.5.48.ebuild, -mysql-5.6.29.ebuild:
+  dev-db/mysql: Version bump for 5.5.49 and 5.6.30
+
   12 Feb 2016; Brian Evans <grknight@gentoo.org> metadata.xml:
   dev-db/mysql: Remove old USE flag descriptions for client-libs and tools
 
