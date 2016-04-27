@@ -2,6 +2,12 @@
 # Copyright 1999-2016 Gentoo Foundation; Distributed under the GPL v2
 # $Id$
 
+*mysql-5.7.12 (27 Apr 2016)
+
+  27 Apr 2016; Brian Evans <grknight@gentoo.org> +files/5.7.12-boost.cmake,
+  +mysql-5.7.12.ebuild:
+  dev-db/mysql: Version bump for 5.7.12
+
 *mysql-5.5.49 (12 Apr 2016)
 *mysql-5.6.30 (12 Apr 2016)
 
