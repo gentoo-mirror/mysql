@@ -10,6 +10,8 @@ MY_PV="${MY_PV//_/-}"
 SUBSLOT="20"
 
 inherit mysql-multilib-r1
+SRC_URI+="mirror://sourceforge/boost/boost_1_59_0.tar.bz2"
+
 # only to make repoman happy. it is really set in the eclass
 IUSE="$IUSE"
 
@@ -20,7 +22,6 @@ KEYWORDS="~alpha ~amd64 ~arm ~hppa ~ia64 ~mips ~ppc ~ppc64 ~s390 ~sh ~sparc ~x86
 EPATCH_EXCLUDE=''
 
 DEPEND="|| ( >=sys-devel/gcc-3.4.6 >=sys-devel/gcc-apple-4.0 )
-	>=dev-libs/boost-1.60:=
 	>=app-arch/lz4-0_p131:="
 RDEPEND="${RDEPEND}"
 
@@ -46,16 +47,13 @@ src_prepare() {
 		sed -i 's/OPENSSL_MAJOR_VERSION STREQUAL "1"/OPENSSL_MAJOR_VERSION STREQUAL "2"/' \
 			"${S}/cmake/ssl.cmake" || die
 	fi
-	# Oracle's boost detection does not fit well with Gentoo
-	# It includes download and build on the fly and hard depending on a single version
-	# Replace it with a stripped down version
-	cp "${FILESDIR}/5.7.12-boost.cmake" "${S}/cmake/boost.cmake" || die
 }
 
 src_configure() {
 	local MYSQL_CMAKE_NATIVE_DEFINES=(
 		-DWITH_LZ4=system
 		-DWITH_NUMA=OFF
+		-DWITH_BOOST="${WORKDIR}/boost_1_59_0"
 	)
 	mysql-multilib-r1_src_configure
 }
