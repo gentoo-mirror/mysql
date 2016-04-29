@@ -2,6 +2,10 @@
 # Copyright 1999-2016 Gentoo Foundation; Distributed under the GPL v2
 # $Id$
 
+  29 Apr 2016; Brian Evans <grknight@gentoo.org> mysql-5.7.12.ebuild:
+  dev-db/mysql: Force a download of boost-1.59 and use it in the build.  Only a
+  portion is actually used
+
 *mysql-5.7.12 (27 Apr 2016)
 
   27 Apr 2016; Brian Evans <grknight@gentoo.org> +files/5.7.12-boost.cmake,
