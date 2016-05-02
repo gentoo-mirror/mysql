@@ -2,10 +2,8 @@
 # Distributed under the terms of the GNU General Public License v2
 # $Id$
 
-EAPI="5"
+EAPI="6"
 MY_EXTRAS_VER="20151223-1501Z"
-# The wsrep API version must match between upstream WSREP and sys-cluster/galera major number
-WSREP_REVISION="25"
 SUBSLOT="18"
 MYSQL_PV_MAJOR="5.6"
 
@@ -17,14 +15,19 @@ DESCRIPTION="An enhanced, drop-in replacement for MySQL"
 IUSE="bindist odbc oqgraph pam sphinx tokudb xml"
 RESTRICT="!bindist? ( bindist )"
 
-REQUIRED_USE="tokudb? ( jemalloc ) static? ( !pam )"
+REQUIRED_USE="server? ( tokudb? ( jemalloc ) ) static? ( !pam )"
 
 # REMEMBER: also update eclass/mysql*.eclass before committing!
 KEYWORDS="~alpha ~amd64 ~arm ~arm64 ~hppa ~ia64 ~mips ~ppc ~ppc64 ~s390 ~sh ~sparc ~x86 ~sparc-fbsd ~x86-fbsd ~x86-freebsd ~amd64-linux ~x86-linux ~ppc-macos ~x64-macos ~x86-macos ~x64-solaris ~x86-solaris"
 
-# When MY_EXTRAS is bumped, the index should be revised to exclude these.
-EPATCH_EXCLUDE=''
-
+MY_PATCH_DIR="${WORKDIR}/mysql-extras-${MY_EXTRAS_VER}"
+PATCHES=(
+	"${MY_PATCH_DIR}/01050_all_mariadb_mysql_config_cleanup-5.5.41.patch"
+	"${MY_PATCH_DIR}/20004_all_mariadb-filter-tokudb-flags-10.0.23.patch"
+	"${MY_PATCH_DIR}/20006_all_cmake_elib-mariadb-10.0.15.patch"
+	"${MY_PATCH_DIR}/20009_all_mariadb_myodbc_symbol_fix-5.5.38.patch"
+	"${MY_PATCH_DIR}/20018_all_mariadb-10.0.20-without-clientlibs-tools.patch"
+)
 COMMON_DEPEND="
 	!bindist? ( >=sys-libs/readline-4.1:0=	)
 	server? (
