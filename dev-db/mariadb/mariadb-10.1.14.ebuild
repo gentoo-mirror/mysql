@@ -1,9 +1,9 @@
-# Copyright 1999-2015 Gentoo Foundation
+# Copyright 1999-2016 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Id$
 
-EAPI="5"
-MY_EXTRAS_VER="20151223-1501Z"
+EAPI="6"
+MY_EXTRAS_VER="20160131-0252Z"
 # The wsrep API version must match between upstream WSREP and sys-cluster/galera major number
 WSREP_REVISION="25"
 SUBSLOT="18"
@@ -14,21 +14,32 @@ inherit toolchain-funcs mysql-multilib-r1
 HOMEPAGE="http://mariadb.org/"
 DESCRIPTION="An enhanced, drop-in replacement for MySQL"
 
-IUSE="bindist cracklib galera innodb-lz4 innodb-lzo innodb-snappy mroonga odbc oqgraph pam sphinx sst-rsync sst-xtrabackup tokudb systemd xml"
+IUSE="bindist cracklib galera kerberos innodb-lz4 innodb-lzo innodb-snappy mroonga odbc oqgraph pam sphinx sst-rsync sst-xtrabackup tokudb systemd xml"
 RESTRICT="!bindist? ( bindist )"
 
-REQUIRED_USE="tokudb? ( jemalloc ) static? ( !pam )"
+REQUIRED_USE="server? ( tokudb? ( jemalloc ) ) static? ( !pam ) "
 
 # REMEMBER: also update eclass/mysql*.eclass before committing!
 KEYWORDS="~alpha ~amd64 ~arm ~arm64 ~ia64 ~hppa ~mips ~ppc ~ppc64 ~s390 ~sh ~sparc ~x86 ~sparc-fbsd ~x86-fbsd ~x86-freebsd ~amd64-linux ~x86-linux ~ppc-macos ~x64-macos ~x86-macos ~x64-solaris ~x86-solaris"
 
-# When MY_EXTRAS is bumped, the index should be revised to exclude these.
-#EPATCH_EXCLUDE=''
+MY_PATCH_DIR="${WORKDIR}/mysql-extras-${MY_EXTRAS_VER}"
+
+PATCHES=(
+	"${MY_PATCH_DIR}"/20004_all_mariadb-filter-tokudb-flags-10.1.10.patch
+	"${MY_PATCH_DIR}"/20006_all_cmake_elib-mariadb-10.1.8.patch
+	"${MY_PATCH_DIR}"/20009_all_mariadb_myodbc_symbol_fix-5.5.38.patch
+	"${MY_PATCH_DIR}"/20015_all_mariadb-pkgconfig-location.patch
+	"${MY_PATCH_DIR}"/20018_all_mariadb-10.1.7-without-clientlibs-tools.patch
+)
 
 COMMON_DEPEND="
 	mroonga? ( app-text/groonga-normalizer-mysql )
+	kerberos? ( virtual/krb5[${MULTILIB_USEDEP}] )
 	systemd? ( sys-apps/systemd:= )
-	!bindist? ( >=sys-libs/readline-4.1:0=	)
+	!bindist? (
+		sys-libs/binutils-libs:0=
+		>=sys-libs/readline-4.1:0=
+	)
 	server? (
 		cracklib? ( sys-libs/cracklib:0= )
 		extraengine? (
@@ -67,9 +78,13 @@ MULTILIB_WRAPPED_HEADERS+=( /usr/include/mysql/mysql_version.h )
 src_configure(){
 	# bug 508724 mariadb cannot use ld.gold
 	tc-ld-disable-gold
+
 	local MYSQL_CMAKE_NATIVE_DEFINES=(
 			-DWITH_JEMALLOC=$(usex jemalloc system)
 			-DWITH_PCRE=system
+	)
+	local MYSQL_CMAKE_EXTRA_DEFINES=(
+			-DPLUGIN_AUTH_GSSAPI_CLIENT=$(usex kerberos YES NO)
 	)
 	if use server ; then
 		# Federated{,X} must be treated special otherwise they will not be built as plugins
@@ -97,6 +112,7 @@ src_configure(){
 			-DWITH_INNODB_LZO=$(usex innodb-lzo)
 			-DWITH_INNODB_SNAPPY=$(usex innodb-snappy)
 			-DPLUGIN_MROONGA=$(usex mroonga YES NO)
+			-DPLUGIN_AUTH_GSSAPI=$(usex kerberos YES NO)
 		)
 	fi
 	mysql-multilib-r1_src_configure
