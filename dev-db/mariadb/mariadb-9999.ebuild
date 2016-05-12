@@ -1,28 +1,118 @@
-# Copyright 1999-2014 Gentoo Foundation
+# Copyright 1999-2016 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Id$
 
-EAPI="5"
+EAPI="6"
 MY_EXTRAS_VER="none"
 SERVER_URI=" "
 EGIT_REPO_URI="https://github.com/MariaDB/server.git"
+# The wsrep API version must match between upstream WSREP and sys-cluster/galera major number
+WSREP_REVISION="25"
+SUBSLOT="18"
+MYSQL_PV_MAJOR="5.6"
 
-inherit toolchain-funcs mysql-multilib git-r3
-# only to make repoman happy. it is really set in the eclass
-IUSE="$IUSE"
+inherit toolchain-funcs mysql-multilib-r1 git-r3
+HOMEPAGE="http://mariadb.org/"
+DESCRIPTION="An enhanced, drop-in replacement for MySQL"
+
+IUSE="bindist cracklib galera kerberos innodb-lz4 innodb-lzo innodb-snappy mroonga odbc oqgraph pam sphinx sst-rsync sst-xtrabackup tokudb systemd xml"
+RESTRICT="!bindist? ( bindist )"
+
+REQUIRED_USE="server? ( tokudb? ( jemalloc ) ) static? ( !pam ) "
+
 KEYWORDS=""
 
-# When MY_EXTRAS is bumped, the index should be revised to exclude these.
-EPATCH_EXCLUDE=''
+COMMON_DEPEND="
+	mroonga? ( app-text/groonga-normalizer-mysql )
+	kerberos? ( virtual/krb5[${MULTILIB_USEDEP}] )
+	systemd? ( sys-apps/systemd:= )
+	!bindist? (
+		sys-libs/binutils-libs:0=
+		>=sys-libs/readline-4.1:0=
+	)
+	server? (
+		cracklib? ( sys-libs/cracklib:0= )
+		extraengine? (
+			odbc? ( dev-db/unixODBC:0= )
+			xml? ( dev-libs/libxml2:2= )
+		)
+		innodb-lz4? ( app-arch/lz4 )
+		innodb-lzo? ( dev-libs/lzo )
+		innodb-snappy? ( app-arch/snappy )
+		oqgraph? ( >=dev-libs/boost-1.40.0:0= dev-libs/judy:0= )
+		pam? ( virtual/pam:0= )
+		tokudb? ( app-arch/snappy )
+	)
+	>=dev-libs/libpcre-8.35:3=
+"
+DEPEND="|| ( >=sys-devel/gcc-3.4.6 >=sys-devel/gcc-apple-4.0 )
+	${COMMON_DEPEND}"
+RDEPEND="${RDEPEND} ${COMMON_DEPEND}
+	galera? (
+		sys-apps/iproute2
+		=sys-cluster/galera-${WSREP_REVISION}*
+		sst-rsync? ( sys-process/lsof )
+		sst-xtrabackup? ( net-misc/socat[ssl] )
+	)
+	perl? ( !dev-db/mytop
+		virtual/perl-Getopt-Long
+		dev-perl/TermReadKey
+		virtual/perl-Term-ANSIColor
+		virtual/perl-Time-HiRes )
+"
+# xtrabackup-bin causes a circular dependency if DBD-mysql is not already installed
+PDEPEND="galera? ( sst-xtrabackup? ( >=dev-db/xtrabackup-bin-2.2.4 ) )"
 
-DEPEND="|| ( >=sys-devel/gcc-3.4.6 >=sys-devel/gcc-apple-4.0 )"
-RDEPEND="${RDEPEND}"
+MULTILIB_WRAPPED_HEADERS+=( /usr/include/mysql/mysql_version.h )
 
 # This is a special unpack for the VCS version
 src_unpack() {
 	git-r3_src_unpack
 
 	mv -f "${WORKDIR}/${P}" "${S}"
+}
+
+src_configure(){
+	# bug 508724 mariadb cannot use ld.gold
+	tc-ld-disable-gold
+
+	local MYSQL_CMAKE_NATIVE_DEFINES=(
+			-DWITH_JEMALLOC=$(usex jemalloc system)
+			-DWITH_PCRE=system
+	)
+	local MYSQL_CMAKE_EXTRA_DEFINES=(
+			-DPLUGIN_AUTH_GSSAPI_CLIENT=$(usex kerberos YES NO)
+	)
+	if use server ; then
+		# Federated{,X} must be treated special otherwise they will not be built as plugins
+		if ! use extraengine ; then
+			MYSQL_CMAKE_NATIVE_DEFINES+=(
+				-DPLUGIN_FEDERATED=NO
+				-DPLUGIN_FEDERATEDX=NO )
+		fi
+
+		MYSQL_CMAKE_NATIVE_DEFINES+=(
+			-DPLUGIN_OQGRAPH=$(usex oqgraph YES NO)
+			-DPLUGIN_SPHINX=$(usex sphinx YES NO)
+			-DPLUGIN_TOKUDB=$(usex tokudb YES NO)
+			-DPLUGIN_AUTH_PAM=$(usex pam YES NO)
+			-DPLUGIN_CRACKLIB_PASSWORD_CHECK=$(usex cracklib YES NO)
+			-DPLUGIN_CASSANDRA=NO
+			-DPLUGIN_SEQUENCE=$(usex extraengine YES NO)
+			-DPLUGIN_SPIDER=$(usex extraengine YES NO)
+			-DPLUGIN_CONNECT=$(usex extraengine YES NO)
+			-DCONNECT_WITH_MYSQL=1
+			-DCONNECT_WITH_LIBXML2=$(usex xml)
+			-DCONNECT_WITH_ODBC=$(usex odbc)
+			-DWITH_WSREP=$(usex galera)
+			-DWITH_INNODB_LZ4=$(usex innodb-lz4)
+			-DWITH_INNODB_LZO=$(usex innodb-lzo)
+			-DWITH_INNODB_SNAPPY=$(usex innodb-snappy)
+			-DPLUGIN_MROONGA=$(usex mroonga YES NO)
+			-DPLUGIN_AUTH_GSSAPI=$(usex kerberos YES NO)
+		)
+	fi
+	mysql-multilib-r1_src_configure
 }
 
 # Official test instructions:
