@@ -23,6 +23,7 @@ EPATCH_EXCLUDE=''
 
 DEPEND="|| ( >=sys-devel/gcc-3.4.6 >=sys-devel/gcc-apple-4.0 )
 	>=app-arch/lz4-0_p131:=
+	>=dev-libs/protobuf-2.5.0:=
 	cjk? ( app-text/mecab )"
 RDEPEND="${RDEPEND}"
 
@@ -63,6 +64,7 @@ src_configure() {
 		-DWITH_LZ4=system
 		-DWITH_NUMA=OFF
 		-DWITH_BOOST="${S}/boost/boost_1_59_0"
+		-DWITH_PROTOBUF=system
 	)
 	# This is the CJK fulltext plugin, not related to the complete fulltext indexing
 	if use cjk ; then
