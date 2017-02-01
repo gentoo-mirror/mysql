@@ -213,7 +213,7 @@ DEPEND="${DEPEND}
 # dev-perl/DBD-mysql is needed by some scripts installed by MySQL
 PDEPEND="${PDEPEND} perl? ( >=dev-perl/DBD-mysql-2.9004 )
 	 ~virtual/mysql-${MYSQL_PV_MAJOR}[embedded=,static=]
-	 virtual/libmysqlclient:${SLOT}[${MULTILIB_USEDEP},static-libs=]"
+	 virtual/libmysqlclient:${MYSLOT:-${SLOT}}[${MULTILIB_USEDEP},static-libs=]"
 
 # my_config.h includes ABI specific data
 MULTILIB_WRAPPED_HEADERS=( /usr/include/mysql/my_config.h /usr/include/mysql/private/embedded_priv.h )
@@ -229,12 +229,6 @@ mysql-multilib-r1_pkg_pretend() {
 	if [[ ${MERGE_TYPE} != binary ]] ; then
 		local GCC_MAJOR_SET=$(gcc-major-version)
 		local GCC_MINOR_SET=$(gcc-minor-version)
-		if in_iuse tokudb && use tokudb && [[ ${GCC_MAJOR_SET} -lt 4 || \
-			${GCC_MAJOR_SET} -eq 4 && ${GCC_MINOR_SET} -lt 7 ]] ; then
-			eerror "${PN} with tokudb needs to be built with gcc-4.7 or later."
-			eerror "Please use gcc-config to switch to gcc-4.7 or later version."
-			die
-		fi
 		# Bug 565584.  InnoDB now requires atomic functions introduced with gcc-4.7 on
 		# non x86{,_64} arches
 		if ! use amd64 && ! use x86 && [[ ${GCC_MAJOR_SET} -lt 4 || \
@@ -319,12 +313,10 @@ mysql-multilib-r1_src_prepare() {
 	if in_iuse tokudb ; then
 		# Don't build bundled xz-utils
 		if [[ -d "${S}/storage/tokudb/ft-index" ]] ; then
-			rm -f "${S}/storage/tokudb/ft-index/cmake_modules/TokuThirdParty.cmake" || die
-			touch "${S}/storage/tokudb/ft-index/cmake_modules/TokuThirdParty.cmake" || die
+			echo > "${S}/storage/tokudb/ft-index/cmake_modules/TokuThirdParty.cmake" || die
 			sed -i 's/ build_lzma//' "${S}/storage/tokudb/ft-index/ft/CMakeLists.txt" || die
 		elif [[ -d "${S}/storage/tokudb/PerconaFT" ]] ; then
-			rm "${S}/storage/tokudb/PerconaFT/cmake_modules/TokuThirdParty.cmake" || die
-			touch "${S}/storage/tokudb/PerconaFT/cmake_modules/TokuThirdParty.cmake" || die
+			echo > "${S}/storage/tokudb/PerconaFT/cmake_modules/TokuThirdParty.cmake" || die
 			sed -i -e 's/ build_lzma//' -e 's/ build_snappy//' "${S}/storage/tokudb/PerconaFT/ft/CMakeLists.txt" || die
 			sed -i -e 's/add_dependencies\(tokuportability_static_conv build_jemalloc\)//' "${S}/storage/tokudb/PerconaFT/portability/CMakeLists.txt" || die
 		fi
@@ -338,6 +330,11 @@ mysql-multilib-r1_src_prepare() {
 	# There is no CMake flag, it simply checks for existance
 	if [[ -d "${S}"/storage/mroonga/vendor/groonga ]] ; then
 		rm -r "${S}"/storage/mroonga/vendor/groonga || die "could not remove packaged groonga"
+	fi
+
+	# Remove the centos and rhel selinux policies to support mysqld_safe under SELinux
+	if [[ -d "${S}/support-files/SELinux" ]] ; then
+		echo > "${S}/support-files/SELinux/CMakeLists.txt" || die
 	fi
 
 	if [[ "${EAPI}x" == "5x" ]] ; then
@@ -358,6 +355,17 @@ mysql-multilib-r1_src_configure() {
 
 	# bug #283926, with GCC4.4, this is required to get correct behavior.
 	append-flags -fno-strict-aliasing
+
+	if in_iuse tokudb && use tokudb; then
+		echo "int main(void) { return 0; }" | \
+			$(tc-getCC) -x c -o /dev/null ${CFLAGS} ${LDFLAGS} -flto -fuse-linker-plugin -
+		if [[ $? -ne 0 ]] ; then
+			eerror "${PN} with tokudb needs to be built with a compiler which supports -flto."
+			eerror "Please use gcc-config to switch to gcc-4.7 or later"
+			eerror "or another compatible compiler."
+			die "unsupported compiler"
+		fi
+	fi
 
 	multilib-minimal_src_configure
 }
@@ -404,6 +412,7 @@ multilib_src_configure() {
 		# The build forces this to be defined when cross-compiling.  We pass it
 		# all the time for simplicity and to make sure it is actually correct.
 		-DSTACK_DIRECTION=$(tc-stack-grows-down && echo -1 || echo 1)
+		-DPKG_CONFIG_EXECUTABLE="$(tc-getPKG_CONFIG)"
 	)
 
 	if use test ; then
@@ -537,7 +546,9 @@ multilib_src_compile() {
 # Install mysql.
 mysql-multilib-r1_src_install() {
 	# wrap the config script
-	MULTILIB_CHOST_TOOLS=( /usr/bin/mysql_config )
+	if ! declare -a MULTILIB_CHOST_TOOLS ; then
+		MULTILIB_CHOST_TOOLS=( /usr/bin/mysql_config )
+	fi
 
 	multilib-minimal_src_install
 }
