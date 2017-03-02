@@ -7,4 +7,4 @@ LICENSE=GPL-2
 RDEPEND=!<dev-db/mysql-5.1 sys-apps/openrc
 SLOT=0
 _eclass_exported_funcs=src_install:-
-_md5_=a5e6608c5762d0606c8a21684056e891
+_md5_=3831c6acd2337a0280c4a23ecf163a6d
