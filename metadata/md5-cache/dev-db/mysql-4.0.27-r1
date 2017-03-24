@@ -1,5 +1,5 @@
 DEFINED_PHASES=compile install postinst postrm preinst setup test unpack
-DEPEND=sys-devel/gnuconfig !<sys-devel/gettext-0.18.1.1-r3 || ( >=sys-devel/automake-1.15 ) >=sys-devel/autoconf-2.69 >=sys-devel/libtool-2.4 ssl? ( >=dev-libs/openssl-0.9.6d ) kernel_linux? ( sys-process/procps ) >=sys-apps/sed-4 >=sys-apps/texinfo-4.7-r1 >=sys-libs/readline-4.1 >=sys-libs/zlib-1.2.3 !dev-db/mysql-community !dev-db/mysql-cluster !dev-db/mariadb virtual/yacc berkdb? ( sys-apps/ed )
+DEPEND=sys-devel/gnuconfig >=app-portage/elt-patches-20170317 !<sys-devel/gettext-0.18.1.1-r3 || ( >=sys-devel/automake-1.15 ) >=sys-devel/autoconf-2.69 >=sys-devel/libtool-2.4 ssl? ( >=dev-libs/openssl-0.9.6d ) kernel_linux? ( sys-process/procps ) >=sys-apps/sed-4 >=sys-apps/texinfo-4.7-r1 >=sys-libs/readline-4.1 >=sys-libs/zlib-1.2.3 !dev-db/mysql-community !dev-db/mysql-cluster !dev-db/mariadb virtual/yacc berkdb? ( sys-apps/ed )
 DESCRIPTION=A fast, multi-threaded, multi-user SQL database server.
 EAPI=0
 HOMEPAGE=http://www.mysql.com/
@@ -11,5 +11,5 @@ RDEPEND=ssl? ( >=dev-libs/openssl-0.9.6d ) kernel_linux? ( sys-process/procps ) 
 SLOT=0
 SRC_URI=mirror://mysql/Downloads/MySQL-4.0/mysql-4.0.27.tar.gz mirror://gentoo/mysql-extras-20070105.tar.bz2 http://g3nt8.org/patches/mysql-extras-20070105.tar.bz2 http://dev.gentoo.org/~robbat2/distfiles/mysql-extras-20070105.tar.bz2
 _eclass_exported_funcs=pkg_preinst:mysql pkg_postrm:mysql pkg_postinst:mysql pkg_setup:mysql src_unpack:mysql src_compile:mysql src_test:- src_install:mysql
-_eclasses_=autotools	7027963e8e8cc12c91117bdb9225dc26	epatch	122e1264e67c4f59a1482f2095e0b35d	estack	5ac2a138d0b33354b764d84f9e835db8	eutils	1ef31aee2bd63ffbfcae8a1843c9208d	flag-o-matic	61cad4fb5d800b29d484b27cb033f59b	gnuconfig	b8ec1c34be4ff9dac7ad4034d277936b	libtool	48b1b9f6194d2842456514d1184ca72e	ltprune	2770eed66a9b8ef944714cd0e968182e	multilib	0236be304ee52e7f179ed2f337075515	mysql	25b9bcea63f08fb46835d2ba0d377b60	mysql_fx	198902d1634b4462a8070f8c933df0e8	toolchain-funcs	6eb35f81556258a4bc9182ad3dfd58ee	versionator	c80ccf29e90adea7c5cae94b42eb76d0
+_eclasses_=autotools	7027963e8e8cc12c91117bdb9225dc26	epatch	8233751dc5105a6ae8fcd86ce2bb0247	epunt-cxx	f8073339d152f56626493f43d8ba4691	estack	5ac2a138d0b33354b764d84f9e835db8	eutils	e7491451996e8b54c3caeb713285b0fb	flag-o-matic	61cad4fb5d800b29d484b27cb033f59b	gnuconfig	b8ec1c34be4ff9dac7ad4034d277936b	libtool	e32ea84bf82cf8987965b574672dba93	ltprune	2770eed66a9b8ef944714cd0e968182e	multilib	0236be304ee52e7f179ed2f337075515	mysql	25b9bcea63f08fb46835d2ba0d377b60	mysql_fx	198902d1634b4462a8070f8c933df0e8	toolchain-funcs	6eb35f81556258a4bc9182ad3dfd58ee	versionator	c80ccf29e90adea7c5cae94b42eb76d0
 _md5_=ff25af367b8bd7ef8ab4ab74eb752bfc
