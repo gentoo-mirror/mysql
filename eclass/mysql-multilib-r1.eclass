@@ -950,7 +950,7 @@ mysql-multilib-r1_pkg_config() {
 		# --initialize-insecure will not set root password
 		# --initialize would set a random one in the log which we don't need as we set it ourselves
 		cmd=( "${EROOT}usr/sbin/mysqld" )
-		initialize_options="--initialize-insecure  '--init-file=${sqltmp}'"
+		initialize_options="--initialize-insecure  --init-file='${sqltmp}'"
 		sqltmp="" # the initialize will take care of it
 	else
 		cmd=( "${EROOT}usr/share/mysql/scripts/mysql_install_db" )
