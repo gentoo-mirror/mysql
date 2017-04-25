@@ -1,5 +1,5 @@
 dev-db/mariadb 5.1.67 5.2.14 5.3.12 5.5.49 10.0.25 10.1.12 10.1.13 10.1.14 9999: An enhanced, drop-in replacement for MySQL
-dev-db/mariadb-connector-c 2.0.0-r1 2.1.0 2.2.2 9999: C client library for MariaDB/MySQL
+dev-db/mariadb-connector-c 2.0.0-r1 2.1.0 2.2.2 3.0.1_beta 9999: C client library for MariaDB/MySQL
 dev-db/mariadb-galera 10.0.22: An enhanced, drop-in replacement for MySQL with Galera Replication
 dev-db/myodbc 5.2.7-r1 5.2.7-r2 5.3.4: ODBC driver for MySQL
 dev-db/mysql 4.0.27-r1 4.1.22-r1 5.0.96 5.1.73-r1 5.6.30 5.7.10 5.7.11 5.7.12 5.7.17: A fast, multi-threaded, multi-user SQL database server
