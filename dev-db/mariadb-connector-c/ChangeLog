@@ -1,3 +1,7 @@
+  25 Apr 2017; Brian Evans <grknight@gentoo.org>
+  mariadb-connector-c-3.0.1_beta.ebuild:
+  dev-db/mariadb-connector-c: Fix up mysqlcompat USE installs
+
 *mariadb-connector-c-3.0.1_beta (25 Apr 2017)
 
   25 Apr 2017; Brian Evans <grknight@gentoo.org> +files/gentoo-layout-3.0.patch,
