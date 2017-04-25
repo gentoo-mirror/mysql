@@ -75,7 +75,6 @@ multilib_src_configure() {
 	local mycmakeargs=(
 		-DWITH_EXTERNAL_ZLIB=ON
 		-DWITH_SSL:STRING=$(usex ssl $(usex gnutls GNUTLS OPENSSL) OFF)
-		-DWITH_MYSQLCOMPAT=$(usex mysqlcompat ON OFF)
 		-DWITH_CURL=$(usex curl ON OFF)
 		-DAUTH_GSSAPI_PLUGIN_TYPE:STRING=$(usex kerberos ON OFF)
 		-DINSTALL_LIBDIR="$(get_libdir)"
@@ -86,12 +85,20 @@ multilib_src_configure() {
 	cmake-utils_src_configure
 }
 
+multilib_src_install() {
+	cmake-utils_src_install
+	if use mysqlcompat ; then
+		dosym libmariadb.so.3 /usr/$(get_libdir)/libmysqlclient.so.19
+		dosym libmariadb.so.3 /usr/$(get_libdir)/libmysqlclient.so
+	fi
+}
+
 multilib_src_install_all() {
 	if ! use static-libs ; then
 		find "${D}" -name "*.a" -delete || die
 	fi
 	if use mysqlcompat ; then
-		dosym /usr/bin/mariadb_config /usr/bin/mysql_config
+		dosym mariadb_config /usr/bin/mysql_config
 		dosym mariadb /usr/include/mysql
 	fi
 }
