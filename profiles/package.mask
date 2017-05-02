@@ -3,6 +3,7 @@
 >=dev-db/mariadb-10.2
 >=dev-db/mysql-5.7
 >=virtual/mysql-5.7
+>=virtual/libmysqlclient-19
 >=virtual/libmysqlclient-20
 >=dev-db/percona-server-5.7
 
