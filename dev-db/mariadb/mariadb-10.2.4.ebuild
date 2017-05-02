@@ -8,8 +8,6 @@ WSREP_REVISION="25"
 SUBSLOT="19"
 MYSQL_PV_MAJOR="5.6"
 
-MYSLOT="${PN}/${SUBSLOT}"
-
 inherit toolchain-funcs mysql-multilib-r1
 
 HOMEPAGE="http://mariadb.org/"
