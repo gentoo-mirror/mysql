@@ -2,7 +2,7 @@
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI="6"
-MY_EXTRAS_VER="20160131-0252Z"
+MY_EXTRAS_VER="live"
 # The wsrep API version must match between upstream WSREP and sys-cluster/galera major number
 WSREP_REVISION="25"
 SUBSLOT="19"
@@ -22,13 +22,18 @@ REQUIRED_USE="server? ( tokudb? ( jemalloc ) ) static? ( !pam ) "
 # REMEMBER: also update eclass/mysql*.eclass before committing!
 KEYWORDS="~alpha ~amd64 ~arm ~arm64 ~ia64 ~hppa ~mips ~ppc ~ppc64 ~s390 ~sh ~sparc ~x86 ~sparc-fbsd ~x86-fbsd ~amd64-linux ~x86-linux ~ppc-macos ~x64-macos ~x86-macos ~x64-solaris ~x86-solaris"
 
-MY_PATCH_DIR="${WORKDIR}/mysql-extras-${MY_EXTRAS_VER}"
+if [[ "${MY_EXTRAS_VER}" == "live" ]] ; then
+	MY_PATCH_DIR="${WORKDIR}/mysql-extras"
+else
+	MY_PATCH_DIR="${WORKDIR}/mysql-extras-${MY_EXTRAS_VER}"
+fi
 
 #	"${MY_PATCH_DIR}"/20006_all_cmake_elib-mariadb-10.1.8.patch
 #	"${MY_PATCH_DIR}"/20009_all_mariadb_myodbc_symbol_fix-5.5.38.patch
 #	"${MY_PATCH_DIR}"/20018_all_mariadb-10.2.2-without-clientlibs-tools.patch
 PATCHES=(
 	"${MY_PATCH_DIR}"/20015_all_mariadb-pkgconfig-location.patch
+	"${MY_PATCH_DIR}"/20024_all_mariadb-10.2.6-mysql_st-regression.patch
 )
 
 COMMON_DEPEND="
@@ -92,7 +97,7 @@ src_configure(){
 			-DCONC_WITH_EXTERNAL_ZLIB=YES
 			-DWITH_EXTERNAL_ZLIB=YES
 			-DSUFFIX_INSTALL_DIR=""
-			-DINSTALL_INCLUDEDIR=include/mariadb
+			-DINSTALL_INCLUDEDIR=include/mysql
 			-DINSTALL_INFODIR=share/info
 			-DINSTALL_LIBDIR=$(get_libdir)
 			-DINSTALL_ELIBDIR=$(get_libdir)/mariadb
@@ -171,9 +176,9 @@ multilib_src_test() {
 		addpredict /this-dir-does-not-exist/t9.MYI
 
 		# Run CTest (test-units)
-		cmake-utils_src_test
-		retstatus_unit=$?
-		[[ $retstatus_unit -eq 0 ]] || eerror "test-unit failed"
+#		cmake-utils_src_test
+#		retstatus_unit=$?
+#		[[ $retstatus_unit -eq 0 ]] || eerror "test-unit failed"
 
 		# Ensure that parallel runs don't die
 		export MTR_BUILD_THREAD="$((${RANDOM} % 100))"
