@@ -1,19 +1,18 @@
-# Copyright 1999-2014 Gentoo Foundation
+# Copyright 1999-2017 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Id$
 
-EAPI="5"
+EAPI=6
 
 DESCRIPTION="Virtual for MySQL client or database"
 HOMEPAGE=""
 SRC_URI=""
 
 LICENSE=""
-SLOT="0/18"
+SLOT="0/19"
 KEYWORDS=""
-IUSE="embedded minimal static static-libs"
+IUSE="embedded static"
 
 DEPEND=""
 RDEPEND="|| (
-	=dev-db/mariadb-${PV}[embedded=,minimal=,static=,static-libs=]
+	=dev-db/mariadb-${PV}[embedded?,server,static?]
 )"

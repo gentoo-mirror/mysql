@@ -2,6 +2,13 @@
 # Copyright 1999-2017 Gentoo Foundation; Distributed under the GPL v2
 # $Id$
 
+  29 May 2017; Brian Evans <grknight@gentoo.org> -mysql-5.6-r2.ebuild,
+  -mysql-5.6-r3.ebuild, -mysql-5.6-r4.ebuild, -mysql-5.6-r8.ebuild,
+  mysql-4.0.ebuild, mysql-4.1.ebuild, mysql-5.0.ebuild, mysql-5.1.ebuild,
+  mysql-5.2.ebuild, mysql-5.3.ebuild, mysql-5.5-r1.ebuild, mysql-5.7-r1.ebuild,
+  mysql-5.7-r2.ebuild, mysql-9999.ebuild:
+  virtual/mysql: Make repoman happy for virtual/mysql
+
 *mysql-5.7-r2 (29 May 2017)
 
   29 May 2017; Brian Evans <grknight@gentoo.org> +mysql-5.7-r2.ebuild:
