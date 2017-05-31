@@ -58,6 +58,8 @@ COMMON_DEPEND="
 		tokudb? ( app-arch/snappy )
 	)
 	>=dev-libs/libpcre-8.35:3=
+	net-misc/curl[${MULTILIB_USEDEP}]
+	sys-libs/zlib[${MULTILIB_USEDEP}]
 "
 DEPEND="|| ( >=sys-devel/gcc-3.4.6 >=sys-devel/gcc-apple-4.0 )
 	${COMMON_DEPEND}"
@@ -141,8 +143,21 @@ src_configure(){
 			-DPLUGIN_AUTH_GSSAPI=$(usex kerberos YES NO)
 			-DINSTALL_SQLBENCHDIR=share/mariadb
 		)
+		if use test ; then
+			# This is needed for the new client lib which tests a real, open server
+			MYSQL_CMAKE_NATIVE_DEFINES+=( -DSKIP_TESTS=ON )
+		fi
 	fi
 	mysql-multilib-r1_src_configure
+}
+
+src_install() {
+	mysql-multilib-r1_src_install
+	install_compat_symlink() {
+		use static-libs && dosym libmariadbclient.a "${EPREFIX}/usr/$(get_libdir)/libmysqlclient.a"
+		dosym libmariadb.so.3 "${EPREFIX}/usr/$(get_libdir)/libmysqlclient.so"
+	}
+	multilib_foreach_abi install_compat_symlink
 }
 
 # Official test instructions:
@@ -176,9 +191,9 @@ multilib_src_test() {
 		addpredict /this-dir-does-not-exist/t9.MYI
 
 		# Run CTest (test-units)
-#		cmake-utils_src_test
-#		retstatus_unit=$?
-#		[[ $retstatus_unit -eq 0 ]] || eerror "test-unit failed"
+		cmake-utils_src_test
+		retstatus_unit=$?
+		[[ $retstatus_unit -eq 0 ]] || eerror "test-unit failed"
 
 		# Ensure that parallel runs don't die
 		export MTR_BUILD_THREAD="$((${RANDOM} % 100))"
