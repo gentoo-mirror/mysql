@@ -5,7 +5,7 @@ EAPI="6"
 MY_EXTRAS_VER="live"
 # The wsrep API version must match between upstream WSREP and sys-cluster/galera major number
 WSREP_REVISION="25"
-SUBSLOT="19"
+SUBSLOT="18"
 MYSQL_PV_MAJOR="5.6"
 
 inherit toolchain-funcs mysql-multilib-r1
@@ -14,7 +14,7 @@ HOMEPAGE="http://mariadb.org/"
 DESCRIPTION="An enhanced, drop-in replacement for MySQL"
 LICENSE="GPL-2 LGPL-2.1+"
 
-IUSE="bindist cracklib galera kerberos innodb-lz4 innodb-lzo innodb-snappy mroonga odbc oqgraph pam sphinx sst-rsync sst-xtrabackup tokudb systemd xml"
+IUSE="+backup bindist cracklib galera kerberos innodb-lz4 innodb-lzo innodb-snappy mroonga odbc oqgraph pam sphinx sst-rsync sst-xtrabackup tokudb systemd xml"
 RESTRICT="!bindist? ( bindist )"
 
 REQUIRED_USE="server? ( tokudb? ( jemalloc ) ) static? ( !pam ) "
@@ -58,7 +58,6 @@ COMMON_DEPEND="
 		tokudb? ( app-arch/snappy )
 	)
 	>=dev-libs/libpcre-8.35:3=
-	net-misc/curl[${MULTILIB_USEDEP}]
 	sys-libs/zlib[${MULTILIB_USEDEP}]
 "
 DEPEND="|| ( >=sys-devel/gcc-3.4.6 >=sys-devel/gcc-apple-4.0 )
@@ -156,6 +155,7 @@ src_install() {
 	install_compat_symlink() {
 		use static-libs && dosym libmariadbclient.a "${EPREFIX}/usr/$(get_libdir)/libmysqlclient.a"
 		dosym libmariadb.so.3 "${EPREFIX}/usr/$(get_libdir)/libmysqlclient.so"
+		dosym libmariadb.so.3 "${EPREFIX}/usr/$(get_libdir)/libmysqlclient.so.${SUBSLOT}"
 	}
 	multilib_foreach_abi install_compat_symlink
 }

@@ -10,6 +10,7 @@
     <description>Libressl issues. Only assign if it's a direct Libressl issue. Do not directly assign for anything else</description>
   </maintainer>
 <use>
+  <flag name="backup">Build mariadb-backup which supports SST and hot backup of InnoDB, Aria and MyISAM including compression and encryption</flag>
   <flag name="big-tables">Make tables contain up to 1.844E+19 rows</flag>
   <flag name="cluster">Add support for NDB clustering (deprecated)</flag>
   <flag name="community">Enables the community features from upstream.</flag>
