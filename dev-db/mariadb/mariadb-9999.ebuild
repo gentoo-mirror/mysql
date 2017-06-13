@@ -7,7 +7,7 @@ SERVER_URI=" "
 EGIT_REPO_URI="https://github.com/MariaDB/server.git"
 # The wsrep API version must match between upstream WSREP and sys-cluster/galera major number
 WSREP_REVISION="25"
-SUBSLOT="19"
+SUBSLOT="18"
 MYSQL_PV_MAJOR="5.6"
 
 inherit toolchain-funcs mysql-multilib-r1 git-r3
