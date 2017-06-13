@@ -2,6 +2,9 @@
 # Copyright 1999-2017 Gentoo Foundation; Distributed under the GPL v2
 # $Id$
 
+  13 Jun 2017; Brian Evans <grknight@gentoo.org> mariadb-9999.ebuild:
+  dev-db/mariadb: Fix subslot of 9999
+
   13 Jun 2017; Brian Evans <grknight@gentoo.org> mariadb-10.2.6.ebuild,
   metadata.xml:
   dev-db/mariadb: Restore jdbc and test functionality as it exists in 10.1
