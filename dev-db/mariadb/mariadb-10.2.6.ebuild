@@ -32,10 +32,11 @@ fi
 
 #	"${MY_PATCH_DIR}"/20006_all_cmake_elib-mariadb-10.1.8.patch
 #	"${MY_PATCH_DIR}"/20009_all_mariadb_myodbc_symbol_fix-5.5.38.patch
-#	"${MY_PATCH_DIR}"/20018_all_mariadb-10.2.2-without-clientlibs-tools.patch
 PATCHES=(
 	"${MY_PATCH_DIR}"/20015_all_mariadb-pkgconfig-location.patch
+	"${MY_PATCH_DIR}"/20018_all_mariadb-10.2.6-without-clientlibs-tools.patch
 	"${MY_PATCH_DIR}"/20024_all_mariadb-10.2.6-mysql_st-regression.patch
+	"${MY_PATCH_DIR}"/20025_all_mariadb-10.2.6-gssapi-detect.patch
 )
 
 COMMON_DEPEND="
@@ -113,8 +114,8 @@ src_configure(){
 			-DWITH_PCRE=system
 	)
 	local MYSQL_CMAKE_EXTRA_DEFINES=(
-			-DPLUGIN_AUTH_GSSAPI_CLIENT=$(usex kerberos ON OFF)
-			-DAUTH_GSSAPI_PLUGIN_TYPE=$(usex kerberos DYNAMIC OFF)
+			-DPLUGIN_AUTH_GSSAPI=$(usex kerberos ON OFF)
+			-DAUTH_GSSAPI_PLUGIN_TYPE="$(usex kerberos DYNAMIC OFF)"
 			-DCONC_WITH_EXTERNAL_ZLIB=YES
 			-DWITH_EXTERNAL_ZLIB=YES
 			-DSUFFIX_INSTALL_DIR=""
@@ -127,6 +128,7 @@ src_configure(){
 			-DINSTALL_PLUGINDIR=$(get_libdir)/mariadb/plugin
 			-DINSTALL_SCRIPTDIR=share/mariadb/scripts
 			-DINSTALL_SUPPORTFILESDIR="${EPREFIX}/usr/share/mariadb"
+			-DWITH_UNITTEST=OFF
 	)
 
 	if use test ; then
