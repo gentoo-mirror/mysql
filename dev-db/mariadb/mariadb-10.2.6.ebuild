@@ -114,7 +114,7 @@ src_configure(){
 			-DWITH_PCRE=system
 	)
 	local MYSQL_CMAKE_EXTRA_DEFINES=(
-			-DPLUGIN_AUTH_GSSAPI=$(usex kerberos ON OFF)
+			-DPLUGIN_AUTH_GSSAPI=$(usex kerberos DYNAMIC NO)
 			-DAUTH_GSSAPI_PLUGIN_TYPE="$(usex kerberos DYNAMIC OFF)"
 			-DCONC_WITH_EXTERNAL_ZLIB=YES
 			-DWITH_EXTERNAL_ZLIB=YES
@@ -162,7 +162,7 @@ src_configure(){
 			-DWITH_INNODB_LZO=$(usex innodb-lzo ON OFF)
 			-DWITH_INNODB_SNAPPY=$(usex innodb-snappy ON OFF)
 			-DPLUGIN_MROONGA=$(usex mroonga YES NO)
-			-DPLUGIN_AUTH_GSSAPI=$(usex kerberos YES NO)
+			-DPLUGIN_AUTH_GSSAPI=$(usex kerberos DYNAMIC NO)
 			-DWITH_MARIABACKUP=$(usex backup ON OFF)
 			-DWITH_LIBARCHIVE=$(usex backup ON OFF)
 			-DINSTALL_SQLBENCHDIR=share/mariadb
