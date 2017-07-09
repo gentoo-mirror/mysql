@@ -42,7 +42,6 @@ PATCHES=(
 COMMON_DEPEND="
 	mroonga? ( app-text/groonga-normalizer-mysql )
 	kerberos? ( virtual/krb5[${MULTILIB_USEDEP}] )
-	systemd? ( sys-apps/systemd:= )
 	!bindist? (
 		sys-libs/binutils-libs:0=
 		>=sys-libs/readline-4.1:0=
@@ -59,6 +58,7 @@ COMMON_DEPEND="
 		innodb-snappy? ( app-arch/snappy )
 		oqgraph? ( >=dev-libs/boost-1.40.0:0= dev-libs/judy:0= )
 		pam? ( virtual/pam:0= )
+		systemd? ( sys-apps/systemd:= )
 		tokudb? ( app-arch/snappy )
 	)
 	>=dev-libs/libpcre-8.35:3=
