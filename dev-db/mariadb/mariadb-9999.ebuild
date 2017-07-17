@@ -9,15 +9,16 @@ EGIT_REPO_URI="https://github.com/MariaDB/server.git"
 WSREP_REVISION="25"
 SUBSLOT="18"
 MYSQL_PV_MAJOR="5.6"
+JAVA_PKG_OPT_USE="jdbc"
 
-inherit toolchain-funcs mysql-multilib-r1 git-r3
+inherit toolchain-funcs java-pkg-opt-2 mysql-multilib-r1 git-r3
 HOMEPAGE="http://mariadb.org/"
 DESCRIPTION="An enhanced, drop-in replacement for MySQL"
 
-IUSE="bindist cracklib galera kerberos innodb-lz4 innodb-lzo innodb-snappy mroonga odbc oqgraph pam sphinx sst-rsync sst-xtrabackup tokudb systemd xml"
+IUSE="+backup bindist cracklib galera kerberos innodb-lz4 innodb-lzo innodb-snappy jdbc mroonga odbc oqgraph pam sphinx sst-rsync sst-xtrabackup tokudb systemd xml"
 RESTRICT="!bindist? ( bindist )"
 
-REQUIRED_USE="server? ( tokudb? ( jemalloc ) ) static? ( !pam ) "
+REQUIRED_USE="jdbc? ( extraengine server !static ) server? ( tokudb? ( jemalloc !tcmalloc ) ) static? ( !pam )"
 
 KEYWORDS=""
 
@@ -30,6 +31,7 @@ COMMON_DEPEND="
 		>=sys-libs/readline-4.1:0=
 	)
 	server? (
+		backup? ( app-arch/libarchive:0= )
 		cracklib? ( sys-libs/cracklib:0= )
 		extraengine? (
 			odbc? ( dev-db/unixODBC:0= )
@@ -45,30 +47,51 @@ COMMON_DEPEND="
 	>=dev-libs/libpcre-8.35:3=
 "
 DEPEND="|| ( >=sys-devel/gcc-3.4.6 >=sys-devel/gcc-apple-4.0 )
+	server? ( extraengine? ( jdbc? ( >=virtual/jdk-1.6 ) ) )
 	${COMMON_DEPEND}"
 RDEPEND="${RDEPEND} ${COMMON_DEPEND}
-	galera? (
+	server? ( galera? (
 		sys-apps/iproute2
 		=sys-cluster/galera-${WSREP_REVISION}*
 		sst-rsync? ( sys-process/lsof )
 		sst-xtrabackup? ( net-misc/socat[ssl] )
-	)
+	) )
 	perl? ( !dev-db/mytop
 		virtual/perl-Getopt-Long
 		dev-perl/TermReadKey
 		virtual/perl-Term-ANSIColor
 		virtual/perl-Time-HiRes )
+	server? ( extraengine? ( jdbc? ( >=virtual/jre-1.6 ) ) )
 "
 # xtrabackup-bin causes a circular dependency if DBD-mysql is not already installed
-PDEPEND="galera? ( sst-xtrabackup? ( >=dev-db/xtrabackup-bin-2.2.4 ) )"
+PDEPEND="galera? ( sst-xtrabackup? ( || ( >=dev-db/xtrabackup-bin-2.2.4 dev-db/percona-xtrabackup ) ) )"
 
-MULTILIB_WRAPPED_HEADERS+=( /usr/include/mysql/mysql_version.h )
+MULTILIB_WRAPPED_HEADERS+=( /usr/include/mysql/mysql_version.h
+	/usr/include/mariadb/mariadb_version.h
+	/usr/include/mysql/private/probes_mysql_nodtrace.h
+	/usr/include/mysql/private/probes_mysql_dtrace.h )
+MULTILIB_CHOST_TOOLS=( /usr/bin/mariadb_config /usr/bin/mysql_config )
+
+pkg_setup() {
+	java-pkg-opt-2_pkg_setup
+	mysql-multilib-r1_pkg_setup
+}
+
+pkg_preinst() {
+	java-pkg-opt-2_pkg_preinst
+	mysql-multilib-r1_pkg_preinst
+}
 
 # This is a special unpack for the VCS version
 src_unpack() {
 	git-r3_src_unpack
 
 	mv -f "${WORKDIR}/${P}" "${S}"
+}
+
+src_prepare() {
+	java-pkg-opt-2_src_prepare
+	mysql-multilib-r1_src_prepare
 }
 
 src_configure(){
@@ -103,12 +126,15 @@ src_configure(){
 			-DCONNECT_WITH_MYSQL=1
 			-DCONNECT_WITH_LIBXML2=$(usex xml)
 			-DCONNECT_WITH_ODBC=$(usex odbc)
+			-DCONNECT_WITH_JDBC=$(usex jdbc)
 			-DWITH_WSREP=$(usex galera)
-			-DWITH_INNODB_LZ4=$(usex innodb-lz4)
-			-DWITH_INNODB_LZO=$(usex innodb-lzo)
-			-DWITH_INNODB_SNAPPY=$(usex innodb-snappy)
+			-DWITH_INNODB_LZ4=$(usex innodb-lz4 ON OFF)
+			-DWITH_INNODB_LZO=$(usex innodb-lzo ON OFF)
+			-DWITH_INNODB_SNAPPY=$(usex innodb-snappy ON OFF)
 			-DPLUGIN_MROONGA=$(usex mroonga YES NO)
 			-DPLUGIN_AUTH_GSSAPI=$(usex kerberos YES NO)
+			-DWITH_MARIABACKUP=$(usex backup ON OFF)
+			-DWITH_LIBARCHIVE=$(usex backup ON OFF)
 		)
 	fi
 	mysql-multilib-r1_src_configure
