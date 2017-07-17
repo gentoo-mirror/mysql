@@ -1,6 +1,5 @@
-# Copyright 1999-2015 Gentoo Foundation
+# Copyright 1999-2017 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Id$
 
 # @ECLASS: mysql-multilib.eclass
 # @MAINTAINER:
@@ -228,9 +227,9 @@ if [[ ${PN} == "mariadb" || ${PN} == "mariadb-galera" ]]; then
 	# 5.5.33 and 10.0.5 add TokuDB. Authors strongly recommend jemalloc or perfomance suffers
 	mysql_version_is_at_least "10.0.5" && IUSE="${IUSE} odbc xml"
 	if [[ ${HAS_TOOLS_PATCH} ]] ; then
-		REQUIRED_USE="${REQUIRED_USE} !server? ( !oqgraph !sphinx ) tokudb? ( jemalloc )"
+		REQUIRED_USE="${REQUIRED_USE} !server? ( !oqgraph !sphinx ) tokudb? ( jemalloc !tcmalloc )"
 	else
-		REQUIRED_USE="${REQUIRED_USE} minimal? ( !oqgraph !sphinx ) tokudb? ( jemalloc )"
+		REQUIRED_USE="${REQUIRED_USE} minimal? ( !oqgraph !sphinx ) tokudb? ( jemalloc !tcmalloc )"
 	fi
 	# MariaDB 10.1 introduces InnoDB/XtraDB compression with external libraries
 	# Choices are bzip2, lz4, lzma, lzo.  bzip2 and lzma enabled by default as they are system libraries
@@ -266,7 +265,7 @@ fi
 
 REQUIRED_USE="
 	${REQUIRED_USE} tcmalloc? ( !jemalloc ) jemalloc? ( !tcmalloc )
-	 static? ( yassl )"
+	 static? ( yassl !openssl !libressl )"
 
 #
 # DEPENDENCIES:
@@ -943,14 +942,8 @@ mysql-multilib_pkg_config() {
 	mysql_init_vars
 
 	[[ -z "${MY_DATADIR}" ]] && die "Sorry, unable to find MY_DATADIR"
-	if [[ ${HAS_TOOLS_PATCH} ]] ; then
-		if ! built_with_use ${CATEGORY}/${PN} server ; then
-			die "Minimal builds do NOT include the MySQL server"
-		fi
-	else
-		if built_with_use ${CATEGORY}/${PN} minimal ; then
-			die "Minimal builds do NOT include the MySQL server"
-		fi
+	if [[ ! -x "${EROOT}/usr/sbin/mysqld" ]] ; then
+		die "Minimal builds do NOT include the MySQL server"
 	fi
 
 	if [[ ( -n "${MY_DATADIR}" ) && ( "${MY_DATADIR}" != "${old_MY_DATADIR}" ) ]]; then

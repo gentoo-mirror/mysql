@@ -450,6 +450,7 @@ multilib_src_configure() {
 
 	if multilib_is_native_abi && use server ; then
 
+		# systemd is only linked to for server notification
 		if in_iuse systemd ; then
 			mycmakeargs+=( -DWITH_SYSTEMD=$(usex systemd) )
 		fi
