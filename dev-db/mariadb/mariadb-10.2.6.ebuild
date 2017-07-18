@@ -10,13 +10,14 @@ MYSQL_PV_MAJOR="5.6"
 
 JAVA_PKG_OPT_USE="jdbc"
 
-inherit toolchain-funcs java-pkg-opt-2 mysql-multilib-r1
+inherit toolchain-funcs java-pkg-opt-2 prefix toolchain-funcs \
+	multilib-minimal mysql-multilib-r1
 
 HOMEPAGE="http://mariadb.org/"
 DESCRIPTION="An enhanced, drop-in replacement for MySQL"
 LICENSE="GPL-2 LGPL-2.1+"
 
-IUSE="+backup bindist cracklib galera kerberos innodb-lz4 innodb-lzo innodb-snappy jdbc mroonga odbc oqgraph pam sphinx sst-rsync sst-xtrabackup tokudb systemd xml"
+IUSE="+backup bindist cracklib galera kerberos innodb-lz4 innodb-lzo innodb-snappy jdbc mroonga odbc oqgraph pam rocksdb sphinx sst-rsync sst-xtrabackup tokudb systemd xml"
 RESTRICT="!bindist? ( bindist )"
 
 REQUIRED_USE="jdbc? ( extraengine server !static ) server? ( tokudb? ( jemalloc !tcmalloc ) ) static? ( !pam )"
@@ -88,7 +89,6 @@ MULTILIB_WRAPPED_HEADERS+=( /usr/include/mysql/mysql_version.h
 	/usr/include/mariadb/mariadb_version.h
 	/usr/include/mysql/private/probes_mysql_nodtrace.h
 	/usr/include/mysql/private/probes_mysql_dtrace.h )
-MULTILIB_CHOST_TOOLS=( /usr/bin/mariadb_config /usr/bin/mysql_config )
 
 pkg_setup() {
 	java-pkg-opt-2_pkg_setup
@@ -97,12 +97,36 @@ pkg_setup() {
 
 pkg_preinst() {
 	java-pkg-opt-2_pkg_preinst
-	mysql-multilib-r1_pkg_preinst
+
+	# Here we need to see if the implementation switched client libraries
+	# We check if this is a new instance of the package and a client library already exists
+	local SHOW_ABI_MESSAGE libpath
+	if [[ -z ${REPLACING_VERSIONS} && -e "${EROOT}usr/$(get_libdir)/libmysqlclient.so" ]] ; then
+		libpath=$(readlink "${EROOT}usr/$(get_libdir)/libmysqlclient.so")
+		elog "Due to ABI changes when switching between different client libraries,"
+		elog "revdep-rebuild must find and rebuild all packages linking to libmysqlclient."
+		elog "Please run: revdep-rebuild --library ${libpath}"
+		ewarn "Failure to run revdep-rebuild may cause issues with other programs or libraries"
+	fi
 }
 
 src_prepare() {
 	java-pkg-opt-2_src_prepare
-	mysql-multilib-r1_src_prepare
+	if use tcmalloc; then
+		echo "TARGET_LINK_LIBRARIES(mysqld tcmalloc)" >> "${S}/sql/CMakeLists.txt"
+	fi
+
+	# Don't build bundled xz-utils for tokudb
+	echo > "${S}/storage/tokudb/PerconaFT/cmake_modules/TokuThirdParty.cmake" || die
+	sed -i -e 's/ build_lzma//' -e 's/ build_snappy//' "${S}/storage/tokudb/PerconaFT/ft/CMakeLists.txt" || die
+	sed -i -e 's/add_dependencies\(tokuportability_static_conv build_jemalloc\)//' "${S}/storage/tokudb/PerconaFT/portability/CMakeLists.txt" || die
+
+	# Remove the bundled groonga
+	# There is no CMake flag, it simply checks for existance
+	rm -r "${S}"/storage/mroonga/vendor/groonga || die "could not remove packaged groonga"
+
+	eapply "${PATCHES[@]}"
+	eapply_user
 }
 
 src_configure(){
@@ -144,7 +168,7 @@ src_configure(){
 		fi
 
 		MYSQL_CMAKE_NATIVE_DEFINES+=(
-			-DPLUGIN_OQGRAPH=$(usex oqgraph YES NO)
+			-DPLUGIN_OQGRAPH=$(usex oqgraph DYNAMIC NO)
 			-DPLUGIN_SPHINX=$(usex sphinx YES NO)
 			-DPLUGIN_TOKUDB=$(usex tokudb YES NO)
 			-DPLUGIN_AUTH_PAM=$(usex pam YES NO)
@@ -161,11 +185,12 @@ src_configure(){
 			-DWITH_INNODB_LZ4=$(usex innodb-lz4 ON OFF)
 			-DWITH_INNODB_LZO=$(usex innodb-lzo ON OFF)
 			-DWITH_INNODB_SNAPPY=$(usex innodb-snappy ON OFF)
-			-DPLUGIN_MROONGA=$(usex mroonga YES NO)
+			-DPLUGIN_MROONGA=$(usex mroonga DYNAMIC NO)
 			-DPLUGIN_AUTH_GSSAPI=$(usex kerberos DYNAMIC NO)
 			-DWITH_MARIABACKUP=$(usex backup ON OFF)
 			-DWITH_LIBARCHIVE=$(usex backup ON OFF)
 			-DINSTALL_SQLBENCHDIR=share/mariadb
+			-DPLUGIN_ROCKSDB=$(usex rocksdb DYNAMIC NO)
 		)
 		if use test ; then
 			# This is needed for the new client lib which tests a real, open server
@@ -176,13 +201,118 @@ src_configure(){
 }
 
 src_install() {
-	mysql-multilib-r1_src_install
-	install_compat_symlink() {
-		use static-libs && dosym libmariadbclient.a "${EPREFIX}/usr/$(get_libdir)/libmysqlclient.a"
-		dosym libmariadb.so.3 "${EPREFIX}/usr/$(get_libdir)/libmysqlclient.so"
-		dosym libmariadb.so.3 "${EPREFIX}/usr/$(get_libdir)/libmysqlclient.so.${SUBSLOT}"
-	}
-	multilib_foreach_abi install_compat_symlink
+	# wrap the config scripts
+	local MULTILIB_CHOST_TOOLS=( /usr/bin/mariadb_config /usr/bin/mysql_config )
+	multilib-minimal_src_install
+}
+
+# Intentionally override eclass function
+multilib_src_install() {
+	cmake-utils_src_install
+
+	# Make sure the vars are correctly initialized
+	mysql_init_vars
+
+	# Remove an unnecessary, private config header which will never match between ABIs and is not meant to be used
+	if [[ -f "${D}${MY_INCLUDEDIR}/private/config.h" ]] ; then
+		rm "${D}${MY_INCLUDEDIR}/private/config.h" || die
+	fi
+
+	if ! multilib_is_native_abi && use server ; then
+		insinto /usr/include/mysql/private
+		doins "${S}"/sql/*.h
+	fi
+}
+
+multilib_src_install_all() {
+	# Make sure the vars are correctly initialized
+	mysql_init_vars
+
+	# Convenience links
+	einfo "Making Convenience links for mysqlcheck multi-call binary"
+	dosym "/usr/bin/mysqlcheck" "/usr/bin/mysqlanalyze"
+	dosym "/usr/bin/mysqlcheck" "/usr/bin/mysqlrepair"
+	dosym "/usr/bin/mysqlcheck" "/usr/bin/mysqloptimize"
+
+	# INSTALL_LAYOUT=STANDALONE causes cmake to create a /usr/data dir
+	if [[ -d "${ED}/usr/data" ]] ; then
+		rm -Rf "${ED}/usr/data" || die
+	fi
+
+	# Unless they explicitly specific USE=test, then do not install the
+	# testsuite. It DOES have a use to be installed, esp. when you want to do a
+	# validation of your database configuration after tuning it.
+	if ! use test ; then
+		rm -rf "${D}/${MY_SHAREDSTATEDIR}/mysql-test"
+	fi
+
+	# Configuration stuff
+	einfo "Building default configuration ..."
+	[[ -f "${S}/scripts/mysqlaccess.conf" ]] && doins "${S}"/scripts/mysqlaccess.conf
+	insinto "${MY_SYSCONFDIR#${EPREFIX}}"
+	cp "${FILESDIR}/my.cnf-10.2" "${TMPDIR}/my.cnf" || die
+	eprefixify "${TMPDIR}/my.cnf"
+	doins "${TMPDIR}/my.cnf"
+	insinto "${MY_SYSCONFDIR#${EPREFIX}}/mariadb.d"
+	cp "${FILESDIR}/my.cnf-distro-client" "${TMPDIR}/50-distro-client.cnf" || die
+	eprefixify "${TMPDIR}/50-distro-client.cnf"
+	newins "${TMPDIR}/50-distro-client.cnf"
+
+	if use server ; then
+		mycnf_src="my.cnf.distro-server"
+		sed -e "s!@DATADIR@!${MY_DATADIR}!g" \
+			"${FILESDIR}/${mycnf_src}" \
+			> "${TMPDIR}/my.cnf.ok" || die
+		if use prefix ; then
+			sed -i -r -e '/^user[[:space:]]*=[[:space:]]*mysql$/d' \
+				"${TMPDIR}/my.cnf.ok" || die
+		fi
+		if use latin1 ; then
+			sed -i \
+				-e "/character-set/s|utf8|latin1|g" \
+				"${TMPDIR}/my.cnf.ok" || die
+		fi
+		eprefixify "${TMPDIR}/my.cnf.ok"
+		newins "${TMPDIR}/my.cnf.ok" 50-distro-server.cnf
+		einfo "Creating initial directories"
+		# Empty directories ...
+		diropts "-m0750"
+		if [[ "${PREVIOUS_DATADIR}" != "yes" ]] ; then
+			dodir "${MY_DATADIR#${EPREFIX}}"
+			keepdir "${MY_DATADIR#${EPREFIX}}"
+			chown -R mysql:mysql "${D}/${MY_DATADIR}"
+		fi
+
+		diropts "-m0755"
+		local folder
+		for folder in "${MY_LOGDIR#${EPREFIX}}" ; do
+			dodir "${folder}"
+			keepdir "${folder}"
+			chown -R mysql:mysql "${ED}/${folder}"
+		done
+
+		einfo "Including support files and sample configurations"
+		docinto "support-files"
+		local script
+		for script in \
+			"${S}"/support-files/magic
+		do
+			[[ -f "$script" ]] && dodoc "${script}"
+		done
+
+		docinto "scripts"
+		for script in "${S}"/scripts/mysql* ; do
+			[[ ( -f "$script" ) && ( "${script%.sh}" == "${script}" ) ]] && dodoc "${script}"
+		done
+	fi
+
+	#Remove mytop if perl is not selected
+	[[ -e "${ED}/usr/bin/mytop" ]] && ! use perl && rm -f "${ED}/usr/bin/mytop"
+
+	# Install compatible symlinks to libmysqlclient
+	use static-libs && dosym libmariadbclient.a "${EPREFIX}/usr/$(get_libdir)/libmysqlclient.a"
+	dosym libmariadb.so.3 "${EPREFIX}/usr/$(get_libdir)/libmysqlclient.so"
+	dosym libmariadb.so.3 "${EPREFIX}/usr/$(get_libdir)/libmysqlclient.so.${SUBSLOT}"
 }
 
 # Official test instructions:
