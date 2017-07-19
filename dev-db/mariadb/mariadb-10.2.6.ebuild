@@ -254,9 +254,9 @@ multilib_src_install_all() {
 	eprefixify "${TMPDIR}/my.cnf"
 	doins "${TMPDIR}/my.cnf"
 	insinto "${MY_SYSCONFDIR#${EPREFIX}}/mariadb.d"
-	cp "${FILESDIR}/my.cnf-distro-client" "${TMPDIR}/50-distro-client.cnf" || die
+	cp "${FILESDIR}/my.cnf.distro-client" "${TMPDIR}/50-distro-client.cnf" || die
 	eprefixify "${TMPDIR}/50-distro-client.cnf"
-	newins "${TMPDIR}/50-distro-client.cnf"
+	doins "${TMPDIR}/50-distro-client.cnf"
 
 	if use server ; then
 		mycnf_src="my.cnf.distro-server"
