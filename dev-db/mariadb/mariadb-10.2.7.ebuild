@@ -220,6 +220,14 @@ multilib_src_install() {
 		insinto /usr/include/mysql/private
 		doins "${S}"/sql/*.h
 	fi
+
+	# Install compatible symlinks to libmysqlclient
+	use static-libs && dosym libmariadbclient.a "${EPREFIX}/usr/$(get_libdir)/libmysqlclient.a"
+	dosym libmariadb.so.3 "${EPREFIX}/usr/$(get_libdir)/libmysqlclient.so"
+	dosym libmariadb.so.3 "${EPREFIX}/usr/$(get_libdir)/libmysqlclient.so.${SUBSLOT}"
+
+	# Kill old libmysqclient_r symlinks if they exist.  Time to fix what depends on them.
+	find "${D}" -name 'libmysqlclient_r.*' -type l -delete || die
 }
 
 multilib_src_install_all() {
@@ -306,11 +314,6 @@ multilib_src_install_all() {
 
 	#Remove mytop if perl is not selected
 	[[ -e "${ED}/usr/bin/mytop" ]] && ! use perl && rm -f "${ED}/usr/bin/mytop"
-
-	# Install compatible symlinks to libmysqlclient
-	use static-libs && dosym libmariadbclient.a "${EPREFIX}/usr/$(get_libdir)/libmysqlclient.a"
-	dosym libmariadb.so.3 "${EPREFIX}/usr/$(get_libdir)/libmysqlclient.so"
-	dosym libmariadb.so.3 "${EPREFIX}/usr/$(get_libdir)/libmysqlclient.so.${SUBSLOT}"
 }
 
 # Official test instructions:
