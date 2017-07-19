@@ -2,7 +2,7 @@
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI="6"
-MY_EXTRAS_VER="live"
+MY_EXTRAS_VER="20170719-0024Z"
 # The wsrep API version must match between upstream WSREP and sys-cluster/galera major number
 WSREP_REVISION="25"
 SUBSLOT="18"
@@ -31,8 +31,6 @@ else
 	MY_PATCH_DIR="${WORKDIR}/mysql-extras-${MY_EXTRAS_VER}"
 fi
 
-#	"${MY_PATCH_DIR}"/20006_all_cmake_elib-mariadb-10.1.8.patch
-#	"${MY_PATCH_DIR}"/20009_all_mariadb_myodbc_symbol_fix-5.5.38.patch
 PATCHES=(
 	"${MY_PATCH_DIR}"/20015_all_mariadb-pkgconfig-location.patch
 	"${MY_PATCH_DIR}"/20018_all_mariadb-10.2.6-without-clientlibs-tools.patch
