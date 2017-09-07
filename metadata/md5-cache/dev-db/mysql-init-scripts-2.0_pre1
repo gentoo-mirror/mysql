@@ -6,5 +6,4 @@ KEYWORDS=~alpha ~amd64 ~arm ~hppa ~ia64 ~mips ~ppc ~ppc64 ~s390 ~sh ~sparc ~x86 
 LICENSE=GPL-2
 RDEPEND=!<dev-db/mysql-5.1 sys-apps/openrc
 SLOT=0
-_eclass_exported_funcs=src_install:-
 _md5_=3831c6acd2337a0280c4a23ecf163a6d
