@@ -46,12 +46,13 @@ DEPEND="sys-libs/zlib:=[${MULTILIB_USEDEP}]
 	"
 RDEPEND="${DEPEND}
 	mysqlcompat? (
-	!dev-db/mysql
-	!dev-db/mysql-cluster
-	!dev-db/mariadb
-	!dev-db/mariadb-galera
-	!dev-db/percona-server
+	!dev-db/mysql[client-libs(+)]
+	!dev-db/mysql-cluster[client-libs(+)]
+	!dev-db/mariadb[client-libs(+)]
+	!dev-db/mariadb-galera[client-libs(+)]
+	!dev-db/percona-server[client-libs(+)]
 	!dev-db/mysql-connector-c )
+	!>=dev-db/mariadb-10.2.0[client-libs(+)]
 	"
 PATCHES=(
 	"${FILESDIR}/gentoo-layout-3.0.patch" )
