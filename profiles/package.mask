@@ -1,6 +1,9 @@
+# Brian Evans< grknight@gentoo.org (12 Mar 2018)
+# Do not use this version, it is broken just yet.
+~dev-db/mysql-5.7.21
+
 # Brian Evans <grknight@gentoo.org> (10 Oct 2015)
 # Latest versions are masked for testing
->=dev-db/mariadb-10.2
 >=dev-db/mysql-5.7
 >=virtual/mysql-5.7
 >=virtual/libmysqlclient-19
