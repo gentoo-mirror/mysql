@@ -1,4 +1,4 @@
-# Copyright 1999-2017 Gentoo Foundation
+# Copyright 1999-2018 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI="6"
@@ -7,8 +7,7 @@ MY_EXTRAS_VER="live"
 MY_PV="${PV//_alpha_pre/-m}"
 MY_PV="${MY_PV//_/-}"
 SUBSLOT="20"
-
-SERVER_URI="http://cdn.mysql.com/Downloads/MySQL-5.7/${PN}-boost-${MY_PV}.tar.gz"
+SERVER_URI="https://cdn.mysql.com/archives/${PN}-5.7/${PN}-boost-${MY_PV}.tar.gz"
 MY_SOURCEDIR="${PN}-${MY_PV}"
 inherit mysql-multilib-r1
 
