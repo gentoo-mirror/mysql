@@ -2,17 +2,17 @@
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI="6"
-MY_EXTRAS_VER="20180308-1938Z"
-SUBSLOT="18"
+MY_EXTRAS_VER="20180312-2011Z"
 
 CMAKE_MAKEFILE_GENERATOR=emake
 
 # Keeping eutils in EAPI=6 for emktemp in pkg_config
 
-inherit eutils systemd flag-o-matic prefix toolchain-funcs \
+inherit eutils flag-o-matic prefix toolchain-funcs \
 	user cmake-utils multilib-minimal
 
 SRC_URI="http://cdn.mysql.com/Downloads/MySQL-5.7/${PN}-boost-${PV}.tar.gz
+	https://cdn.mysql.com/archives/mysql-5.7/mysql-boost-${PV}.tar.gz
 	http://downloads.mysql.com/archives/MySQL-5.7/${PN}-boost-${PV}.tar.gz"
 
 # Gentoo patches to MySQL
@@ -28,19 +28,14 @@ fi
 HOMEPAGE="https://www.mysql.com/"
 DESCRIPTION="A fast, multi-threaded, multi-user SQL database server"
 LICENSE="GPL-2"
-SLOT="0/${SUBSLOT:-0}"
-IUSE="client-libs cracklib debug extraengine innodb-lz4
-	innodb-lzo innodb-snappy jemalloc kerberos latin1 libressl
-	numa odbc pam +perl profiling selinux +server static
-	static-libs systemd systemtap tcmalloc test xml yassl"
+SLOT="0/20"
+IUSE="client-libs cracklib debug jemalloc latin1 libressl numa +perl profiling selinux
+	+server static static-libs systemtap tcmalloc test yassl"
 
 # Tests always fail when libressl is enabled due to hard-coded ciphers in the tests
 RESTRICT="libressl? ( test )"
 
-REQUIRED_USE="
-	!server? ( !extraengine )
-	?? ( tcmalloc jemalloc )
-	static? ( yassl !pam )"
+REQUIRED_USE="?? ( tcmalloc jemalloc ) static? ( yassl )"
 
 KEYWORDS="~amd64 ~arm ~hppa ~ia64 ~ppc64 ~sparc ~x86 ~amd64-linux ~x86-linux ~x64-macos ~x86-macos ~x64-solaris ~x86-solaris"
 
@@ -63,7 +58,7 @@ PATCHES=(
 	"${MY_PATCH_DIR}"/20007_all_cmake-debug-werror-5.7.patch
 #	"${MY_PATCH_DIR}"/20008_all_mysql-tzinfo-symlink-5.7.6.patch
 	"${MY_PATCH_DIR}"/20009_all_mysql_myodbc_symbol_fix-5.7.10.patch
-	"${MY_PATCH_DIR}"/20018_all_mysql-5.7-without-clientlibs-tools.patch
+	"${MY_PATCH_DIR}"/20018_all_mysql-5.7.21-without-clientlibs-tools.patch
 )
 
 # Be warned, *DEPEND are version-dependant
@@ -74,6 +69,7 @@ COMMON_DEPEND="
 		sys-process/procps:0=
 		dev-libs/libaio:0=
 	)
+	net-misc/curl
 	>=sys-apps/sed-4
 	>=sys-apps/texinfo-4.7-r1
 	jemalloc? ( dev-libs/jemalloc:0= )
@@ -89,26 +85,14 @@ COMMON_DEPEND="
 			libressl? ( dev-libs/libressl:0= )
 		)
 	)
-	client-libs? ( >=sys-libs/zlib-1.2.3:0=[${MULTILIB_USEDEP},static-libs?]
-		kerberos? ( virtual/krb5[${MULTILIB_USEDEP}] )
-	)
-	!client-libs? ( >=sys-libs/zlib-1.2.3:0= kerberos? ( virtual/krb5 ) )
+	client-libs? ( >=sys-libs/zlib-1.2.3:0=[${MULTILIB_USEDEP},static-libs?] )
+	!client-libs? ( >=sys-libs/zlib-1.2.3:0= )
 	sys-libs/ncurses:0=
 	server? (
 		>=app-arch/lz4-0_p131:=
 		>=dev-libs/boost-1.65.0:=
-		cracklib? ( sys-libs/cracklib:0= )
-		extraengine? (
-			odbc? ( dev-db/unixODBC:0= )
-			xml? ( dev-libs/libxml2:2= )
-		)
-		innodb-lzo? ( dev-libs/lzo )
-		innodb-snappy? ( app-arch/snappy )
 		numa? ( sys-process/numactl )
-		pam? ( virtual/pam:0= )
-		systemd? ( sys-apps/systemd:= )
 	)
-	>=dev-libs/libpcre-8.41-r1:3=
 "
 DEPEND="virtual/yacc
 	static? ( sys-libs/ncurses[static-libs] )
@@ -126,8 +110,8 @@ RDEPEND="selinux? ( sec-policy/selinux-mysql )
 # dev-perl/DBD-mysql is needed by some scripts installed by MySQL
 # xtrabackup-bin causes a circular dependency if DBD-mysql is not already installed
 PDEPEND="perl? ( >=dev-perl/DBD-mysql-2.9004 )
-	!client-libs? ( dev-db/mysql-connector-c[${MULTILIB_USEDEP}] )
-	 server? ( ~virtual/mysql-5.6[static=] )"
+	!client-libs? ( dev-db/mysql-connector-c[${MULTILIB_USEDEP},static-libs?] )
+	 server? ( ~virtual/mysql-5.6 )"
 
 pkg_setup() {
 	if [[ ${MERGE_TYPE} != binary ]] ; then
@@ -156,7 +140,7 @@ pkg_preinst() {
 	# Here we need to see if the implementation switched client libraries
 	# We check if this is a new instance of the package and a client library already exists
 	local SHOW_ABI_MESSAGE libpath
-	if [[ -z ${REPLACING_VERSIONS} && -e "${EROOT}usr/$(get_libdir)/libmysqlclient.so" ]] ; then
+	if use client-libs && [[ -z ${REPLACING_VERSIONS} && -e "${EROOT}usr/$(get_libdir)/libmysqlclient.so" ]] ; then
 		libpath=$(readlink "${EROOT}usr/$(get_libdir)/libmysqlclient.so")
 		elog "Due to ABI changes when switching between different client libraries,"
 		elog "revdep-rebuild must find and rebuild all packages linking to libmysqlclient."
@@ -173,14 +157,6 @@ pkg_postinst() {
 	[[ -d "${ROOT}${MY_LOGDIR}" ]] || install -d -m0750 -o mysql -g mysql "${ROOT}${MY_LOGDIR}"
 
 	if use server ; then
-		if use pam; then
-			einfo
-			elog "This install includes the PAM authentication plugin."
-			elog "To activate and configure the PAM plugin, please read:"
-			elog "https://mariadb.com/kb/en/mariadb/pam-authentication-plugin/"
-			einfo
-		fi
-
 		if [[ -z "${REPLACING_VERSIONS}" ]] ; then
 			einfo
 			elog "You might want to run:"
@@ -284,28 +260,22 @@ multilib_src_configure() {
 		-DINSTALL_MYSQLDATADIR="${EPREFIX}/var/lib/mysql"
 		-DINSTALL_SBINDIR=sbin
 		-DINSTALL_SUPPORTFILESDIR="${EPREFIX}/usr/share/mysql"
-		-DWITH_COMMENT="Gentoo Linux ${PF}"
+		-DCOMPILATION_COMMENT="Gentoo Linux ${PF}"
 		-DWITH_UNIT_TESTS=$(usex test ON OFF)
 		### TODO: make this system but issues with UTF-8 prevent it
 		-DWITH_EDITLINE=bundled
 		-DWITH_ZLIB=system
-		-DWITHOUT_LIBWRAP=1
+		-DWITH_LIBWRAP=0
 		-DENABLED_LOCAL_INFILE=1
 		-DMYSQL_UNIX_ADDR="${EPREFIX}/var/run/mysqld/mysqld.sock"
-		-DINSTALL_UNIX_ADDRDIR="${EPREFIX}/var/run/mysqld/mysqld.sock"
 		-DWITH_DEFAULT_COMPILER_OPTIONS=0
 		-DWITH_DEFAULT_FEATURE_SET=0
-		-DINSTALL_SYSTEMD_UNITDIR="$(systemd_get_systemunitdir)"
-		-DENABLE_STATIC_LIBS=$(usex static-libs ON OFF)
 		# The build forces this to be defined when cross-compiling.  We pass it
 		# all the time for simplicity and to make sure it is actually correct.
 		-DSTACK_DIRECTION=$(tc-stack-grows-down && echo -1 || echo 1)
-		-DPKG_CONFIG_EXECUTABLE="${EPREFIX}/usr/bin/$(tc-getPKG_CONFIG)"
-#		-DPLUGIN_AUTH_GSSAPI=$(usex kerberos DYNAMIC NO)
-#		-DAUTH_GSSAPI_PLUGIN_TYPE=$(usex kerberos DYNAMIC OFF)
-		-DWITH_EXTERNAL_ZLIB=YES
-		-DSUFFIX_INSTALL_DIR=""
-		-DWITH_UNITTEST=OFF
+		-DWITH_RAPID=OFF
+		-DWITH_LIBEVENT=NO
+		-DWITH_CURL=system
 	)
 	if use test ; then
 		mycmakeargs+=( -DINSTALL_MYSQLTESTDIR=share/mariadb/mysql-test )
@@ -339,26 +309,9 @@ multilib_src_configure() {
 
 	if multilib_is_native_abi && use server ; then
 
-		# Federated{,X} must be treated special otherwise they will not be built as plugins
-		if ! use extraengine ; then
-			mycmakeargs+=( -DWITH_FEDERATED_STORAGE_ENGINE=NO )
-		fi
-
 		mycmakeargs+=(
 			-DWITH_BOOST="${S}/boost"
 			-DWITH_LZ4=system
-			-DWITH_JEMALLOC=$(usex jemalloc system)
-			-DWITH_PCRE=system
-#			-DPLUGIN_AUTH_PAM=$(usex pam YES NO)
-#			-DPLUGIN_CRACKLIB_PASSWORD_CHECK=$(usex cracklib YES NO)
-#			-DPLUGIN_SEQUENCE=$(usex extraengine YES NO)
-			-DWITH_INNODB_LZ4=$(usex innodb-lz4 ON OFF)
-			-DWITH_INNODB_LZO=$(usex innodb-lzo ON OFF)
-			-DWITH_INNODB_SNAPPY=$(usex innodb-snappy ON OFF)
-#			-DPLUGIN_AUTH_GSSAPI=$(usex kerberos DYNAMIC NO)
-			-DINSTALL_SQLBENCHDIR=share/mysql
-			# systemd is only linked to for server notification
-			-DWITH_SYSTEMD=$(usex systemd yes no)
 			-DWITH_NUMA=$(usex numa ON OFF)
 		)
 
@@ -385,11 +338,10 @@ multilib_src_configure() {
 		fi
 		mycmakeargs+=(
 			-DEXTRA_CHARSETS=all
-			-DMYSQL_USER=mysql
 			-DDISABLE_SHARED=$(usex static YES NO)
 			-DWITH_DEBUG=$(usex debug)
 			-DWITH_EMBEDDED_SERVER=OFF
-			-DWITH_PROFILING=$(usex profiling)
+			-DENABLED_PROFILING=$(usex profiling)
 		)
 
 		if use static; then
@@ -402,6 +354,7 @@ multilib_src_configure() {
 
 		# Storage engines
 		mycmakeargs+=(
+			-DWITH_EXAMPLE_STORAGE_ENGINE=0
 			-DWITH_ARCHIVE_STORAGE_ENGINE=1
 			-DWITH_BLACKHOLE_STORAGE_ENGINE=1
 			-DWITH_CSV_STORAGE_ENGINE=1
@@ -410,6 +363,7 @@ multilib_src_configure() {
 			-DWITH_MYISAMMRG_STORAGE_ENGINE=1
 			-DWITH_MYISAM_STORAGE_ENGINE=1
 			-DWITH_PARTITION_STORAGE_ENGINE=1
+			-DWITH_INNODB_MEMCACHED=0
 		)
 
 	else
@@ -417,8 +371,6 @@ multilib_src_configure() {
 			-DWITHOUT_SERVER=1
 			-DWITH_EMBEDDED_SERVER=OFF
 			-DEXTRA_CHARSETS=none
-			-DINSTALL_SQLBENCHDIR=
-			-DWITH_SYSTEMD=no
 		)
 	fi
 
@@ -535,7 +487,7 @@ multilib_src_install_all() {
 }
 
 # Official test instructions:
-# USE='extraengine perl server static-libs' \
+# USE='perl server static-libs' \
 # FEATURES='test userpriv -usersandbox' \
 # ebuild mysql-X.X.XX.ebuild \
 # digest clean package
