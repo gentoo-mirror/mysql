@@ -3,7 +3,7 @@
 # The following options will be passed to all MySQL clients
 [client]
 socket						= @GENTOO_PORTAGE_EPREFIX@/var/run/mysqld/mysqld.sock
-character-sets-dir				= @GENTOO_PORTAGE_EPREFIX@/usr/share/mariadb/charsets
+character-sets-dir				= @GENTOO_PORTAGE_EPREFIX@/usr/share/mysql/charsets
 default-character-set=utf8
 
 [mysql]
@@ -15,7 +15,7 @@ quick
 max_allowed_packet			= 16M
 
 [myisamchk]
-character-sets-dir=@GENTOO_PORTAGE_EPREFIX@/usr/share/mariadb/charsets
+character-sets-dir=@GENTOO_PORTAGE_EPREFIX@/usr/share/mysql/charsets
 
 [myisampack]
-character-sets-dir=@GENTOO_PORTAGE_EPREFIX@/usr/share/mariadb/charsets
+character-sets-dir=@GENTOO_PORTAGE_EPREFIX@/usr/share/mysql/charsets

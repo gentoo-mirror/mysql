@@ -278,7 +278,7 @@ multilib_src_configure() {
 		-DWITH_CURL=system
 	)
 	if use test ; then
-		mycmakeargs+=( -DINSTALL_MYSQLTESTDIR=share/mariadb/mysql-test )
+		mycmakeargs+=( -DINSTALL_MYSQLTESTDIR=share/mysql/mysql-test )
 	else
 		mycmakeargs+=( -DINSTALL_MYSQLTESTDIR='' )
 	fi
@@ -445,7 +445,7 @@ multilib_src_install_all() {
 	cp "${FILESDIR}/my.cnf-5.7" "${TMPDIR}/my.cnf" || die
 	eprefixify "${TMPDIR}/my.cnf"
 	doins "${TMPDIR}/my.cnf"
-	insinto "${MY_SYSCONFDIR#${EPREFIX}}/mariadb.d"
+	insinto "${MY_SYSCONFDIR#${EPREFIX}}/mysql.d"
 	cp "${FILESDIR}/my.cnf.distro-client" "${TMPDIR}/50-distro-client.cnf" || die
 	eprefixify "${TMPDIR}/50-distro-client.cnf"
 	doins "${TMPDIR}/50-distro-client.cnf"
@@ -539,7 +539,7 @@ src_test() {
 	pushd "${TESTDIR}" > /dev/null || die
 
 	touch "${T}/disabled.def"
-	# These are failing in MariaDB 10.0 for now and are believed to be
+	# These are failing in MySQL 5.7 for now and are believed to be
 	# false positives:
 	#
 	# main.mysql_client_test, main.mysql_client_test_nonblock
@@ -579,7 +579,7 @@ src_test() {
 }
 
 mysql_init_vars() {
-	MY_SHAREDSTATEDIR=${MY_SHAREDSTATEDIR="${EPREFIX}/usr/share/mariadb"}
+	MY_SHAREDSTATEDIR=${MY_SHAREDSTATEDIR="${EPREFIX}/usr/share/mysql"}
 	MY_SYSCONFDIR=${MY_SYSCONFDIR="${EPREFIX}/etc/mysql"}
 	MY_LOCALSTATEDIR=${MY_LOCALSTATEDIR="${EPREFIX}/var/lib/mysql"}
 	MY_LOGDIR=${MY_LOGDIR="${EPREFIX}/var/log/mysql"}
@@ -794,7 +794,7 @@ pkg_config() {
 	# http://dev.mysql.com/doc/mysql/en/time-zone-support.html
 	"${EROOT}/usr/bin/mysql_tzinfo_to_sql" "${EROOT}/usr/share/zoneinfo" > "${sqltmp}" 2>/dev/null
 
-	local cmd=( "${EROOT}usr/share/mariadb/scripts/mysql_install_db" )
+	local cmd=( "${EROOT}usr/share/mysql/scripts/mysql_install_db" )
 	[[ -f "${cmd}" ]] || cmd=( "${EROOT}usr/bin/mysql_install_db" )
 	cmd+=( "--basedir=${EPREFIX}/usr" ${options} "--datadir=${ROOT}/${MY_DATADIR}" "--tmpdir=${ROOT}/${MYSQL_TMPDIR}" )
 	einfo "Command: ${cmd[*]}"

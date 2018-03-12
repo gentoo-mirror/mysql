@@ -6,12 +6,12 @@ character-set-server				= utf8
 user						= mysql
 port						= 3306
 socket						= @GENTOO_PORTAGE_EPREFIX@/var/run/mysqld/mysqld.sock
-pid-file					= @GENTOO_PORTAGE_EPREFIX@/var/run/mysqld/mariadb.pid
+pid-file					= @GENTOO_PORTAGE_EPREFIX@/var/run/mysqld/mysql.pid
 log-error					= @GENTOO_PORTAGE_EPREFIX@/var/log/mysql/mysqld.err
 basedir						= @GENTOO_PORTAGE_EPREFIX@/usr
 datadir						= @DATADIR@
 skip-external-locking
-lc_messages_dir					= @GENTOO_PORTAGE_EPREFIX@/usr/share/mariadb
+lc_messages_dir					= @GENTOO_PORTAGE_EPREFIX@/usr/share/mysql
 #Set this to your desired error message language
 lc_messages					= en_US
 
