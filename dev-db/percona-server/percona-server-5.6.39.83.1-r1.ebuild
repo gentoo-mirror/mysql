@@ -2,7 +2,7 @@
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI="6"
-MY_EXTRAS_VER="20180312-2011Z"
+MY_EXTRAS_VER="20180329-0129Z"
 PYTHON_COMPAT=( python2_7 )
 CMAKE_MAKEFILE_GENERATOR=emake
 
@@ -57,11 +57,10 @@ PATCHES=(
 	"${MY_PATCH_DIR}"/01050_all_mysql_config_cleanup-5.6.patch
 	"${MY_PATCH_DIR}"/02040_all_embedded-library-shared-5.5.10.patch
 	"${MY_PATCH_DIR}"/20001_all_fix-minimal-build-cmake-mysql-5.6.20.patch
-	"${MY_PATCH_DIR}"/20006_all_cmake_elib-percona-5.6.34.patch
 	"${MY_PATCH_DIR}"/20007_all_cmake-debug-werror-5.6.22.patch
 	"${MY_PATCH_DIR}"/20008_all_mysql-tzinfo-symlink-5.6.37.patch
 	"${MY_PATCH_DIR}"/20009_all_mysql_myodbc_symbol_fix-5.6.patch
-	"${MY_PATCH_DIR}"/20018_all_percona-server-5.6.25-without-clientlibs-tools.patch
+	"${MY_PATCH_DIR}"/20018_all_percona-server-5.6.39-without-clientlibs-tools.patch
 )
 
 # Be warned, *DEPEND are version-dependant
@@ -298,6 +297,7 @@ multilib_src_configure() {
 		-DINSTALL_MYSQLSHAREDIR=share/mysql
 		-DINSTALL_PLUGINDIR=$(get_libdir)/mysql/plugin
 		-DINSTALL_SCRIPTDIR=share/mysql/scripts
+		-DINSTALL_SQLBENCHDIR=NO
 		-DINSTALL_MYSQLDATADIR="${EPREFIX}/var/lib/mysql"
 		-DINSTALL_SBINDIR=sbin
 		-DINSTALL_SUPPORTFILESDIR="${EPREFIX}/usr/share/mysql"
@@ -401,6 +401,7 @@ multilib_src_configure() {
 			-DWITH_MYISAMMRG_STORAGE_ENGINE=1
 			-DWITH_MYISAM_STORAGE_ENGINE=1
 			-DWITH_PARTITION_STORAGE_ENGINE=1
+			-DWITH_FEDERATED_STORAGE_ENGINE=1
 			-DWITH_INNODB_MEMCACHED=0
 			-DWITH_ROCKSDB=$(usex rocksdb 1 0)
 			$(usex tokudb '' -DWITHOUT_TOKUDB=1)
@@ -534,9 +535,8 @@ multilib_src_install_all() {
 }
 
 # Official test instructions:
-# USE='perl server static-libs' \
 # FEATURES='test userpriv -usersandbox' \
-# ebuild mysql-X.X.XX.ebuild \
+# ebuild percona-server-X.X.XX.ebuild \
 # digest clean package
 src_test() {
 
@@ -616,12 +616,10 @@ src_test() {
 		fi
 	fi
 
-	if ! use extraengine ; then
-		# bug 401673, 530766
-		for t in federated.federated_plugin ; do
-			_disable_test "$t" "Test $t requires USE=extraengine (Need federated engine)"
-		done
-	fi
+	# bug 401673, 530766
+#	for t in federated.federated_plugin ; do
+#		_disable_test "$t" "Test $t requires USE=extraengine (Need federated engine)"
+#	done
 
 	# Set file limits higher so tests run
 	if ! ulimit -n 16500 1>/dev/null 2>&1; then
