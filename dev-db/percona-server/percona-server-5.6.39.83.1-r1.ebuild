@@ -9,10 +9,12 @@ CMAKE_MAKEFILE_GENERATOR=emake
 # Keeping eutils in EAPI=6 for emktemp in pkg_config
 
 inherit linux-info python-any-r1 eutils flag-o-matic prefix toolchain-funcs \
-	user cmake-utils multilib-minimal versionator
+	versionator user cmake-utils multilib-minimal
+
 MY_PV=$(replace_version_separator 3 '-')
 MY_PN="Percona-Server"
 MY_MAJOR_PV=$(get_version_component_range 1-2)
+MY_RELEASE_NOTES_URI="https://www.percona.com/doc/percona-server/5.6/release-notes/release-notes_index.html"
 SRC_URI="https://www.percona.com/downloads/${MY_PN}-${MY_MAJOR_PV}/${MY_PN}-${MY_PV}/source/tarball/${PN}-${MY_PV}.tar.gz"
 
 # Gentoo patches to MySQL
@@ -30,7 +32,7 @@ DESCRIPTION="An enhanced, drop-in replacement for MySQL from the Percona team"
 LICENSE="GPL-2"
 SLOT="0/18"
 IUSE="-client-libs cracklib debug jemalloc latin1 libressl numa pam +perl profiling rocksdb selinux
-	+server static static-libs systemtap tcmalloc test tokudb tokudb-backup-plugin yassl"
+	+server static static-libs systemtap tcmalloc test test-suite tokudb tokudb-backup-plugin yassl"
 
 # Tests always fail when libressl is enabled due to hard-coded ciphers in the tests
 RESTRICT="libressl? ( test )"
@@ -90,7 +92,6 @@ COMMON_DEPEND="
 	!client-libs? ( >=sys-libs/zlib-1.2.3:0= )
 	sys-libs/ncurses:0=
 	server? (
-		>=app-arch/lz4-0_p131:=
 		>=dev-libs/boost-1.65.0:=
 		numa? ( sys-process/numactl )
 		pam? ( virtual/pam:0= )
@@ -117,6 +118,66 @@ RDEPEND="selinux? ( sec-policy/selinux-mysql )
 PDEPEND="perl? ( >=dev-perl/DBD-mysql-2.9004 )
 	!client-libs? ( dev-db/mysql-connector-c[${MULTILIB_USEDEP},static-libs?] )"
 
+python_check_deps() {
+	has_version "dev-python/mysql-python[${PYTHON_USEDEP}]"
+}
+
+mysql_init_vars() {
+	MY_SHAREDSTATEDIR=${MY_SHAREDSTATEDIR="${EPREFIX%/}/usr/share/mysql"}
+	MY_SYSCONFDIR=${MY_SYSCONFDIR="${EPREFIX%/}/etc/mysql"}
+	MY_LOCALSTATEDIR=${MY_LOCALSTATEDIR="${EPREFIX%/}/var/lib/mysql"}
+	MY_LOGDIR=${MY_LOGDIR="${EPREFIX%/}/var/log/mysql"}
+
+	if [[ -z "${MY_DATADIR}" ]] ; then
+		MY_DATADIR=""
+		if [[ -f "${MY_SYSCONFDIR}/my.cnf" ]] ; then
+			MY_DATADIR=`"my_print_defaults" mysqld 2>/dev/null \
+				| sed -ne '/datadir/s|^--datadir=||p' \
+				| tail -n1`
+			if [[ -z "${MY_DATADIR}" ]] ; then
+				MY_DATADIR=`grep ^datadir "${MY_SYSCONFDIR}/my.cnf" \
+				| sed -e 's/.*=\s*//' \
+				| tail -n1`
+			fi
+		fi
+		if [[ -z "${MY_DATADIR}" ]] ; then
+			MY_DATADIR="${MY_LOCALSTATEDIR}"
+			einfo "Using default MY_DATADIR"
+		fi
+		elog "MySQL MY_DATADIR is ${MY_DATADIR}"
+
+		if [[ -z "${PREVIOUS_DATADIR}" ]] ; then
+			if [[ -e "${MY_DATADIR}" ]] ; then
+				# If you get this and you're wondering about it, see bug #207636
+				elog "MySQL datadir found in ${MY_DATADIR}"
+				elog "A new one will not be created."
+				PREVIOUS_DATADIR="yes"
+			else
+				PREVIOUS_DATADIR="no"
+			fi
+			export PREVIOUS_DATADIR
+		fi
+	else
+		if [[ ${EBUILD_PHASE} == "config" ]] ; then
+			local new_MY_DATADIR
+			new_MY_DATADIR=`"my_print_defaults" mysqld 2>/dev/null \
+				| sed -ne '/datadir/s|^--datadir=||p' \
+				| tail -n1`
+
+			if [[ ( -n "${new_MY_DATADIR}" ) && ( "${new_MY_DATADIR}" != "${MY_DATADIR}" ) ]] ; then
+				ewarn "MySQL MY_DATADIR has changed"
+				ewarn "from ${MY_DATADIR}"
+				ewarn "to ${new_MY_DATADIR}"
+				MY_DATADIR="${new_MY_DATADIR}"
+			fi
+		fi
+	fi
+
+	export MY_SHAREDSTATEDIR MY_SYSCONFDIR
+	export MY_LOCALSTATEDIR MY_LOGDIR
+	export MY_DATADIR
+}
+
 pkg_pretend() {
 	if use numa; then
 		local CONFIG_CHECK="~NUMA"
@@ -126,10 +187,6 @@ pkg_pretend() {
 
 		check_extra_config
 	fi
-}
-
-python_check_deps() {
-	has_version "dev-python/mysql-python[${PYTHON_USEDEP}]"
 }
 
 pkg_setup() {
@@ -161,57 +218,9 @@ pkg_setup() {
 	enewuser mysql 60 -1 /dev/null mysql || die "problem adding 'mysql' user"
 }
 
-pkg_preinst() {
-	# Here we need to see if the implementation switched client libraries
-	# We check if this is a new instance of the package and a client library already exists
-	local SHOW_ABI_MESSAGE libpath
-	if use client-libs && [[ -z ${REPLACING_VERSIONS} && -e "${EROOT}usr/$(get_libdir)/libmysqlclient.so" ]] ; then
-		libpath=$(readlink "${EROOT}usr/$(get_libdir)/libmysqlclient.so")
-		elog "Due to ABI changes when switching between different client libraries,"
-		elog "revdep-rebuild must find and rebuild all packages linking to libmysqlclient."
-		elog "Please run: revdep-rebuild --library ${libpath}"
-		ewarn "Failure to run revdep-rebuild may cause issues with other programs or libraries"
-	fi
-}
-
-pkg_postinst() {
-	# Make sure the vars are correctly initialized
-	mysql_init_vars
-
-	# Create log directory securely if it does not exist
-	[[ -d "${EROOT%/}${MY_LOGDIR}" ]] || install -d -m0750 -o mysql -g mysql "${EROOT%/}${MY_LOGDIR}"
-
-	if use server ; then
-		if [[ -z "${REPLACING_VERSIONS}" ]] ; then
-			einfo
-			elog "You might want to run:"
-			elog "\"emerge --config =${CATEGORY}/${PF}\""
-			elog "if this is a new install."
-			elog
-			elog "If you are switching server implentations, you should run the"
-			elog "mysql_upgrade tool."
-			einfo
-		else
-			einfo
-			elog "If you are upgrading major versions, you should run the"
-			elog "mysql_upgrade tool."
-			einfo
-		fi
-	fi
-
-	# Note about configuration change
-	einfo
-	elog "This version of mysql reorganizes the configuration from a single my.cnf"
-	elog "to several files in /etc/mysql/${PN}.d."
-	elog "Please backup any changes you made to /etc/mysql/my.cnf"
-	elog "and add them as a new file under /etc/mysql/${PN}.d with a .cnf extension."
-	elog "You may have as many files as needed and they are read alphabetically."
-	elog "Be sure the options have the appropitate section headers, i.e. [mysqld]."
-	einfo
-}
-
 src_unpack() {
 	unpack ${A}
+
 	# Grab the patches
 	[[ "${MY_EXTRAS_VER}" == "live" ]] && S="${WORKDIR}/mysql-extras" git-r3_src_unpack
 
@@ -221,8 +230,7 @@ src_unpack() {
 src_prepare() {
 	if use jemalloc ; then
 		echo "TARGET_LINK_LIBRARIES(mysqld jemalloc)" >> "${S}/sql/CMakeLists.txt" || die
-	fi
-	if use tcmalloc; then
+	elif use tcmalloc ; then
 		echo "TARGET_LINK_LIBRARIES(mysqld tcmalloc)" >> "${S}/sql/CMakeLists.txt" || die
 	fi
 
@@ -253,9 +261,10 @@ src_prepare() {
 	cmake-utils_src_prepare
 }
 
-src_configure(){
+src_configure() {
 	# bug 508724 mariadb cannot use ld.gold
 	tc-ld-disable-gold
+
 	# Bug #114895, bug #110149
 	filter-flags "-O" "-O[01]"
 
@@ -316,7 +325,7 @@ multilib_src_configure() {
 		-DSTACK_DIRECTION=$(tc-stack-grows-down && echo -1 || echo 1)
 		-DWITH_LIBEVENT=NO
 	)
-	if use test ; then
+	if use test || use test-suite ; then
 		mycmakeargs+=( -DINSTALL_MYSQLTESTDIR=share/mysql/mysql-test )
 	else
 		mycmakeargs+=( -DINSTALL_MYSQLTESTDIR='' )
@@ -347,13 +356,12 @@ multilib_src_configure() {
 	fi
 
 	if multilib_is_native_abi && use server ; then
-
 		mycmakeargs+=(
 			-DWITH_PAM=$(usex pam)
 			-DWITH_NUMA=$(usex numa ON OFF)
 		)
 
-		if [[ ( -n ${MYSQL_DEFAULT_CHARSET} ) && ( -n ${MYSQL_DEFAULT_COLLATION} ) ]]; then
+		if [[ ( -n ${MYSQL_DEFAULT_CHARSET} ) && ( -n ${MYSQL_DEFAULT_COLLATION} ) ]] ; then
 			ewarn "You are using a custom charset of ${MYSQL_DEFAULT_CHARSET}"
 			ewarn "and a collation of ${MYSQL_DEFAULT_COLLATION}."
 			ewarn "You MUST file bugs without these variables set."
@@ -384,10 +392,6 @@ multilib_src_configure() {
 
 		if use static; then
 			mycmakeargs+=( -DWITH_PIC=1 )
-		fi
-
-		if use jemalloc || use tcmalloc ; then
-			mycmakeargs+=( -DWITH_SAFEMALLOC=OFF )
 		fi
 
 		# Storage engines
@@ -437,6 +441,127 @@ multilib_src_compile() {
 	cmake-utils_src_compile
 }
 
+# Official test instructions:
+# FEATURES='test userpriv -usersandbox' \
+# ebuild percona-server-X.X.XX.ebuild \
+# digest clean package
+src_test() {
+	_disable_test() {
+		local rawtestname reason
+		rawtestname="${1}" ; shift
+		reason="${@}"
+		ewarn "test '${rawtestname}' disabled: '${reason}'"
+		echo ${rawtestname} : ${reason} >> "${T}/disabled.def"
+	}
+
+	local TESTDIR="${BUILD_DIR}/mysql-test"
+	local retstatus_unit
+	local retstatus_tests
+
+	if ! use server ; then
+		einfo "Skipping server tests due to minimal build."
+		return 0
+	fi
+
+	# Bug #213475 - MySQL _will_ object strenously if your machine is named
+	# localhost. Also causes weird failures.
+	[[ "${HOSTNAME}" == "localhost" ]] && die "Your machine must NOT be named localhost"
+
+	einfo ">>> Test phase [test]: ${CATEGORY}/${PF}"
+
+	# Run CTest (test-units)
+	cmake-utils_src_test
+	retstatus_unit=$?
+
+	# Ensure that parallel runs don't die
+	export MTR_BUILD_THREAD="$((${RANDOM} % 100))"
+	# Enable parallel testing, auto will try to detect number of cores
+	# You may set this by hand.
+	# The default maximum is 8 unless MTR_MAX_PARALLEL is increased
+	export MTR_PARALLEL="${MTR_PARALLEL:-auto}"
+
+	# create directories because mysqladmin might run out of order
+	mkdir -p "${T}"/var-tests{,/log} || die "Failed to create \"${T}/var-tests{,/log}\""
+
+	# Run mysql tests
+	pushd "${TESTDIR}" > /dev/null || die "Failed to chdir into \"${TESTDIR}\""
+
+	touch "${T}/disabled.def"
+	# These are failing in MySQL 5.6 for now and are believed to be
+	# false positives:
+
+	local t
+	for t in main.mysql_client_test \
+		binlog.binlog_statement_insert_delayed main.information_schema \
+		main.mysqld--help-notwin binlog.binlog_mysqlbinlog_filter \
+		perfschema.binlog_edge_mix perfschema.binlog_edge_stmt \
+		funcs_1.is_columns_mysql funcs_1.is_tables_mysql funcs_1.is_triggers \
+		main.variables main.myisam main.merge_recover \
+		engines/funcs.db_alter_character_set engines/funcs.db_alter_character_set_collate \
+		engines/funcs.db_alter_collate_ascii engines/funcs.db_alter_collate_utf8 \
+		engines/funcs.db_create_character_set engines/funcs.db_create_character_set_collate \
+		main.percona_bug1289599 main.mysqlhotcopy_archive main.mysqlhotcopy_myisam ; do
+			_disable_test  "$t" "False positives in Gentoo"
+	done
+
+	if use numa && use kernel_linux ; then
+		# bug 584880
+		if ! linux_config_exists || ! linux_chkconfig_present NUMA ; then
+			for t in sys_vars.innodb_buffer_pool_populate_basic ; do
+				_disable_test "$t" "Test $t requires system with NUMA support"
+			done
+		fi
+	fi
+
+	# Set file limits higher so tests run
+	if ! ulimit -n 16500 1>/dev/null 2>&1 ; then
+		# Upper limit comes from parts.partition_* tests
+		ewarn "For maximum test coverage please raise open file limit to 16500 (ulimit -n 16500) before calling the package manager."
+
+		if ! ulimit -n 4162 1>/dev/null 2>&1 ; then
+			# Medium limit comes from '[Warning] Buffered warning: Could not increase number of max_open_files to more than 3000 (request: 4162)'
+			ewarn "For medium test coverage please raise open file limit to 4162 (ulimit -n 4162) before calling the package manager."
+
+			if ! ulimit -n 3000 1>/dev/null 2>&1 ; then
+				ewarn "For minimum test coverage please raise open file limit to 3000 (ulimit -n 3000) before calling the package manager."
+			else
+				einfo "Will run test suite with open file limit set to 3000 (minimum test coverage)."
+			fi
+		else
+			einfo "Will run test suite with open file limit set to 4162 (medium test coverage)."
+		fi
+	else
+		einfo "Will run test suite with open file limit set to 16500 (best test coverage)."
+	fi
+
+	python_setup
+	# run mysql-test tests
+	perl mysql-test-run.pl --force --vardir="${T}/var-tests" \
+		--testcase-timeout=30 --reorder --skip-test-list="${T}/disabled.def"
+	retstatus_tests=$?
+
+	popd > /dev/null || die
+
+	# Cleanup is important for these testcases.
+	pkill -9 -f "${S}/ndb" 2>/dev/null
+	pkill -9 -f "${S}/sql" 2>/dev/null
+
+	local failures=""
+	[[ $retstatus_unit -eq 0 ]] || failures="${failures} test-unit"
+	[[ $retstatus_tests -eq 0 ]] || failures="${failures} tests"
+
+	if [[ -n "$failures" ]] ; then
+		if has usersandbox ${FEATURES}; then
+			ewarn "Some tests may have failed due to FEATURES=usersandbox"
+			ewarn "Please confirm test failure with FEATURES=-usersandbox before reporting a bug."
+		fi
+
+		die "Test failures: $failures"
+	fi
+
+	einfo "Tests successfully completed"
+}
+
 src_install() {
 	local MULTILIB_WRAPPED_HEADERS
 	local MULTILIB_CHOST_TOOLS
@@ -475,250 +600,112 @@ multilib_src_install_all() {
 
 	# INSTALL_LAYOUT=STANDALONE causes cmake to create a /usr/data dir
 	if [[ -d "${ED}/usr/data" ]] ; then
-		rm -Rf "${ED}/usr/data" || die
+		rm -rf "${ED%/}/usr/data" || die
 	fi
 
 	# Unless they explicitly specific USE=test, then do not install the
 	# testsuite. It DOES have a use to be installed, esp. when you want to do a
 	# validation of your database configuration after tuning it.
-	if ! use test ; then
-		rm -rf "${D}/${MY_SHAREDSTATEDIR}/mysql-test"
+	if ! use test-suite ; then
+		rm -rf "${D%/}/${MY_SHAREDSTATEDIR#/}/mysql-test" || die
 	fi
 
 	# Configuration stuff
 	einfo "Building default configuration ..."
 	insinto "${MY_SYSCONFDIR#${EPREFIX}}"
 	[[ -f "${S}/scripts/mysqlaccess.conf" ]] && doins "${S}"/scripts/mysqlaccess.conf
-	cp "${FILESDIR}/my.cnf-5.7" "${TMPDIR}/my.cnf" || die
-	eprefixify "${TMPDIR}/my.cnf"
-	doins "${TMPDIR}/my.cnf"
-	insinto "${MY_SYSCONFDIR#${EPREFIX}}/mysql.d"
-	cp "${FILESDIR}/my.cnf.distro-client" "${TMPDIR}/50-distro-client.cnf" || die
-	eprefixify "${TMPDIR}/50-distro-client.cnf"
-	doins "${TMPDIR}/50-distro-client.cnf"
+	mycnf_src="my.cnf-5.6"
+	sed -e "s!@DATADIR@!${MY_DATADIR}!g" \
+		"${FILESDIR}/${mycnf_src}" \
+		> "${TMPDIR}/my.cnf.ok" || die
+	use prefix && sed -i -r -e '/^user[[:space:]]*=[[:space:]]*mysql$/d' "${TMPDIR}/my.cnf.ok"
+	if use latin1 ; then
+		sed -i \
+			-e "/character-set/s|utf8|latin1|g" \
+			"${TMPDIR}/my.cnf.ok" || die
+	fi
+	eprefixify "${TMPDIR}/my.cnf.ok"
+	newins "${TMPDIR}/my.cnf.ok" my.cnf
 
 	if use server ; then
-		mycnf_src="my.cnf.distro-server"
-		sed -e "s!@DATADIR@!${MY_DATADIR}!g" \
-			"${FILESDIR}/${mycnf_src}" \
-			> "${TMPDIR}/my.cnf.ok" || die
-		if use prefix ; then
-			sed -i -r -e '/^user[[:space:]]*=[[:space:]]*mysql$/d' \
-				"${TMPDIR}/my.cnf.ok" || die
-		fi
-		if use latin1 ; then
-			sed -i \
-				-e "/character-set/s|utf8|latin1|g" \
-				"${TMPDIR}/my.cnf.ok" || die
-		fi
-		eprefixify "${TMPDIR}/my.cnf.ok"
-		newins "${TMPDIR}/my.cnf.ok" 50-distro-server.cnf
-
 		einfo "Including support files and sample configurations"
 		docinto "support-files"
-		local script
 		for script in \
-			"${S}"/support-files/magic
+			"${S}"/support-files/my-*.cnf.sh \
+			"${S}"/support-files/magic \
+			"${S}"/support-files/ndb-config-2-node.ini.sh
 		do
-			[[ -f "$script" ]] && dodoc "${script}"
+			[[ -f $script ]] && dodoc "${script}"
 		done
 
 		docinto "scripts"
 		for script in "${S}"/scripts/mysql* ; do
-			[[ ( -f "$script" ) && ( "${script%.sh}" == "${script}" ) ]] && dodoc "${script}"
+			[[ ( -f $script ) && ( ${script%.sh} == ${script} ) ]] && dodoc "${script}"
 		done
 	fi
 
 	#Remove mytop if perl is not selected
-	[[ -e "${ED}/usr/bin/mytop" ]] && ! use perl && rm -f "${ED}/usr/bin/mytop"
+	[[ -e "${ED%/}/usr/bin/mytop" ]] && ! use perl && rm -f "${ED}/usr/bin/mytop"
 }
 
-# Official test instructions:
-# FEATURES='test userpriv -usersandbox' \
-# ebuild percona-server-X.X.XX.ebuild \
-# digest clean package
-multilib_src_test() {
-	if ! multilib_is_native_abi ; then
-		einfo "Server tests not available on non-native abi".
-		return 0;
+pkg_preinst() {
+	# Here we need to see if the implementation switched client libraries
+	# We check if this is a new instance of the package and a client library already exists
+	local SHOW_ABI_MESSAGE libpath
+	if use client-libs && [[ -z ${REPLACING_VERSIONS} && -e "${EROOT}usr/$(get_libdir)/libmysqlclient.so" ]] ; then
+		libpath=$(readlink "${EROOT}usr/$(get_libdir)/libmysqlclient.so")
+		elog "Due to ABI changes when switching between different client libraries,"
+		elog "revdep-rebuild must find and rebuild all packages linking to libmysqlclient."
+		elog "Please run: revdep-rebuild --library ${libpath}"
+		ewarn "Failure to run revdep-rebuild may cause issues with other programs or libraries"
 	fi
+}
 
-	_disable_test() {
-		local rawtestname reason
-		rawtestname="${1}" ; shift
-		reason="${@}"
-		ewarn "test '${rawtestname}' disabled: '${reason}'"
-		echo ${rawtestname} : ${reason} >> "${T}/disabled.def"
-	}
+pkg_postinst() {
+	# Make sure the vars are correctly initialized
+	mysql_init_vars
 
-	local TESTDIR="${BUILD_DIR}/mysql-test"
-	local retstatus_unit
-	local retstatus_tests
+	# Create log directory securely if it does not exist
+	[[ -d "${EROOT%/}${MY_LOGDIR}" ]] || install -d -m0750 -o mysql -g mysql "${EROOT%/}${MY_LOGDIR}"
 
-	if ! use server ; then
-		einfo "Skipping server tests due to minimal build."
-		return 0
-	fi
+	if use server ; then
+		if [[ -z "${REPLACING_VERSIONS}" ]] ; then
+			einfo
+			elog "You might want to run:"
+			elog "  \"emerge --config =${CATEGORY}/${PF}\""
+			elog "if this is a new install."
+			elog
+			elog "If you are switching server implentations, you should run the"
+			elog "mysql_upgrade tool."
+			einfo
+		else
+			local _replacing_version=
+			for _replacing_version in ${REPLACING_VERSIONS}; do
+				local _new_version_branch=$(get_version_component_range 1-3 "${PV}")
+				local _replacing_version_branch=$(get_version_component_range 1-3 "${_replacing_version}")
+				debug-print "Updating an existing installation (v${_replacing_version}; branch '${_replacing_version_branch}') ..."
 
-	# Bug #213475 - MySQL _will_ object strenously if your machine is named
-	# localhost. Also causes weird failures.
-	[[ "${HOSTNAME}" == "localhost" ]] && die "Your machine must NOT be named localhost"
+				if ! version_is_at_least "${_new_version_branch}" "${_replacing_version_branch}"; then
+					debug-print "Upgrading from v${_replacing_version_branch} to v${_new_version_branch} ..."
+					# https://www.percona.com/blog/2014/09/19/mysql-upgrade-best-practices/
 
-	if [[ $UID -eq 0 ]]; then
-		die "Testing with FEATURES=-userpriv is no longer supported by upstream. Tests MUST be run as non-root."
-	fi
-	has usersandbox $FEATURES && ewarn "Some tests may fail with FEATURES=usersandbox"
+					einfo
+					elog "You are upgrading an existing ${PN} installation, you should review"
+					elog "release notes at ${MY_RELEASE_NOTES_URI}"
+					elog "and run the mysql_upgrade tool."
+					einfo
 
-	einfo ">>> Test phase [test]: ${CATEGORY}/${PF}"
-
-	# Run CTest (test-units)
-	cmake-utils_src_test
-	retstatus_unit=$?
-
-	# Ensure that parallel runs don't die
-	export MTR_BUILD_THREAD="$((${RANDOM} % 100))"
-	# Enable parallel testing, auto will try to detect number of cores
-	# You may set this by hand.
-	# The default maximum is 8 unless MTR_MAX_PARALLEL is increased
-	export MTR_PARALLEL="${MTR_PARALLEL:-auto}"
-
-	# create directories because mysqladmin might run out of order
-	mkdir -p "${T}"/var-tests{,/log} || die
-
-	# Run mysql tests
-	pushd "${TESTDIR}" > /dev/null || die
-
-	touch "${T}/disabled.def"
-	# These are failing in MySQL 5.7 for now and are believed to be
-	# false positives:
-	#
-	# main.mysql_client_test, main.mysql_client_test_nonblock
-	# main.mysql_client_test_comp:
-	# segfaults at random under Portage only, suspect resource limits.
-
-	local t
-	for t in main.mysql_client_test \
-		binlog.binlog_statement_insert_delayed main.information_schema \
-		main.mysqld--help-notwin binlog.binlog_mysqlbinlog_filter \
-		perfschema.binlog_edge_mix perfschema.binlog_edge_stmt \
-		funcs_1.is_columns_mysql funcs_1.is_tables_mysql funcs_1.is_triggers \
-		main.variables main.myisam main.merge_recover \
-		engines/funcs.db_alter_character_set engines/funcs.db_alter_character_set_collate \
-		engines/funcs.db_alter_collate_ascii engines/funcs.db_alter_collate_utf8 \
-		engines/funcs.db_create_character_set engines/funcs.db_create_character_set_collate \
-		main.percona_bug1289599 main.mysqlhotcopy_archive main.mysqlhotcopy_myisam ; do
-			_disable_test  "$t" "False positives in Gentoo"
-	done
-
-	if use numa && use kernel_linux ; then
-		# bug 584880
-		if ! linux_config_exists || ! linux_chkconfig_present NUMA ; then
-			for t in sys_vars.innodb_buffer_pool_populate_basic ; do
-				_disable_test "$t" "Test $t requires system with NUMA support"
+					// Break loop - we only want to show this hint once
+					break
+				fi
 			done
 		fi
+
+		elog "Since ${PN}-5.6.39.83.1-r1 we no longer provide client libs."
+		elog "Applications depending on client libs should migrate to virtual/libmysqlclient"
+		elog "which will pull-in dev-db/mysql-connector-c as their new client lib provider."
+		einfo
 	fi
-
-	# bug 401673, 530766
-#	for t in federated.federated_plugin ; do
-#		_disable_test "$t" "Test $t requires USE=extraengine (Need federated engine)"
-#	done
-
-	# Set file limits higher so tests run
-	if ! ulimit -n 16500 1>/dev/null 2>&1; then
-		# Upper limit comes from parts.partition_* tests
-		ewarn "For maximum test coverage please raise open file limit to 16500 (ulimit -n 16500) before calling the package manager."
-
-		if ! ulimit -n 4162 1>/dev/null 2>&1; then
-			# Medium limit comes from '[Warning] Buffered warning: Could not increase number of max_open_files to more than 3000 (request: 4162)'
-			ewarn "For medium test coverage please raise open file limit to 4162 (ulimit -n 4162) before calling the package manager."
-
-			if ! ulimit -n 3000 1>/dev/null 2>&1; then
-				ewarn "For minimum test coverage please raise open file limit to 3000 (ulimit -n 3000) before calling the package manager."
-			else
-				einfo "Will run test suite with open file limit set to 3000 (minimum test coverage)."
-			fi
-		else
-			einfo "Will run test suite with open file limit set to 4162 (medium test coverage)."
-		fi
-	else
-		einfo "Will run test suite with open file limit set to 16500 (best test coverage)."
-	fi
-
-	python_setup
-	# run mysql-test tests
-	perl mysql-test-run.pl --force --vardir="${T}/var-tests" \
-		--testcase-timeout=30 --reorder --skip-test-list="${T}/disabled.def"
-	retstatus_tests=$?
-
-	popd > /dev/null || die
-
-	# Cleanup is important for these testcases.
-	pkill -9 -f "${S}/ndb" 2>/dev/null
-	pkill -9 -f "${S}/sql" 2>/dev/null
-
-	local failures=""
-	[[ $retstatus_unit -eq 0 ]] || failures="${failures} test-unit"
-	[[ $retstatus_tests -eq 0 ]] || failures="${failures} tests"
-
-	[[ -z "$failures" ]] || die "Test failures: $failures"
-	einfo "Tests successfully completed"
-}
-
-mysql_init_vars() {
-	MY_SHAREDSTATEDIR=${MY_SHAREDSTATEDIR="${EPREFIX%/}/usr/share/mysql"}
-	MY_SYSCONFDIR=${MY_SYSCONFDIR="${EPREFIX%/}/etc/mysql"}
-	MY_LOCALSTATEDIR=${MY_LOCALSTATEDIR="${EPREFIX%/}/var/lib/mysql"}
-	MY_LOGDIR=${MY_LOGDIR="${EPREFIX%/}/var/log/mysql"}
-
-	if [[ -z "${MY_DATADIR}" ]] ; then
-		MY_DATADIR=""
-		if [[ -f "${MY_SYSCONFDIR}/my.cnf" ]] ; then
-			MY_DATADIR=`"my_print_defaults" mysqld 2>/dev/null \
-				| sed -ne '/datadir/s|^--datadir=||p' \
-				| tail -n1`
-			if [[ -z "${MY_DATADIR}" ]] ; then
-				MY_DATADIR=`grep ^datadir "${MY_SYSCONFDIR}/my.cnf" \
-				| sed -e 's/.*=\s*//' \
-				| tail -n1`
-			fi
-		fi
-		if [[ -z "${MY_DATADIR}" ]] ; then
-			MY_DATADIR="${MY_LOCALSTATEDIR}"
-			einfo "Using default MY_DATADIR"
-		fi
-		elog "MySQL MY_DATADIR is ${MY_DATADIR}"
-
-		if [[ -z "${PREVIOUS_DATADIR}" ]] ; then
-			if [[ -e "${MY_DATADIR}" ]] ; then
-				# If you get this and you're wondering about it, see bug #207636
-				elog "MySQL datadir found in ${MY_DATADIR}"
-				elog "A new one will not be created."
-				PREVIOUS_DATADIR="yes"
-			else
-				PREVIOUS_DATADIR="no"
-			fi
-			export PREVIOUS_DATADIR
-		fi
-	else
-		if [[ ${EBUILD_PHASE} == "config" ]]; then
-			local new_MY_DATADIR
-			new_MY_DATADIR=`"my_print_defaults" mysqld 2>/dev/null \
-				| sed -ne '/datadir/s|^--datadir=||p' \
-				| tail -n1`
-
-			if [[ ( -n "${new_MY_DATADIR}" ) && ( "${new_MY_DATADIR}" != "${MY_DATADIR}" ) ]]; then
-				ewarn "MySQL MY_DATADIR has changed"
-				ewarn "from ${MY_DATADIR}"
-				ewarn "to ${new_MY_DATADIR}"
-				MY_DATADIR="${new_MY_DATADIR}"
-			fi
-		fi
-	fi
-
-	export MY_SHAREDSTATEDIR MY_SYSCONFDIR
-	export MY_LOCALSTATEDIR MY_LOGDIR
-	export MY_DATADIR
 }
 
 pkg_config() {
@@ -747,13 +734,13 @@ pkg_config() {
 		die "Minimal builds do NOT include the MySQL server"
 	fi
 
-	if [[ ( -n "${MY_DATADIR}" ) && ( "${MY_DATADIR}" != "${old_MY_DATADIR}" ) ]]; then
+	if [[ ( -n "${MY_DATADIR}" ) && ( "${MY_DATADIR}" != "${old_MY_DATADIR}" ) ]] ; then
 		local MY_DATADIR_s="${EROOT%/}/${MY_DATADIR#/}"
 		MY_DATADIR_s="${MY_DATADIR_s%%/}"
 		local old_MY_DATADIR_s="${EROOT%/}/${old_MY_DATADIR#/}"
 		old_MY_DATADIR_s="${old_MY_DATADIR_s%%/}"
 
-		if [[ ( -d "${old_MY_DATADIR_s}" ) && ( "${old_MY_DATADIR_s}" != / ) ]]; then
+		if [[ ( -d "${old_MY_DATADIR_s}" ) && ( "${old_MY_DATADIR_s}" != / ) ]] ; then
 			if [[ -d "${MY_DATADIR_s}" ]]; then
 				ewarn "Both ${old_MY_DATADIR_s} and ${MY_DATADIR_s} exist"
 				ewarn "Attempting to use ${MY_DATADIR_s} and preserving ${old_MY_DATADIR_s}"
@@ -764,7 +751,7 @@ pkg_config() {
 			fi
 		else
 			ewarn "Previous MY_DATADIR (${old_MY_DATADIR_s}) does not exist"
-			if [[ -d "${MY_DATADIR_s}" ]]; then
+			if [[ -d "${MY_DATADIR_s}" ]] ; then
 				ewarn "Attempting to use ${MY_DATADIR_s}"
 			else
 				eerror "New MY_DATADIR (${MY_DATADIR_s}) does not exist"
@@ -787,15 +774,15 @@ pkg_config() {
 		die "MySQL database already exists!"
 	fi
 
-	if [[ ! -d "${EROOT%/}/${MYSQL_TMPDIR#/}" ]]; then
+	if [[ ! -d "${EROOT%/}/${MYSQL_TMPDIR#/}" ]] ; then
 		einfo "Creating MySQL tmpdir $MYSQL_TMPDIR"
 		install -d -m 770 -o mysql -g mysql "${EROOT%/}/${MYSQL_TMPDIR#/}"
 	fi
-	if [[ ! -d "${EROOT%/}/${MYSQL_LOG_BIN#/}" ]]; then
+	if [[ ! -d "${EROOT%/}/${MYSQL_LOG_BIN#/}" ]] ; then
 		einfo "Creating MySQL log-bin directory $MYSQL_LOG_BIN"
 		install -d -m 770 -o mysql -g mysql "${EROOT%/}/${MYSQL_LOG_BIN#/}"
 	fi
-	if [[ ! -d "${EROOT%/}/${MYSQL_RELAY_LOG#/}" ]]; then
+	if [[ ! -d "${EROOT%/}/${MYSQL_RELAY_LOG#/}" ]] ; then
 		einfo "Creating MySQL relay-log directory $MYSQL_RELAY_LOG"
 		install -d -m 770 -o mysql -g mysql "${EROOT%/}/${MYSQL_RELAY_LOG#/}"
 	fi
@@ -804,14 +791,14 @@ pkg_config() {
 	local pwd2="b"
 	local maxtry=15
 
-	if [ -z "${MYSQL_ROOT_PASSWORD}" ]; then
+	if [ -z "${MYSQL_ROOT_PASSWORD}" ] ; then
 		local tmp_mysqld_password_source=
 
 		for tmp_mysqld_password_source in mysql client; do
 			einfo "Trying to get password for mysql 'root' user from '${tmp_mysqld_password_source}' section ..."
 			MYSQL_ROOT_PASSWORD="$(_getoptval "${tmp_mysqld_password_source}" password)"
-			if [[ -n "${MYSQL_ROOT_PASSWORD}" ]]; then
-				if [[ ${MYSQL_ROOT_PASSWORD} == *$'\n'* ]]; then
+			if [[ -n "${MYSQL_ROOT_PASSWORD}" ]] ; then
+				if [[ ${MYSQL_ROOT_PASSWORD} == *$'\n'* ]] ; then
 					ewarn "Ignoring password from '${tmp_mysqld_password_source}' section due to newline character (do you have multiple password options set?)!"
 					MYSQL_ROOT_PASSWORD=
 					continue
@@ -823,15 +810,14 @@ pkg_config() {
 		done
 
 		# Sometimes --show is required to display passwords in some implementations of my_print_defaults
-		if [[ "${MYSQL_ROOT_PASSWORD}" == '*****' ]]; then
+		if [[ "${MYSQL_ROOT_PASSWORD}" == '*****' ]] ; then
 			MYSQL_ROOT_PASSWORD="$(_getoptval "${tmp_mysqld_password_source}" password --show)"
 		fi
 
 		unset tmp_mysqld_password_source
 	fi
 
-	if [ -z "${MYSQL_ROOT_PASSWORD}" ]; then
-
+	if [[ -z "${MYSQL_ROOT_PASSWORD}" ]] ; then
 		einfo "Please provide a password for the mysql 'root' user now"
 		einfo "or through the ${HOME}/.my.cnf file."
 		ewarn "Avoid [\"'\\_%] characters in the password"
@@ -869,11 +855,11 @@ pkg_config() {
 
 	# Now that /var/run is a tmpfs mount point, we need to ensure it exists before using it
 	PID_DIR="${EROOT%/}/var/run/mysqld"
-	if [[ ! -d "${PID_DIR}" ]]; then
+	if [[ ! -d "${PID_DIR}" ]] ; then
 		install -d -m 755 -o mysql -g mysql "${PID_DIR}" || die "Could not create pid directory"
 	fi
 
-	if [[ ! -d "${EROOT%/}/${MY_DATADIR#/}" ]]; then
+	if [[ ! -d "${EROOT%/}/${MY_DATADIR#/}" ]] ; then
 		install -d -m 750 -o mysql -g mysql "${EROOT%/}/${MY_DATADIR#/}" || die "Could not create data directory"
 	fi
 
@@ -889,7 +875,7 @@ pkg_config() {
 	einfo "Command: ${cmd[*]}"
 	su -s /bin/sh -c "${cmd[*]}" mysql \
 		>"${TMPDIR%/}"/mysql_install_db.log 2>&1
-	if [ $? -ne 0 ]; then
+	if [[ $? -ne 0 ]] ; then
 		grep -B5 -A999 -i "ERROR" "${TMPDIR%/}"/mysql_install_db.log 1>&2
 		die "Failed to initialize mysqld. Please review ${EROOT%/}/var/log/mysql/mysqld.err AND ${TMPDIR%/}/mysql_install_db.log"
 	fi
@@ -923,7 +909,7 @@ pkg_config() {
 	done
 	eend $rc
 
-	if ! [[ -S "${socket}" ]]; then
+	if ! [[ -S "${socket}" ]] ; then
 		die "Completely failed to start up mysqld with: ${mysqld}"
 	fi
 
