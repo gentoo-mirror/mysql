@@ -1,4 +1,4 @@
-DEFINED_PHASES=compile configure install postinst postrm preinst prepare setup test unpack
+DEFINED_PHASES=compile config configure install postinst postrm preinst prepare setup test unpack
 DEPEND=|| ( >=sys-devel/gcc-3.4.6 >=sys-devel/gcc-apple-4.0 ) sys-devel/gnuconfig >=app-portage/elt-patches-20170422 !<sys-devel/gettext-0.18.1.1-r3 || ( >=sys-devel/automake-1.16:1.16 >=sys-devel/automake-1.15.1:1.15 ) >=sys-devel/autoconf-2.69 >=sys-devel/libtool-2.4 ssl? ( >=dev-libs/openssl-0.9.6d ) kernel_linux? ( sys-process/procps ) >=sys-apps/sed-4 >=sys-apps/texinfo-4.7-r1 >=sys-libs/readline-4.1 >=sys-libs/zlib-1.2.3 !dev-db/mysql-community !dev-db/mysql-cluster !dev-db/mariadb virtual/yacc berkdb? ( sys-apps/ed )
 DESCRIPTION=A fast, multi-threaded, multi-user SQL database server.
 EAPI=4

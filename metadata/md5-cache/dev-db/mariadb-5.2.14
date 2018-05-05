@@ -1,4 +1,4 @@
-DEFINED_PHASES=compile configure install postinst postrm preinst prepare setup test unpack
+DEFINED_PHASES=compile config configure install postinst postrm preinst prepare setup test unpack
 DEPEND=|| ( >=sys-devel/gcc-3.4.6 >=sys-devel/gcc-apple-4.0 ) >=app-portage/elt-patches-20170422 !<sys-devel/gettext-0.18.1.1-r3 || ( >=sys-devel/automake-1.16:1.16 >=sys-devel/automake-1.15.1:1.15 ) >=sys-devel/autoconf-2.69 >=sys-devel/libtool-2.4 ssl? ( >=dev-libs/openssl-0.9.6d:0 ) kernel_linux? ( sys-process/procps ) >=sys-apps/sed-4 >=sys-apps/texinfo-4.7-r1 >=sys-libs/zlib-1.2.3 >=sys-libs/readline-4.1:0 libevent? ( >=dev-libs/libevent-1.4 ) oqgraph? ( >=dev-libs/boost-1.40.0 ) !minimal? ( pam? ( virtual/pam ) ) !dev-db/mysql !dev-db/mariadb-galera !dev-db/percona-server !dev-db/mysql-cluster virtual/yacc static? ( sys-libs/ncurses[static-libs] ) >=dev-util/cmake-2.4.3
 DESCRIPTION=An enhanced, drop-in replacement for MySQL
 EAPI=4
