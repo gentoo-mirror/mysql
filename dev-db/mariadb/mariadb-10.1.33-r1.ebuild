@@ -9,7 +9,7 @@ JAVA_PKG_OPT_USE="jdbc"
 
 # Keeping eutils in EAPI=6 for emktemp in pkg_config
 
-inherit eutils flag-o-matic prefix toolchain-funcs java-pkg-opt-2 user cmake-utils multilib-build
+inherit eutils systemd flag-o-matic prefix toolchain-funcs java-pkg-opt-2 user cmake-utils multilib-build
 
 SRC_URI="https://downloads.mariadb.org/interstitial/${P}/source/${P}.tar.gz "
 
@@ -358,7 +358,7 @@ src_configure(){
 			-DPLUGIN_AUTH_GSSAPI=$(usex kerberos DYNAMIC NO)
 			-DWITH_MARIABACKUP=$(usex backup ON OFF)
 			-DWITH_LIBARCHIVE=$(usex backup ON OFF)
-			-DWITH_SYSTEMD=$(usex systemd YES NO)
+			-DWITH_SYSTEMD=$(usex systemd yes no)
 			-DWITH_NUMA=$(usex numa ON OFF)
 			-DINSTALL_SQLBENCHDIR=''
 		)
@@ -419,7 +419,7 @@ src_configure(){
 			-DWITH_EMBEDDED_SERVER=OFF
 			-DEXTRA_CHARSETS=none
 			-DINSTALL_SQLBENCHDIR=
-			-DWITH_SYSTEMD=NO
+			-DWITH_SYSTEMD=no
 		)
 	fi
 
