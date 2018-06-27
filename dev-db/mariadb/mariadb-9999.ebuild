@@ -1,4 +1,4 @@
-# Copyright 1999-2017 Gentoo Foundation
+# Copyright 1999-2018 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI="6"
@@ -64,7 +64,7 @@ RDEPEND="${RDEPEND} ${COMMON_DEPEND}
 	server? ( extraengine? ( jdbc? ( >=virtual/jre-1.6 ) ) )
 "
 # xtrabackup-bin causes a circular dependency if DBD-mysql is not already installed
-PDEPEND="galera? ( sst-xtrabackup? ( || ( >=dev-db/xtrabackup-bin-2.2.4 dev-db/percona-xtrabackup ) ) )"
+PDEPEND="galera? ( sst-xtrabackup? ( || ( >=dev-db/percona-xtrabackup-bin-2.2.4 dev-db/percona-xtrabackup ) ) )"
 
 MULTILIB_WRAPPED_HEADERS+=( /usr/include/mysql/mysql_version.h
 	/usr/include/mariadb/mariadb_version.h
