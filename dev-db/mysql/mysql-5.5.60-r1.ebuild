@@ -10,7 +10,7 @@ SUBSLOT="18"
 inherit eutils flag-o-matic prefix toolchain-funcs user cmake-utils multilib-build
 
 SRC_URI="https://cdn.mysql.com/Downloads/MySQL-5.5/${P}.tar.gz
- https://downloads.mysql.com/archives/MySQL-5.5/${P}.tar.gz"
+	https://downloads.mysql.com/archives/MySQL-5.5/${P}.tar.gz"
 # Gentoo patches to MySQL
 if [[ "${MY_EXTRAS_VER}" != "live" && "${MY_EXTRAS_VER}" != "none" ]]; then
 	SRC_URI="${SRC_URI}
@@ -189,6 +189,16 @@ src_prepare() {
 		echo "TARGET_LINK_LIBRARIES(mysqld jemalloc)" >> "${S%/}/sql/CMakeLists.txt" || die
 	fi
 
+	# Remove the centos and rhel selinux policies to support mysqld_safe under SELinux
+	if [[ -d "${S}/support-files/SELinux" ]] ; then
+		echo > "${S}/support-files/SELinux/CMakeLists.txt" || die
+	fi
+
+	if use libressl ; then
+		sed -i 's/OPENSSL_MAJOR_VERSION STREQUAL "1"/OPENSSL_MAJOR_VERSION STREQUAL "2"/' \
+			"${S}/cmake/ssl.cmake" || die
+	fi
+
 	local plugin
 	local server_plugins=( semisync )
 	local test_plugins=( audit_null daemon_example fulltext )
@@ -206,6 +216,7 @@ src_prepare() {
 
 	# Don't build example
 	_disable_engine example
+	_disable_engine ndb
 
 	cmake-utils_src_prepare
 }
