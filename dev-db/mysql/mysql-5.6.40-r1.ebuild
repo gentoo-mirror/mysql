@@ -164,16 +164,6 @@ pkg_postinst() {
 			einfo
 		fi
 	fi
-
-	# Note about configuration change
-	einfo
-	elog "This version of mysql reorganizes the configuration from a single my.cnf"
-	elog "to several files in /etc/mysql/${PN}.d."
-	elog "Please backup any changes you made to /etc/mysql/my.cnf"
-	elog "and add them as a new file under /etc/mysql/${PN}.d with a .cnf extension."
-	elog "You may have as many files as needed and they are read alphabetically."
-	elog "Be sure the options have the appropitate section headers, i.e. [mysqld]."
-	einfo
 }
 
 src_unpack() {
@@ -381,32 +371,21 @@ src_install() {
 	# Configuration stuff
 	einfo "Building default configuration ..."
 	insinto "${MY_SYSCONFDIR#${EPREFIX}}"
-	[[ -f "${S}/scripts/mysqlaccess.conf" ]] && doins "${S}"/scripts/mysqlaccess.conf
-	cp "${FILESDIR}/my.cnf-5.7" "${TMPDIR}/my.cnf" || die
-	eprefixify "${TMPDIR}/my.cnf"
-	doins "${TMPDIR}/my.cnf"
-	insinto "${MY_SYSCONFDIR#${EPREFIX}}/mysql.d"
-	cp "${FILESDIR}/my.cnf.distro-client" "${TMPDIR}/50-distro-client.cnf" || die
-	eprefixify "${TMPDIR}/50-distro-client.cnf"
-	doins "${TMPDIR}/50-distro-client.cnf"
+	[[ -f "${S%/}/scripts/mysqlaccess.conf" ]] && doins "${S%/}"/scripts/mysqlaccess.conf
+	local mycnf_src="my.cnf-5.6"
+	sed -e "s!@DATADIR@!${MY_DATADIR}!g" \
+		"${FILESDIR%/}/${mycnf_src}" \
+		> "${TMPDIR%/}/my.cnf.ok" || die
+	use prefix && sed -i -r -e '/^user[[:space:]]*=[[:space:]]*mysql$/d' "${TMPDIR%/}/my.cnf.ok"
+	if use latin1 ; then
+		sed -i \
+			-e "/character-set/s|utf8|latin1|g" \
+			"${TMPDIR%/}/my.cnf.ok" || die
+	fi
+	eprefixify "${TMPDIR%/}/my.cnf.ok"
+	newins "${TMPDIR}/my.cnf.ok" my.cnf
 
 	if use server ; then
-		mycnf_src="my.cnf.distro-server"
-		sed -e "s!@DATADIR@!${MY_DATADIR}!g" \
-			"${FILESDIR}/${mycnf_src}" \
-			> "${TMPDIR}/my.cnf.ok" || die
-		if use prefix ; then
-			sed -i -r -e '/^user[[:space:]]*=[[:space:]]*mysql$/d' \
-				"${TMPDIR}/my.cnf.ok" || die
-		fi
-		if use latin1 ; then
-			sed -i \
-				-e "/character-set/s|utf8|latin1|g" \
-				"${TMPDIR}/my.cnf.ok" || die
-		fi
-		eprefixify "${TMPDIR}/my.cnf.ok"
-		newins "${TMPDIR}/my.cnf.ok" 50-distro-server.cnf
-
 		einfo "Including support files and sample configurations"
 		docinto "support-files"
 		local script
