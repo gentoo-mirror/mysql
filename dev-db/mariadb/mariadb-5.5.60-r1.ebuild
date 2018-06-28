@@ -490,18 +490,29 @@ src_test() {
 	pushd "${TESTDIR}" > /dev/null || die
 
 	touch "${T}/disabled.def"
-	# These are failing in MariaDB 10.0 for now and are believed to be
+	# These are failing in MariaDB 5.5 for now and are believed to be
 	# false positives:
 	#
-	# main.mysql_client_test, main.mysql_client_test_nonblock
-	# main.mysql_client_test_comp:
+	# main.information_schema, binlog.binlog_statement_insert_delayed,
+	# main.mysqld--help, funcs_1.is_triggers, funcs_1.is_tables_mysql,
+	# funcs_1.is_columns_mysql
+	# fails due to USE=-latin1 / utf8 default
+	#
+	# main.mysql_client_test, main.mysql_client_test_nonblock:
 	# segfaults at random under Portage only, suspect resource limits.
+	#
+	# archive.mysqlhotcopy_archive main.mysqlhotcopy_myisam
+	# fails due to bad cleanup of previous tests when run in parallel
+	# The tool is deprecated anyway
+	# Bug 532288
 
 	local t
 	for t in main.mysql_client_test main.mysql_client_test_nonblock \
-		main.mysql_client_test_comp rpl.rpl_extra_col_master_myisam \
-		rpl.rpl_semi_sync_uninstall_plugin ; do
-			_disable_test  "$t" "False positives in Gentoo"
+			binlog.binlog_statement_insert_delayed main.information_schema \
+			main.mysqld--help \
+			archive.mysqlhotcopy_archive main.mysqlhotcopy_myisam \
+			funcs_1.is_triggers funcs_1.is_tables_mysql funcs_1.is_columns_mysql ; do
+		_disable_test  "$t" "False positives in Gentoo"
 	done
 
 	if ! use client-libs ; then
