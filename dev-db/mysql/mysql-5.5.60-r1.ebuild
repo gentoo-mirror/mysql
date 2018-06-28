@@ -9,8 +9,8 @@ SUBSLOT="18"
 
 inherit eutils flag-o-matic prefix toolchain-funcs user cmake-utils multilib-build
 
-SRC_URI="https://downloads.mariadb.org/interstitial/${P}/source/${P}.tar.gz "
-
+SRC_URI="https://cdn.mysql.com/Downloads/MySQL-5.5/${P}.tar.gz
+ https://downloads.mysql.com/archives/MySQL-5.5/${P}.tar.gz"
 # Gentoo patches to MySQL
 if [[ "${MY_EXTRAS_VER}" != "live" && "${MY_EXTRAS_VER}" != "none" ]]; then
 	SRC_URI="${SRC_URI}
@@ -21,21 +21,19 @@ if [[ "${MY_EXTRAS_VER}" != "live" && "${MY_EXTRAS_VER}" != "none" ]]; then
 		https://dev.gentoo.org/~jmbsvicetto/distfiles/mysql-extras-${MY_EXTRAS_VER}.tar.bz2"
 fi
 
-HOMEPAGE="http://mariadb.org/"
+HOMEPAGE="https://mysql.com/"
 DESCRIPTION="An enhanced, drop-in replacement for MySQL"
 LICENSE="GPL-2"
 SLOT="0/${SUBSLOT:-0}"
 IUSE="bindist client-libs debug extraengine jemalloc latin1 libressl
-	oqgraph pam +perl profiling selinux +server sphinx
-	static static-libs systemtap tcmalloc
-	test tokudb yassl"
+	+perl profiling selinux +server	static static-libs systemtap tcmalloc
+	test yassl"
 
 # Tests always fail when libressl is enabled due to hard-coded ciphers in the tests
 RESTRICT="!bindist? ( bindist ) libressl? ( test )"
 
-REQUIRED_USE="server? ( tokudb? ( jemalloc !tcmalloc ) )
-	?? ( tcmalloc jemalloc )
-	static? ( yassl !pam )"
+REQUIRED_USE="?? ( tcmalloc jemalloc )
+	static? ( yassl )"
 
 KEYWORDS="~alpha ~amd64 ~arm ~arm64 ~hppa ~ia64 ~mips ~ppc ~ppc64 ~s390 ~sparc ~x86 ~amd64-linux ~x86-linux ~ppc-macos ~x64-macos ~x86-macos ~x64-solaris ~x86-solaris"
 
@@ -54,11 +52,17 @@ else
 fi
 
 PATCHES=(
-	"${MY_PATCH_DIR}/01050_all_mariadb_mysql_config_cleanup-5.5.41.patch"
-	"${MY_PATCH_DIR}/20004_all_mariadb-filter-tokudb-flags.patch"
-	"${MY_PATCH_DIR}/20006_all_cmake_elib-mariadb-5.5.50.patch"
-	"${MY_PATCH_DIR}/20009_all_mariadb_myodbc_symbol_fix-5.5.38.patch"
-	"${MY_PATCH_DIR}/20018_all_mariadb-5.5.60-without-clientlibs-tools.patch"
+	"${MY_PATCH_DIR}/01050_all_mysql_config_cleanup-5.5.patch"
+	"${MY_PATCH_DIR}/02040_all_embedded-library-shared-5.5.10.patch"
+	"${MY_PATCH_DIR}/20001_all_fix-minimal-build-cmake-mysql-5.5.41.patch"
+	"${MY_PATCH_DIR}/20002_all_mysql-va-list.patch"
+	"${MY_PATCH_DIR}/20006_all_cmake_elib-mysql-5.5.53.patch"
+	"${MY_PATCH_DIR}/20007_all_cmake-debug-werror-5.6.22.patch"
+	"${MY_PATCH_DIR}/20008_all_mysql-tzinfo-symlink-5.6.37.patch"
+	"${MY_PATCH_DIR}/20009_all_mysql_myodbc_symbol_fix-5.5.38.patch"
+	"${MY_PATCH_DIR}/20018_all_mysql-5.5.60-without-clientlibs-tools.patch"
+	"${MY_PATCH_DIR}/20027_all_mysql-5.5-perl5.26-includes.patch"
+	"${MY_PATCH_DIR}/20030_all_mysql-5.5-fix-client-mysql-type.patch"
 )
 
 # Be warned, *DEPEND are version-dependant
@@ -82,10 +86,6 @@ COMMON_DEPEND="
 	!bindist? (
 		>=sys-libs/readline-4.1:0=
 	)
-	server? (
-		oqgraph? ( >=dev-libs/boost-1.40.0:0= dev-libs/judy:0= )
-		pam? ( virtual/pam:0= )
-	)
 	!client-libs? ( dev-db/mysql-connector-c[${MULTILIB_USEDEP},static-libs?] )
 "
 DEPEND="virtual/yacc
@@ -94,7 +94,7 @@ DEPEND="virtual/yacc
 	${COMMON_DEPEND}"
 RDEPEND="selinux? ( sec-policy/selinux-mysql )
 	client-libs? ( !dev-db/mariadb-connector-c[mysqlcompat] !dev-db/mysql-connector-c )
-	!dev-db/mysql !dev-db/mariadb-galera !dev-db/percona-server !dev-db/mysql-cluster
+	!dev-db/mariadb !dev-db/mariadb-galera !dev-db/percona-server !dev-db/mysql-cluster
 	server? ( !prefix? ( dev-db/mysql-init-scripts ) )
 	${COMMON_DEPEND}
 	perl? ( !dev-db/mytop
@@ -111,12 +111,6 @@ pkg_setup() {
 	if [[ ${MERGE_TYPE} != binary ]] ; then
 		local GCC_MAJOR_SET=$(gcc-major-version)
 		local GCC_MINOR_SET=$(gcc-minor-version)
-		if use tokudb && [[ ${GCC_MAJOR_SET} -lt 4 || \
-			${GCC_MAJOR_SET} -eq 4 && ${GCC_MINOR_SET} -lt 7 ]] ; then
-			eerror "${PN} with tokudb needs to be built with gcc-4.7 or later."
-			eerror "Please use gcc-config to switch to gcc-4.7 or later version."
-			die
-		fi
 		# Bug 565584.  InnoDB now requires atomic functions introduced with gcc-4.7 on
 		# non x86{,_64} arches
 		if ! use amd64 && ! use x86 && [[ ${GCC_MAJOR_SET} -lt 4 || \
@@ -144,14 +138,6 @@ pkg_postinst() {
 	[[ -d "${ROOT}${MY_LOGDIR}" ]] || install -d -m0750 -o mysql -g mysql "${ROOT}${MY_LOGDIR}"
 
 	if use server ; then
-		if use pam; then
-			einfo
-			elog "This install includes the PAM authentication plugin."
-			elog "To activate and configure the PAM plugin, please read:"
-			elog "https://mariadb.com/kb/en/mariadb/pam-authentication-plugin/"
-			einfo
-		fi
-
 		if [[ -z "${REPLACING_VERSIONS}" ]] ; then
 			einfo
 			elog "You might want to run:"
@@ -199,14 +185,13 @@ src_prepare() {
 		echo "TARGET_LINK_LIBRARIES(mysqld tcmalloc)" >> "${S%/}/sql/CMakeLists.txt" || die
 	fi
 
-	# Don't build bundled xz-utils for tokudb
-	echo > "${S%/}/storage/tokudb/ft-index/cmake_modules/TokuThirdParty.cmake" || die
-	sed -i -e 's/ build_lzma//' "${S%/}/storage/tokudb/ft-index/ft/CMakeLists.txt" || die
-	sed -i -e 's/add_dependencies\(tokuportability_static_conv build_jemalloc\)//' "${S%/}/storage/tokudb/ft-index/portability/CMakeLists.txt" || die
+	if use jemalloc; then
+		echo "TARGET_LINK_LIBRARIES(mysqld jemalloc)" >> "${S%/}/sql/CMakeLists.txt" || die
+	fi
 
 	local plugin
-	local server_plugins=( handler_socket auth_socket feedback qc_info server_audit semisync sql_errlog )
-	local test_plugins=( audit_null auth_examples daemon_example fulltext )
+	local server_plugins=( semisync )
+	local test_plugins=( audit_null daemon_example fulltext )
 	if ! use server; then # These plugins are for the server
 		for plugin in "${server_plugins[@]}" ; do
 			_disable_plugin "${plugin}"
@@ -219,22 +204,13 @@ src_prepare() {
 		done
 	fi
 
-	# Collides with mariadb-connector-c bug 655980
-	_disable_plugin auth_dialog
-
 	# Don't build example
 	_disable_engine example
-
-	if ! use oqgraph ; then # avoids extra library checks
-		_disable_engine oqgraph
-	fi
 
 	cmake-utils_src_prepare
 }
 
 src_configure(){
-	# bug 508724 mariadb cannot use ld.gold
-	tc-ld-disable-gold
 	# Bug #114895, bug #110149
 	filter-flags "-O" "-O[01]"
 
@@ -258,28 +234,26 @@ src_configure(){
 		-DINSTALL_INFODIR=share/info
 		-DINSTALL_LIBDIR=$(get_libdir)
 		-DINSTALL_MANDIR=share/man
-		-DINSTALL_MYSQLSHAREDIR=share/mariadb
-		-DINSTALL_PLUGINDIR=$(get_libdir)/mariadb/plugin
-		-DINSTALL_SCRIPTDIR=share/mariadb/scripts
+		-DINSTALL_MYSQLSHAREDIR=share/mysql
+		-DINSTALL_PLUGINDIR=$(get_libdir)/mysql/plugin
+		-DINSTALL_SCRIPTDIR=share/mysql/scripts
 		-DINSTALL_MYSQLDATADIR="${EPREFIX%/}/var/lib/mysql"
 		-DINSTALL_SBINDIR=sbin
-		-DINSTALL_SUPPORTFILESDIR="${EPREFIX%/}/usr/share/mariadb"
+		-DINSTALL_SUPPORTFILESDIR="${EPREFIX%/}/usr/share/mysql"
 		-DCOMPILATION_COMMENT="Gentoo Linux ${PF}"
 		-DWITH_UNIT_TESTS=$(usex test ON OFF)
 		-DWITH_ZLIB=system
 		-DENABLED_LOCAL_INFILE=1
 		-DMYSQL_UNIX_ADDR="${EPREFIX%/}/var/run/mysqld/mysqld.sock"
-		-DINSTALL_UNIX_ADDRDIR="${EPREFIX%/}/var/run/mysqld/mysqld.sock"
 		# The build forces this to be defined when cross-compiling.  We pass it
 		# all the time for simplicity and to make sure it is actually correct.
 		-DSTACK_DIRECTION=$(tc-stack-grows-down && echo -1 || echo 1)
 		-DWITHOUT_CLIENTLIBS=YES
 		-DWITH_READLINE=$(usex bindist 1 0)
-		-DNOT_FOR_DISTRIBUTION=$(usex bindist 0 1)
 		-DENABLE_DTRACE=$(usex systemtap)
 	)
 	if use test ; then
-		mycmakeargs+=( -DINSTALL_MYSQLTESTDIR=share/mariadb/mysql-test )
+		mycmakeargs+=( -DINSTALL_MYSQLTESTDIR=share/mysql/mysql-test )
 	else
 		mycmakeargs+=( -DINSTALL_MYSQLTESTDIR='' )
 	fi
@@ -298,14 +272,6 @@ src_configure(){
 				-DWITHOUT_FEDERATED_STORAGE_ENGINE=1
 				-DWITHOUT_FEDERATEDX_STORAGE_ENGINE=1 )
 		fi
-
-		mycmakeargs+=(
-			-DWITH_JEMALLOC=$(usex jemalloc system)
-			-D$(usex sphinx WITH WITHOUT)_SPHINX_STORAGE_ENGINE=1
-			-D$(usex tokudb WITH WITHOUT)_TOKUDB_STORAGE_ENGINE=1
-			-D$(usex oqgraph WITH WITHOUT)_AUTH_PAM=1
-			-DINSTALL_SQLBENCHDIR=share/mariadb
-		)
 
 		if [[ ( -n ${MYSQL_DEFAULT_CHARSET} ) && ( -n ${MYSQL_DEFAULT_COLLATION} ) ]]; then
 			ewarn "You are using a custom charset of ${MYSQL_DEFAULT_CHARSET}"
@@ -329,6 +295,7 @@ src_configure(){
 			)
 		fi
 		mycmakeargs+=(
+			-DINSTALL_SQLBENCHDIR=share/mysql
 			-DEXTRA_CHARSETS=all
 			-DDISABLE_SHARED=$(usex static YES NO)
 			-DWITH_EMBEDDED_SERVER=OFF
@@ -337,10 +304,6 @@ src_configure(){
 
 		if use static; then
 			mycmakeargs+=( -DWITH_PIC=1 )
-		fi
-
-		if use jemalloc || use tcmalloc ; then
-			mycmakeargs+=( -DWITH_SAFEMALLOC=OFF )
 		fi
 
 		# Storage engines
@@ -439,7 +402,7 @@ src_install() {
 # Official test instructions:
 # USE='extraengine perl server' \
 # FEATURES='test userpriv -usersandbox' \
-# ebuild mariadb-X.X.XX.ebuild \
+# ebuild mysql-X.X.XX.ebuild \
 # digest clean package
 src_test() {
 
@@ -489,29 +452,19 @@ src_test() {
 	pushd "${TESTDIR}" > /dev/null || die
 
 	touch "${T}/disabled.def"
-	# These are failing in MariaDB 5.5 for now and are believed to be
+	# These are failing in MySQL 5.5 for now and are believed to be
 	# false positives:
 	#
-	# main.information_schema, binlog.binlog_statement_insert_delayed,
-	# main.mysqld--help, funcs_1.is_triggers, funcs_1.is_tables_mysql,
-	# funcs_1.is_columns_mysql
-	# fails due to USE=-latin1 / utf8 default
-	#
-	# main.mysql_client_test, main.mysql_client_test_nonblock:
+	# main.mysql_client_test, main.mysql_client_test_nonblock
+	# main.mysql_client_test_comp:
 	# segfaults at random under Portage only, suspect resource limits.
-	#
-	# archive.mysqlhotcopy_archive main.mysqlhotcopy_myisam
-	# fails due to bad cleanup of previous tests when run in parallel
-	# The tool is deprecated anyway
-	# Bug 532288
 
 	local t
 	for t in main.mysql_client_test main.mysql_client_test_nonblock \
-			binlog.binlog_statement_insert_delayed main.information_schema \
-			main.mysqld--help \
-			archive.mysqlhotcopy_archive main.mysqlhotcopy_myisam \
-			funcs_1.is_triggers funcs_1.is_tables_mysql funcs_1.is_columns_mysql ; do
-		_disable_test  "$t" "False positives in Gentoo"
+		main.mysql_client_test_comp rpl.rpl_extra_col_master_myisam \
+		main.mysqlhotcopy_archive main.mysqlhotcopy_myisam main.openssl_1 \
+		rpl.rpl_semi_sync_uninstall_plugin ; do
+			_disable_test  "$t" "False positives in Gentoo"
 	done
 
 	if ! use client-libs ; then
@@ -537,7 +490,7 @@ src_test() {
 }
 
 mysql_init_vars() {
-	MY_SHAREDSTATEDIR=${MY_SHAREDSTATEDIR="${EPREFIX}/usr/share/mariadb"}
+	MY_SHAREDSTATEDIR=${MY_SHAREDSTATEDIR="${EPREFIX}/usr/share/mysql"}
 	MY_SYSCONFDIR=${MY_SYSCONFDIR="${EPREFIX}/etc/mysql"}
 	MY_LOCALSTATEDIR=${MY_LOCALSTATEDIR="${EPREFIX}/var/lib/mysql"}
 	MY_LOGDIR=${MY_LOGDIR="${EPREFIX}/var/log/mysql"}
@@ -752,7 +705,7 @@ pkg_config() {
 	# http://dev.mysql.com/doc/mysql/en/time-zone-support.html
 	"${EROOT}/usr/bin/mysql_tzinfo_to_sql" "${EROOT}/usr/share/zoneinfo" > "${sqltmp}" 2>/dev/null
 
-	local cmd=( "${EROOT}usr/share/mariadb/scripts/mysql_install_db" )
+	local cmd=( "${EROOT}usr/share/mysql/scripts/mysql_install_db" )
 	[[ -f "${cmd}" ]] || cmd=( "${EROOT}usr/bin/mysql_install_db" )
 	cmd+=( "--basedir=${EPREFIX}/usr" ${options} "--datadir=${ROOT}/${MY_DATADIR}" "--tmpdir=${ROOT}/${MYSQL_TMPDIR}" )
 	einfo "Command: ${cmd[*]}"
