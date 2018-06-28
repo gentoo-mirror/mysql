@@ -2,8 +2,7 @@
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI="6"
-#MY_EXTRAS_VER="20180515-1334Z"
-MY_EXTRAS_VER="live"
+MY_EXTRAS_VER="20180628-0201Z"
 SUBSLOT="18"
 
 # Keeping eutils in EAPI=6 for emktemp in pkg_config
