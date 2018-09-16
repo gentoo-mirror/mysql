@@ -1,3 +1,2 @@
-dev-db/myodbc 5.2.7-r1: ODBC driver for MySQL
 dev-db/mysql-init-scripts 1.2: Gentoo MySQL init scripts.
 virtual/libmysqlclient 18: Virtual for MySQL client libraries
