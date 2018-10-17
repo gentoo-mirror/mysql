@@ -1,4 +1,4 @@
-# Copyright 1999-2017 Gentoo Foundation
+# Copyright 1999-2018 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=6
@@ -65,7 +65,7 @@ multilib_src_install_all() {
 		find "${D}" -name "*.a" -delete || die
 	fi
 	if use mysqlcompat ; then
-		dosym /usr/sbin/mariadb_config /usr/bin/mysql_config
+		dosym ../sbin/mariadb_config /usr/bin/mysql_config
 		dosym mariadb /usr/include/mysql
 	fi
 }
