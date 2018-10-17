@@ -1,7 +1,7 @@
-# Copyright 1999-2017 Gentoo Foundation
+# Copyright 1999-2018 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI=5
+EAPI=6
 
 VCS_INHERIT=""
 if [[ "${PV}" == 9999 ]] ; then
@@ -19,13 +19,16 @@ else
 	KEYWORDS="~amd64 ~x86"
 fi
 
-inherit cmake-multilib eutils ${VCS_INHERIT}
+inherit cmake-utils multilib-minimal ${VCS_INHERIT}
 
 MULTILIB_CHOST_TOOLS=( /usr/bin/mariadb_config )
 
 MULTILIB_WRAPPED_HEADERS+=(
 	/usr/include/mariadb/my_config.h
 )
+
+PATCHES=( "${FILESDIR}/fix-mariadb_config-2.1.0.patch"
+		"${FILESDIR}/gentoo-layout.patch" )
 
 DESCRIPTION="C client library for MariaDB/MySQL"
 HOMEPAGE="http://mariadb.org/"
@@ -49,19 +52,12 @@ RDEPEND="${DEPEND}
 	mysqlcompat? ( !dev-db/mysql-connector-c )
 	"
 
-src_prepare() {
-	epatch \
-		"${FILESDIR}/fix-mariadb_config-2.1.0.patch" \
-		"${FILESDIR}/gentoo-layout.patch"
-	epatch_user
-}
-
 multilib_src_configure() {
-	mycmakeargs+=(
-		-DMYSQL_UNIX_ADDR="${EPREFIX}/var/run/mysqld/mysqld.sock"
+	local mycmakeargs=(
+		-DMYSQL_UNIX_ADDR="${EPREFIX%/}/var/run/mysqld/mysqld.sock"
 		-DWITH_EXTERNAL_ZLIB=ON
-		$(cmake-utils_use_with ssl OPENSSL)
-		$(cmake-utils_use_with mysqlcompat MYSQLCOMPAT)
+		-DOPENSSL=$(usex ssl ON OFF)
+		-DMYSQLCOMPAT=$(usex mysqlcompat ON OFF)
 		-DLIB_INSTALL_DIR=$(get_libdir)
 		-DPLUGIN_INSTALL_DIR=$(get_libdir)/mariadb/plugin
 		-DINSTALL_LAYOUT=GENTOO
