@@ -1,8 +1,8 @@
-# Copyright 1999-2018 Gentoo Foundation
+# Copyright 1999-2018 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI="6"
-MY_EXTRAS_VER="20180628-0201Z"
+MY_EXTRAS_VER="20180804-2323Z"
 SUBSLOT="18"
 
 # Keeping eutils in EAPI=6 for emktemp in pkg_config
@@ -35,7 +35,7 @@ RESTRICT="!bindist? ( bindist ) libressl? ( test )"
 REQUIRED_USE="?? ( tcmalloc jemalloc )
 	static? ( yassl )"
 
-KEYWORDS="~alpha ~amd64 ~arm ~arm64 ~hppa ~ia64 ~mips ~ppc ~ppc64 ~s390 ~sparc ~x86 ~amd64-linux ~x86-linux ~ppc-macos ~x64-macos ~x86-macos ~x64-solaris ~x86-solaris"
+KEYWORDS="~alpha ~amd64 ~arm ~hppa ~ia64 ~mips ~ppc ~ppc64 ~s390 ~sparc ~x86 ~amd64-linux ~x86-linux ~ppc-macos ~x64-macos ~x86-macos ~x64-solaris ~x86-solaris"
 
 # Shorten the path because the socket path length must be shorter than 107 chars
 # and we will run a mysql server during test phase
@@ -62,7 +62,6 @@ PATCHES=(
 	"${MY_PATCH_DIR}/20009_all_mysql_myodbc_symbol_fix-5.5.38.patch"
 	"${MY_PATCH_DIR}/20018_all_mysql-5.5.60-without-clientlibs-tools.patch"
 	"${MY_PATCH_DIR}/20027_all_mysql-5.5-perl5.26-includes.patch"
-	"${MY_PATCH_DIR}/20030_all_mysql-5.5-fix-client-mysql-type.patch"
 )
 
 # Be warned, *DEPEND are version-dependant
@@ -310,8 +309,14 @@ src_configure(){
 			-DEXTRA_CHARSETS=all
 			-DDISABLE_SHARED=$(usex static YES NO)
 			-DWITH_EMBEDDED_SERVER=OFF
-			-DENABLED_PROFILING=$(usex profiling)
 		)
+
+		if use profiling ; then
+			# Setting to OFF doesn't work: Once set, profiling options will be added
+			# to `mysqld --help` output via sql/sys_vars.cc causing
+			# "main.mysqld--help-notwin" test to fail
+			mycmakeargs+=( -DENABLED_PROFILING=ON )
+		fi
 
 		if use static; then
 			mycmakeargs+=( -DWITH_PIC=1 )
@@ -471,7 +476,8 @@ src_test() {
 	# segfaults at random under Portage only, suspect resource limits.
 
 	local t
-	for t in main.mysql_client_test main.mysql_client_test_nonblock \
+	for t in federated.federated_plugin \
+		main.mysql_client_test main.mysql_client_test_nonblock \
 		main.mysql_client_test_comp rpl.rpl_extra_col_master_myisam \
 		main.mysqlhotcopy_archive main.mysqlhotcopy_myisam main.openssl_1 \
 		rpl.rpl_semi_sync_uninstall_plugin ; do
@@ -742,7 +748,7 @@ pkg_config() {
 		--max_allowed_packet=8M \
 		--net_buffer_length=16K \
 		--socket=${socket} \
-		--pid-file=${pidfile}
+		--pid-file=${pidfile} \
 		--tmpdir=${ROOT}/${MYSQL_TMPDIR}"
 	#einfo "About to start mysqld: ${mysqld}"
 	ebegin "Starting mysqld"
