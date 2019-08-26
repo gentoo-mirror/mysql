@@ -702,8 +702,8 @@ pkg_postinst() {
 		fi
 
 		elog "Since ${PN}-5.6.39.83.1-r1 we no longer provide client libs."
-		elog "Applications depending on client libs should migrate to virtual/libmysqlclient"
-		elog "which will pull-in dev-db/mysql-connector-c as their new client lib provider."
+		elog "Applications depending on client libs should migrate to dev-db/mysql-connector-c"
+		elog "as their new client lib provider."
 		einfo
 	fi
 }
