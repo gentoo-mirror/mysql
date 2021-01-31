@@ -3,7 +3,6 @@ dev-db/mariadb-connector-c 2.2.2 9999: C client library for MariaDB/MySQL
 dev-db/mysql 4.0.27-r1 4.1.22-r1 5.0.96 5.1.73-r1 5.5.62 5.7.21: A fast, multi-threaded, multi-user SQL database server
 dev-db/mysql-cluster 7.2.22 7.3.11 7.4.20: A fast, multi-threaded, multi-user SQL database server
 dev-db/mysql-init-scripts 1.2 2.0_pre1 2.0 2.1_alpha4: Gentoo MySQL init scripts.
-dev-db/mysql-utilities 1.5.4 1.5.6: Set of command-line utilities for common MySQL tasks
 dev-db/percona-server 5.6.39.83.1-r1: An enhanced, drop-in replacement for MySQL from the Percona team
 dev-java/mariadb-java-client 1.1.7 9999: Java client library for MariaDB/MySQL
 virtual/libmysqlclient 18 20: Virtual for MySQL client libraries
